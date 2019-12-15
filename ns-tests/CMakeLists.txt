@@ -11,25 +11,21 @@ endif ()
 
 set(Sources
 		main.cpp
-		testing.cpp
-		testBase64.cpp
-		testExceptionThrowThrough.cpp)
+		testing.cpp testing.h
+		testBase64.cpp testBase64.h
+		testExceptionThrowThrough.cpp testExceptionThrowThrough.h
+		testBrokenWrite.cpp testBrokenWrite.h)
 
 message("Sources: ${Sources}")
 
-set(Headers
-		testing.h
-		testBase64.h
-		testExceptionThrowThrough.h)
-
 include_directories(../ns-skeleton/include)
 
-add_executable(ns-tests ${Sources} ${Headers})
+add_executable(ns-tests ${Sources})
 
 if (${GLOBAL_BUILD})
 	message("ns-tests: Will link ns-tests with ${ns_skeleton_BINARY_DIR}/libns-skeleton.so")
 	target_link_libraries(ns-tests ns-skeleton)
 	add_custom_command(TARGET ns-tests POST_BUILD COMMAND ${ns_tests_BINARY_DIR}/ns-tests)
 else ()
-	message(WARNING "ns-tests: Not a global build, so no libns-skeleton.so to link with")
+	message(WARNING "ns-tests: Not a global build, so no libns-skeleton.so to link with and run tests against")
 endif ()

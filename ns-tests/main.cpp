@@ -14,6 +14,7 @@
 #include "testing.h"
 #include "testExceptionThrowThrough.h"
 #include "testBase64.h"
+#include "testBrokenWrite.h"
 
 /*
  *
@@ -21,6 +22,7 @@
 int main(int argc, char **argv) {
 	testBase64();
 	testExceptionThrowThrough();
+	testBrokenWrite();
 
 	testsResult();
 
