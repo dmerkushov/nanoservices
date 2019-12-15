@@ -4,3 +4,6 @@ project(nanoservices)
 set(GLOBAL_BUILD true)
 
 add_subdirectory(ns-skeleton)
+add_subdirectory(ns-tests)
+
+
