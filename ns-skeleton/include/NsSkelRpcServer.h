@@ -70,7 +70,7 @@
 
 namespace nanoservices {
 
-	const int MAX_INTERRUPTED_TIMES=3;
+	const int MAX_INTERRUPTED_TIMES = 3;
 
 // These serializers are defined in NsRpcExecutor.cpp
 	extern NsSerializer<NsRpcRequest> _requestSerializer;
