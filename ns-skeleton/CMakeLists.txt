@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(ns-skeleton)
+project(ns_skeleton)
 
 set(CMAKE_CXX_STANDARD 11)
 
@@ -66,6 +66,9 @@ set(Headers
 include_directories(include)
 
 add_library(ns-skeleton SHARED ${Sources} ${Headers})
+
+find_package(Threads)
+target_link_libraries(ns-skeleton ${CMAKE_THREAD_LIBS_INIT})
 
 # Documentation generation: make docs
 find_package(Doxygen)
