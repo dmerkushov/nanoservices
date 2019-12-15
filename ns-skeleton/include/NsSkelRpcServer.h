@@ -148,11 +148,17 @@ namespace nanoservices {
 		size_t index = 0;
 		const char *d = (char *) data;
 		int interruptedTimes = 0;
-		while (index < len && interruptedTimes < MAX_INTERRUPTED_TIMES) {
+		while (index < len) {
 			ssize_t count = write(dataSocketFd, d + index, len - index);
 			if (count < 0) {
 				if (errno == EINTR) {
 					interruptedTimes++;
+					if (interruptedTimes > MAX_INTERRUPTED_TIMES) {
+						cout_lock.lock();
+						std::cerr << "writeBin: Too many EINTR signals received: fd=" << dataSocketFd << std::endl;
+						cout_lock.unlock();
+						break;
+					}
 					continue;
 				}
 				cout_lock.lock();
