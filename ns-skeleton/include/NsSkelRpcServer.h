@@ -70,6 +70,8 @@
 
 namespace nanoservices {
 
+	const int MAX_INTERRUPTED_TIMES=3;
+
 // These serializers are defined in NsRpcExecutor.cpp
 	extern NsSerializer<NsRpcRequest> _requestSerializer;
 	extern NsSerializer<NsRpcResponseError> _errorSerializer;
@@ -145,10 +147,12 @@ namespace nanoservices {
 	inline void writeBin(int dataSocketFd, const void *data, size_t len) {
 		size_t index = 0;
 		const char *d = (char *) data;
-		while (index < len) {
+		int interruptedTimes = 0;
+		while (index < len && interruptedTimes < MAX_INTERRUPTED_TIMES) {
 			ssize_t count = write(dataSocketFd, d + index, len - index);
 			if (count < 0) {
 				if (errno == EINTR) {
+					interruptedTimes++;
 					continue;
 				}
 				cout_lock.lock();
