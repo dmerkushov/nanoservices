@@ -10,6 +10,8 @@ It is in development by now, a more meaningful readme will be added later
 How to build
 ------------
 
+You'll need: `cmake` (minimum version is 3.0), `make` and a C++11 compiler (the framework is tested with gcc 4.7)
+
 ```bash
 git clone git@github.com:dmerkushov/nanoservices.git`
 cd nanoservices/
