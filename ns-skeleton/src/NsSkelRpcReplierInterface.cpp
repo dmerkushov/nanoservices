@@ -25,12 +25,12 @@
 
 using namespace nanoservices;
 
-NsSkelRpcReplierInterface::NsSkelRpcReplierInterface () {
+NsSkelRpcReplierInterface::NsSkelRpcReplierInterface() {
 }
 
-NsSkelRpcReplierInterface::~NsSkelRpcReplierInterface () {
+NsSkelRpcReplierInterface::~NsSkelRpcReplierInterface() {
 }
 
-bool NsSkelRpcReplierInterface::isThreadsafe () throw (NsException) {
+bool NsSkelRpcReplierInterface::isThreadsafe() throw(NsException) {
 	return false;
 }

@@ -26,26 +26,26 @@
 using namespace std;
 using namespace nanoservices;
 
-NsRpcRequest::NsRpcRequest () {
+NsRpcRequest::NsRpcRequest() {
 }
 
-NsRpcRequest::NsRpcRequest (std::string &method, NsSerialized &argsSerialized, bool waitForResponse) :
-_method (method),
-_argsSerialized (argsSerialized),
-_waitForResponse (waitForResponse) {
+NsRpcRequest::NsRpcRequest(std::string &method, NsSerialized &argsSerialized, bool waitForResponse) :
+		_method(method),
+		_argsSerialized(argsSerialized),
+		_waitForResponse(waitForResponse) {
 }
 
-NsRpcRequest::~NsRpcRequest () {
+NsRpcRequest::~NsRpcRequest() {
 }
 
-string &NsRpcRequest::method () {
+string &NsRpcRequest::method() {
 	return _method;
 }
 
-NsSerialized & NsRpcRequest::argsSerialized () {
+NsSerialized &NsRpcRequest::argsSerialized() {
 	return _argsSerialized;
 }
 
-bool NsRpcRequest::waitForResponse () {
+bool NsRpcRequest::waitForResponse() {
 	return _waitForResponse;
 }

@@ -71,308 +71,327 @@
 namespace nanoservices {
 
 // These serializers are defined in NsRpcExecutor.cpp
-extern NsSerializer<NsRpcRequest> _requestSerializer;
-extern NsSerializer<NsRpcResponseError> _errorSerializer;
-extern NsSerializer<NsRpcResponse> _responseSerializer;
+	extern NsSerializer<NsRpcRequest> _requestSerializer;
+	extern NsSerializer<NsRpcResponseError> _errorSerializer;
+	extern NsSerializer<NsRpcResponse> _responseSerializer;
 
 // This mutex is defined in NsSkelRpcServer.cpp
-extern std::mutex cout_lock;
+	extern std::mutex cout_lock;
 
-class NsSkelRpcServer : public std::enable_shared_from_this<NsSkelRpcServer> {
-public:
-	NsSkelRpcServer ();
-	virtual ~NsSkelRpcServer ();
+	class NsSkelRpcServer : public std::enable_shared_from_this<NsSkelRpcServer> {
+	public:
+		NsSkelRpcServer();
 
-	void startup () throw (NsException);
-	void shutdown ();
-	bool active ();
-	void sleepWhileActive ();
+		virtual ~NsSkelRpcServer();
 
-	uint16_t port ();
+		void startup() throw(NsException);
 
-protected:
-	void setPort (uint16_t port);
-	virtual void processIncomingConnection (int dataSocketFd);
+		void shutdown();
 
-private:
-	NsSkelRpcServer (const NsSkelRpcServer& orig) = delete;
-	void operator= (NsSkelRpcServer& orig) = delete;
+		bool active();
 
-	uint16_t _port;
-	int _serverSocketFd;
-	std::thread _serverThread;
-	std::atomic<bool> _serverActive;
-	std::atomic<bool> _serverStarted;
-	std::atomic<bool> _shutdownReceived;
-	std::map<int, std::shared_ptr<std::thread> > _threads;
+		void sleepWhileActive();
 
-	virtual void serverThreadWork ();
+		uint16_t port();
 
-};
+	protected:
+		void setPort(uint16_t port);
 
-inline std::shared_ptr<NsBinBuffer> readBin (int dataSocketFd, uint32_t len) {
-	std::shared_ptr<NsBinBuffer> buf = std::make_shared<NsBinBuffer> (len);
-	std::shared_ptr<NsBinBuffer> empty;
+		virtual void processIncomingConnection(int dataSocketFd);
 
-	char currByte;
-	ssize_t rcount = 0;
-	ssize_t totalcount = 0;
-	while (totalcount < len) {
-		rcount = read (dataSocketFd, &currByte, 1);
-		if (rcount == 0) {
-			cout_lock.lock ();
-			std::cerr << "readBin: Socket closed prematurely: fd=" << dataSocketFd << std::endl;
-			cout_lock.unlock ();
-			return empty;
-		}
-		buf->write (&currByte, 1);
-		totalcount++;
-	}
+	private:
+		NsSkelRpcServer(const NsSkelRpcServer &orig) = delete;
 
-	//	cout_lock.lock ();
-	//	std::cout << "Read from socket " << dataSocketFd << ":" << std::endl;
-	//	std::cout << hexdump (buf->data (), len);
-	//	cout_lock.unlock ();
+		void operator=(NsSkelRpcServer &orig) = delete;
 
-	return buf;
-}
+		uint16_t _port;
+		int _serverSocketFd;
+		std::thread _serverThread;
+		std::atomic<bool> _serverActive;
+		std::atomic<bool> _serverStarted;
+		std::atomic<bool> _shutdownReceived;
+		std::map<int, std::shared_ptr<std::thread> > _threads;
 
-inline void writeBin (int dataSocketFd, const void *data, size_t len) {
-	size_t index = 0;
-	const char *d = (char *) data;
-	while (index < len) {
-		ssize_t count = write (dataSocketFd, d + index, len - index);
-		if (count < 0) {
-			if (errno == EINTR) {
-				continue;
+		virtual void serverThreadWork();
+	};
+
+	inline std::shared_ptr<NsBinBuffer> readBin(int dataSocketFd, uint32_t len) {
+		std::shared_ptr<NsBinBuffer> buf = std::make_shared<NsBinBuffer>(len);
+		std::shared_ptr<NsBinBuffer> empty;
+
+		char currByte;
+		ssize_t rcount = 0;
+		ssize_t totalcount = 0;
+		while (totalcount < len) {
+			rcount = read(dataSocketFd, &currByte, 1);
+			if (rcount == 0) {
+				cout_lock.lock();
+				std::cerr << "readBin: Socket closed prematurely: fd=" << dataSocketFd << std::endl;
+				cout_lock.unlock();
+				return empty;
 			}
-			cout_lock.lock ();
-			std::cerr << "writeBin: Socket closed prematurely: fd=" << dataSocketFd << std::endl;
-			cout_lock.unlock ();
-		} else {
-			index += count;
+			buf->write(&currByte, 1);
+			totalcount++;
 		}
+
+		//	cout_lock.lock ();
+		//	std::cout << "Read from socket " << dataSocketFd << ":" << std::endl;
+		//	std::cout << hexdump (buf->data (), len);
+		//	cout_lock.unlock ();
+
+		return buf;
 	}
 
-	//	cout_lock.lock ();
-	//	std::cout << "Wrote to socket " << dataSocketFd << ":" << std::endl;
-	//	std::cout << hexdump (d, len);
-	//	cout_lock.unlock ();
-}
+	inline void writeBin(int dataSocketFd, const void *data, size_t len) {
+		size_t index = 0;
+		const char *d = (char *) data;
+		while (index < len) {
+			ssize_t count = write(dataSocketFd, d + index, len - index);
+			if (count < 0) {
+				if (errno == EINTR) {
+					continue;
+				}
+				cout_lock.lock();
+				std::cerr << "writeBin: Socket closed prematurely: fd=" << dataSocketFd << std::endl;
+				cout_lock.unlock();
+			} else {
+				index += count;
+			}
+		}
 
-static std::shared_ptr<NsRpcResponse> sendPackRpcRequest (std::shared_ptr<std::string> serviceName, const char * host, uint16_t port, std::shared_ptr<NsRpcRequest> request) throw (NsException) {
-
-	char portCharPtr[50];
-	sprintf (portCharPtr, "%d", port);
-
-	addrinfo hints;
-	memset (&hints, 0, sizeof (struct addrinfo));
-	hints.ai_family = AF_UNSPEC; /* Allow IPv4 or IPv6 */
-	hints.ai_socktype = SOCK_STREAM; /* TCP */
-	hints.ai_flags = 0;
-	hints.ai_protocol = IPPROTO_TCP; /* Any protocol */
-
-	addrinfo *addrinfoResult;
-	int s = getaddrinfo (host, portCharPtr, &hints, &addrinfoResult);
-	if (s != 0) {
-		std::stringstream ess;
-		ess << "sendPackRpcRequest(): getaddrinfo() failed: " << gai_strerror (s);
-
-		NsMonitoring::monitorSendRpcRequestError (serviceName, serviceName, 0x807060504030201, "sendPackRpcRequest(): getaddrinfo() failed"); // TODO Generate IDs // Remote method is not known here, so sending the service name twice
-
-		throw NsException (NSE_POSITION, ess);
+		//	cout_lock.lock ();
+		//	std::cout << "Wrote to socket " << dataSocketFd << ":" << std::endl;
+		//	std::cout << hexdump (d, len);
+		//	cout_lock.unlock ();
 	}
 
-	/* getaddrinfo() returns a list of address structures.
-	   Try each address until we successfully connect(2).
-	   If socket(2) (or connect(2)) fails, we (close the socket
-	   and) try the next address. */
+	static std::shared_ptr<NsRpcResponse>
+	sendPackRpcRequest(std::shared_ptr<std::string> serviceName, const char *host, uint16_t port,
+					   std::shared_ptr<NsRpcRequest> request) throw(NsException) {
 
-	addrinfo *rp;
-	int sockfd;
-	for (rp = addrinfoResult; rp != NULL; rp = rp->ai_next) {
-		sockfd = socket (rp->ai_family, rp->ai_socktype, rp->ai_protocol);
-		if (sockfd == -1)
-			continue;
+		char portCharPtr[50];
+		sprintf(portCharPtr, "%d", port);
 
-		if (connect (sockfd, rp->ai_addr, rp->ai_addrlen) != -1)
-			break; /* Success */
+		addrinfo hints;
+		memset(&hints, 0, sizeof(struct addrinfo));
+		hints.ai_family = AF_UNSPEC; /* Allow IPv4 or IPv6 */
+		hints.ai_socktype = SOCK_STREAM; /* TCP */
+		hints.ai_flags = 0;
+		hints.ai_protocol = IPPROTO_TCP; /* Any protocol */
 
-		close (sockfd);
-	}
+		addrinfo *addrinfoResult;
+		int s = getaddrinfo(host, portCharPtr, &hints, &addrinfoResult);
+		if (s != 0) {
+			std::stringstream ess;
+			ess << "sendPackRpcRequest(): getaddrinfo() failed: " << gai_strerror(s);
 
-	//	cout_lock.lock ();
-	//	std::cout << "Client:sendRpcRequest(): fd=" << sockfd << std::endl;
-	//	cout_lock.unlock ();
+			NsMonitoring::monitorSendRpcRequestError(serviceName, serviceName, 0x807060504030201,
+													 "sendPackRpcRequest(): getaddrinfo() failed"); // TODO Generate IDs // Remote method is not known here, so sending the service name twice
 
-	if (rp == NULL) { /* No address succeeded */
-		NsMonitoring::monitorSendRpcRequestError (serviceName, serviceName, 0x807060504030201, "sendPackRpcRequest(): Could not connect"); // TODO Generate IDs // Remote method is not known here, so sending the service name twice
+			throw NsException(NSE_POSITION, ess);
+		}
 
-		throw NsException (NSE_POSITION, "sendPackRpcRequest(): Could not connect");
-	}
-	freeaddrinfo (addrinfoResult); /* No longer needed */
+		/* getaddrinfo() returns a list of address structures.
+		   Try each address until we successfully connect(2).
+		   If socket(2) (or connect(2)) fails, we (close the socket
+		   and) try the next address. */
 
-	////////////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////
+		addrinfo *rp;
+		int sockfd;
+		for (rp = addrinfoResult; rp != NULL; rp = rp->ai_next) {
+			sockfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+			if (sockfd == -1)
+				continue;
 
-	std::shared_ptr<NsSerialized> requestSerialized = _requestSerializer.serialize (request);
+			if (connect(sockfd, rp->ai_addr, rp->ai_addrlen) != -1)
+				break; /* Success */
 
-	uint32_t requestLen = requestSerialized->size;
-	uint32_t requestLenNet = htonl (requestLen);
+			close(sockfd);
+		}
 
-	//	cout_lock.lock ();
-	//	std::cout << "Client:sendRpcRequest(): outgoing message len: " << requestLen << ", HEX " << std::hex << requestLen << std::dec << std::endl;
-	//	std::cout << "Client:sendRpcRequest(): outgoing message len (network byte order): " << requestLenNet << std::endl;
-	//	cout_lock.unlock ();
+		//	cout_lock.lock ();
+		//	std::cout << "Client:sendRpcRequest(): fd=" << sockfd << std::endl;
+		//	cout_lock.unlock ();
 
-	writeBin (sockfd, &requestLenNet, sizeof (requestLenNet));
+		if (rp == NULL) { /* No address succeeded */
+			NsMonitoring::monitorSendRpcRequestError(serviceName, serviceName, 0x807060504030201,
+													 "sendPackRpcRequest(): Could not connect"); // TODO Generate IDs // Remote method is not known here, so sending the service name twice
 
-	//	cout_lock.lock ();
-	//	std::cout << "Client:sendRpcRequest(): outgoing message len written" << std::endl;
-	//	cout_lock.unlock ();
+			throw NsException(NSE_POSITION, "sendPackRpcRequest(): Could not connect");
+		}
+		freeaddrinfo(addrinfoResult); /* No longer needed */
 
-	writeBin (sockfd, requestSerialized->ptr, requestLen);
+		////////////////////////////////////////////////////////////////////////////
+		////////////////////////////////////////////////////////////////////////////
+		////////////////////////////////////////////////////////////////////////////
+		////////////////////////////////////////////////////////////////////////////
 
-	NsMonitoring::monitorSendRpcRequest (serviceName, std::make_shared<std::string>(request->method ()), 0x807060504030201); // TODO Generate IDs
+		std::shared_ptr<NsSerialized> requestSerialized = _requestSerializer.serialize(request);
 
-	//	cout_lock.lock ();
-	//	std::cout << "Client:sendRpcRequest(): outgoing message written" << std::endl;
-	//	cout_lock.unlock ();
+		uint32_t requestLen = requestSerialized->size;
+		uint32_t requestLenNet = htonl(requestLen);
 
-	if (!request->waitForResponse ()) {
-		int closeResult = ::close (sockfd);
+		//	cout_lock.lock ();
+		//	std::cout << "Client:sendRpcRequest(): outgoing message len: " << requestLen << ", HEX " << std::hex << requestLen << std::dec << std::endl;
+		//	std::cout << "Client:sendRpcRequest(): outgoing message len (network byte order): " << requestLenNet << std::endl;
+		//	cout_lock.unlock ();
+
+		writeBin(sockfd, &requestLenNet, sizeof(requestLenNet));
+
+		//	cout_lock.lock ();
+		//	std::cout << "Client:sendRpcRequest(): outgoing message len written" << std::endl;
+		//	cout_lock.unlock ();
+
+		writeBin(sockfd, requestSerialized->ptr, requestLen);
+
+		NsMonitoring::monitorSendRpcRequest(serviceName, std::make_shared<std::string>(request->method()),
+											0x807060504030201); // TODO Generate IDs
+
+		//	cout_lock.lock ();
+		//	std::cout << "Client:sendRpcRequest(): outgoing message written" << std::endl;
+		//	cout_lock.unlock ();
+
+		if (!request->waitForResponse()) {
+			int closeResult = ::close(sockfd);
+			if (closeResult != 0) {
+				int e = errno;
+
+				//		std::stringstream ess;
+				std::cerr << "sendRpcRequest(): (waitForAnswer=false): Could not close socket " << sockfd << ": "
+						  << ::strerror(e) << std::endl;
+				//		throw NsException (NSE_POSITION, ess);
+			}
+
+			return nullptr;
+		}
+
+		//	cout_lock.lock ();
+		//	std::cout << "Client:sendRpcRequest(): reading response msglen" << std::endl;
+		//	cout_lock.unlock ();
+
+		uint32_t msglen;
+
+		{
+			ssize_t msglenrcount;
+			msglenrcount = read(sockfd, &msglen, sizeof(msglen));
+
+			if (msglenrcount < ((ssize_t) sizeof(msglen))) {
+				std::stringstream ess;
+				ess << "sendPackRpcRequest(): Cannot read incoming message length (" << sizeof(msglen) << " bytes)"
+					<< std::endl;
+
+				NsMonitoring::monitorReceiveRpcResponseError(0x8017060504030201,
+															 "sendPackRpcRequest(): Cannot read incoming message length"); // TODO Generate IDs
+
+				throw NsException(NSE_POSITION, ess);
+			}
+
+			msglen = ntohl(msglen);
+
+			//		cout_lock.lock ();
+			//		std::cout << "Client:sendRpcRequest(): response msglen: " << msglen << ". Reading response..." << std::endl;
+			//		cout_lock.unlock ();
+		}
+
+		std::shared_ptr<NsBinBuffer> buf = readBin(sockfd, msglen);
+
+		int closeResult = ::close(sockfd);
 		if (closeResult != 0) {
 			int e = errno;
 
 			//		std::stringstream ess;
-			std::cerr << "sendRpcRequest(): (waitForAnswer=false): Could not close socket " << sockfd << ": " << ::strerror (e) << std::endl;
+			std::cerr << "sendRpcRequest(): (waitForAnswer=true): Could not close socket " << sockfd << ": "
+					  << ::strerror(e) << std::endl;
 			//		throw NsException (NSE_POSITION, ess);
 		}
 
-		return nullptr;
-	}
+		//	cout_lock.lock ();
+		//	std::cout << "Client:sendRpcRequest(): response read. Creating a shared pointer" << std::endl;
+		//	cout_lock.unlock ();
 
-	//	cout_lock.lock ();
-	//	std::cout << "Client:sendRpcRequest(): reading response msglen" << std::endl;
-	//	cout_lock.unlock ();
-
-	uint32_t msglen;
-
-	{
-		ssize_t msglenrcount;
-		msglenrcount = read (sockfd, &msglen, sizeof (msglen));
-
-		if (msglenrcount < ((ssize_t) sizeof (msglen))) {
-			std::stringstream ess;
-			ess << "sendPackRpcRequest(): Cannot read incoming message length (" << sizeof (msglen) << " bytes)" << std::endl;
-
-			NsMonitoring::monitorReceiveRpcResponseError (0x8017060504030201, "sendPackRpcRequest(): Cannot read incoming message length"); // TODO Generate IDs
-
-			throw NsException (NSE_POSITION, ess);
-		}
-
-		msglen = ntohl (msglen);
-
-		//		cout_lock.lock ();
-		//		std::cout << "Client:sendRpcRequest(): response msglen: " << msglen << ". Reading response..." << std::endl;
-		//		cout_lock.unlock ();
-	}
-
-	std::shared_ptr<NsBinBuffer> buf = readBin (sockfd, msglen);
-
-	int closeResult = ::close (sockfd);
-	if (closeResult != 0) {
-		int e = errno;
-
-		//		std::stringstream ess;
-		std::cerr << "sendRpcRequest(): (waitForAnswer=true): Could not close socket " << sockfd << ": " << ::strerror (e) << std::endl;
-		//		throw NsException (NSE_POSITION, ess);
-	}
-
-	//	cout_lock.lock ();
-	//	std::cout << "Client:sendRpcRequest(): response read. Creating a shared pointer" << std::endl;
-	//	cout_lock.unlock ();
-
-	std::shared_ptr<NsSerialized> responseSerialized = buf->toPackable ();
-
-	// DEBUG
-	//	std::cout << "sendRpcRequest(): responseSerialized: " << std::endl << hexdump (responseSerialized->ptr, responseSerialized->size) << std::endl;
-
-	std::shared_ptr<NsRpcResponse> response = _responseSerializer.deserialize (responseSerialized);
-	return response;
-}
-
-template<typename Args, typename Result>
-static std::shared_ptr<Result> sendRpcRequest (std::shared_ptr<std::string> serviceName, std::shared_ptr<std::string> methodName, std::shared_ptr<Args> args, bool waitForResponse) throw (NsException) {
-	std::shared_ptr<NsSkelRpcService> service;
-	try {
-		service = NsSkelRpcRegistry::instance ()->getService (serviceName);
-	} catch (NsException &ex) {
-		std::stringstream ess;
-		ess << "NsException: " << ex.what ();
-		throw NsException (NSE_POSITION, ess);
-	}
-
-	const char * host = service->host ()->c_str ();
-	uint16_t port = service->port ();
-
-	//	cout_lock.lock ();
-	//	std::cout << "sendRpcRequest(): Trying to connect to host " << host << ":" << port << std::endl;
-	//	cout_lock.unlock ();
-
-	NsSerializer<Args> argsSerializer;
-	std::shared_ptr<NsSerialized> argsSerialized = argsSerializer.serialize (args);
-	std::shared_ptr<NsRpcRequest> request = std::make_shared<NsRpcRequest> (*methodName, *argsSerialized, waitForResponse);
-
-	std::shared_ptr<NsRpcResponse> response = sendPackRpcRequest (serviceName, host, port, request);
-
-	//	cout_lock.lock ();
-	//	std::cout << "Client: freeing responseSerialized" << std::endl;
-	//	cout_lock.unlock ();
-	//
-	//	::free (const_cast<char *> (responseSerialized->ptr));
-
-	std::shared_ptr<Result> result = nullptr;
-	if (waitForResponse) {
-		if (!response->success ()) {
-			std::shared_ptr<NsRpcResponseError> err = _errorSerializer.deserialize (response->result ());
-			//		::free (const_cast<char*> (errSerialized->ptr));
-
-			std::shared_ptr<NsException> ex;
-
-			std::stringstream ess;
-			ess << "Exception on remote RPC side (service " << *serviceName << ", method " << *methodName << "):" << std::endl << err->errorCode () << ": ";
-
-			std::map<std::string, std::string>::iterator causeIter = err->optionalErrorParams ().find ("cause");
-			std::map<std::string, std::string>::iterator causeNotFoundIter = err->optionalErrorParams ().end ();
-			if (causeIter != causeNotFoundIter) {
-				ess << causeIter->second;
-
-				ex = std::make_shared<NsException> (NSE_POSITION, ess, "", causeIter->second, err->errorDescription ());
-			} else {
-				ess << err->errorDescription ();
-
-				ex = std::make_shared<NsException> (NSE_POSITION, ess);
-			}
-
-			NsMonitoring::monitorReceiveRpcResponseError (0x807060504030201, "Exception on remote RPC side"); // TODO Generate IDs
-
-			throw *ex;
-		}
+		std::shared_ptr<NsSerialized> responseSerialized = buf->toPackable();
 
 		// DEBUG
-		//	std::cout << "sendRpcRequest(): resultSerialized: " << std::endl << hexdump (response->result ().ptr, response->result ().size) << std::endl;
+		//	std::cout << "sendRpcRequest(): responseSerialized: " << std::endl << hexdump (responseSerialized->ptr, responseSerialized->size) << std::endl;
 
-		NsSerializer<Result> resultSerializer;
-		result = resultSerializer.deserialize (response->result ());
+		std::shared_ptr<NsRpcResponse> response = _responseSerializer.deserialize(responseSerialized);
+		return response;
 	}
-	NsMonitoring::monitorReceiveRpcResponse (0x807060504030201); // TODO Generate IDs
 
-	return result;
-}
+	template<typename Args, typename Result>
+	static std::shared_ptr<Result>
+	sendRpcRequest(std::shared_ptr<std::string> serviceName, std::shared_ptr<std::string> methodName,
+				   std::shared_ptr<Args> args, bool waitForResponse) throw(NsException) {
+		std::shared_ptr<NsSkelRpcService> service;
+		try {
+			service = NsSkelRpcRegistry::instance()->getService(serviceName);
+		} catch (NsException &ex) {
+			std::stringstream ess;
+			ess << "NsException: " << ex.what();
+			throw NsException(NSE_POSITION, ess);
+		}
 
+		const char *host = service->host()->c_str();
+		uint16_t port = service->port();
+
+		//	cout_lock.lock ();
+		//	std::cout << "sendRpcRequest(): Trying to connect to host " << host << ":" << port << std::endl;
+		//	cout_lock.unlock ();
+
+		NsSerializer<Args> argsSerializer;
+		std::shared_ptr<NsSerialized> argsSerialized = argsSerializer.serialize(args);
+		std::shared_ptr<NsRpcRequest> request = std::make_shared<NsRpcRequest>(*methodName, *argsSerialized,
+																			   waitForResponse);
+
+		std::shared_ptr<NsRpcResponse> response = sendPackRpcRequest(serviceName, host, port, request);
+
+		//	cout_lock.lock ();
+		//	std::cout << "Client: freeing responseSerialized" << std::endl;
+		//	cout_lock.unlock ();
+		//
+		//	::free (const_cast<char *> (responseSerialized->ptr));
+
+		std::shared_ptr<Result> result = nullptr;
+		if (waitForResponse) {
+			if (!response->success()) {
+				std::shared_ptr<NsRpcResponseError> err = _errorSerializer.deserialize(response->result());
+				//		::free (const_cast<char*> (errSerialized->ptr));
+
+				std::shared_ptr<NsException> ex;
+
+				std::stringstream ess;
+				ess << "Exception on remote RPC side (service " << *serviceName << ", method " << *methodName << "):"
+					<< std::endl << err->errorCode() << ": ";
+
+				std::map<std::string, std::string>::iterator causeIter = err->optionalErrorParams().find("cause");
+				std::map<std::string, std::string>::iterator causeNotFoundIter = err->optionalErrorParams().end();
+				if (causeIter != causeNotFoundIter) {
+					ess << causeIter->second;
+
+					ex = std::make_shared<NsException>(NSE_POSITION, ess, "", causeIter->second,
+													   err->errorDescription());
+				} else {
+					ess << err->errorDescription();
+
+					ex = std::make_shared<NsException>(NSE_POSITION, ess);
+				}
+
+				NsMonitoring::monitorReceiveRpcResponseError(0x807060504030201,
+															 "Exception on remote RPC side"); // TODO Generate IDs
+
+				throw *ex;
+			}
+
+			// DEBUG
+			//	std::cout << "sendRpcRequest(): resultSerialized: " << std::endl << hexdump (response->result ().ptr, response->result ().size) << std::endl;
+
+			NsSerializer<Result> resultSerializer;
+			result = resultSerializer.deserialize(response->result());
+		}
+		NsMonitoring::monitorReceiveRpcResponse(0x807060504030201); // TODO Generate IDs
+
+		return result;
+	}
 }
 
 #endif /* NSSKELRPCSERVER_H */

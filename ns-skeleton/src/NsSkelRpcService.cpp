@@ -31,62 +31,64 @@
 using namespace std;
 using namespace nanoservices;
 
-NsSkelRpcService::NsSkelRpcService (shared_ptr<string> serviceName, shared_ptr<string> host, uint16_t port, bool httpEnabled = false, uint16_t httpPort = 0) :
-_serviceName (serviceName),
-_host (host),
-_port (port),
-_httpEnabled (httpEnabled),
-_httpPort (httpPort) {
+NsSkelRpcService::NsSkelRpcService(shared_ptr<string> serviceName, shared_ptr<string> host, uint16_t port,
+								   bool httpEnabled = false, uint16_t httpPort = 0) :
+		_serviceName(serviceName),
+		_host(host),
+		_port(port),
+		_httpEnabled(httpEnabled),
+		_httpPort(httpPort) {
 }
 
-NsSkelRpcService::NsSkelRpcService (NsSkelJsonPtr serviceJson) throw (NsException) {
-	NsSkelJsonObject serviceJsonObj = fromNsSkelJsonPtr<NsSkelJsonObject> (serviceJson);
+NsSkelRpcService::NsSkelRpcService(NsSkelJsonPtr serviceJson) throw(NsException) {
+	NsSkelJsonObject serviceJsonObj = fromNsSkelJsonPtr<NsSkelJsonObject>(serviceJson);
 
-	if (serviceJsonObj.find ("service-name") == serviceJsonObj.end ()) {
-		throw (NsException (NSE_POSITION, "No service-name in service description JSON"));
+	if (serviceJsonObj.find("service-name") == serviceJsonObj.end()) {
+		throw (NsException(NSE_POSITION, "No service-name in service description JSON"));
 	}
-	if (serviceJsonObj.find ("host") == serviceJsonObj.end ()) {
-		throw (NsException (NSE_POSITION, "No host in service description JSON"));
+	if (serviceJsonObj.find("host") == serviceJsonObj.end()) {
+		throw (NsException(NSE_POSITION, "No host in service description JSON"));
 	}
-	if (serviceJsonObj.find ("port") == serviceJsonObj.end ()) {
-		throw (NsException (NSE_POSITION, "No port in service description JSON"));
+	if (serviceJsonObj.find("port") == serviceJsonObj.end()) {
+		throw (NsException(NSE_POSITION, "No port in service description JSON"));
 	}
 
-	_serviceName = make_shared<string> (fromNsSkelJsonPtr<std::string> (serviceJsonObj["service-name"]));
-	_host = make_shared<string> (fromNsSkelJsonPtr<std::string> (serviceJsonObj["host"]));
-	_port = fromNsSkelJsonPtr<uint16_t> (serviceJsonObj["port"]);
+	_serviceName = make_shared<string>(fromNsSkelJsonPtr<std::string>(serviceJsonObj["service-name"]));
+	_host = make_shared<string>(fromNsSkelJsonPtr<std::string>(serviceJsonObj["host"]));
+	_port = fromNsSkelJsonPtr<uint16_t>(serviceJsonObj["port"]);
 
-	if (serviceJsonObj.find ("http-enabled") != serviceJsonObj.end () && fromNsSkelJsonPtr<bool> (serviceJsonObj["http-enabled"])) {
-		if (serviceJsonObj.find ("http-port") == serviceJsonObj.end ()) {
-			throw (NsException (NSE_POSITION, "HTTP is enabled in service description JSON, but no HTTP port set"));
+	if (serviceJsonObj.find("http-enabled") != serviceJsonObj.end() &&
+		fromNsSkelJsonPtr<bool>(serviceJsonObj["http-enabled"])) {
+		if (serviceJsonObj.find("http-port") == serviceJsonObj.end()) {
+			throw (NsException(NSE_POSITION, "HTTP is enabled in service description JSON, but no HTTP port set"));
 		}
 		_httpEnabled = true;
-		_httpPort = fromNsSkelJsonPtr<uint16_t> (serviceJsonObj["http-port"]);
+		_httpPort = fromNsSkelJsonPtr<uint16_t>(serviceJsonObj["http-port"]);
 	} else {
 		_httpEnabled = false;
 		_httpPort = 0;
 	}
 }
 
-NsSkelRpcService::~NsSkelRpcService () {
+NsSkelRpcService::~NsSkelRpcService() {
 }
 
-shared_ptr<string> NsSkelRpcService::serviceName () {
+shared_ptr<string> NsSkelRpcService::serviceName() {
 	return _serviceName;
 }
 
-shared_ptr<string> NsSkelRpcService::host () {
+shared_ptr<string> NsSkelRpcService::host() {
 	return _host;
 }
 
-uint16_t NsSkelRpcService::port () {
+uint16_t NsSkelRpcService::port() {
 	return _port;
 }
 
-uint16_t NsSkelRpcService::httpPort () {
+uint16_t NsSkelRpcService::httpPort() {
 	return _httpPort;
 }
 
-bool NsSkelRpcService::httpEnabled () {
+bool NsSkelRpcService::httpEnabled() {
 	return _httpEnabled;
 }

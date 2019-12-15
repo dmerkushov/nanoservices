@@ -28,18 +28,18 @@
 
 namespace nanoservices {
 
-class NsSkelRpcHttpServer : public NsSkelRpcServer {
-public:
-	NsSkelRpcHttpServer ();
-	virtual ~NsSkelRpcHttpServer ();
+	class NsSkelRpcHttpServer : public NsSkelRpcServer {
+	public:
+		NsSkelRpcHttpServer();
 
-protected:
-	virtual void processIncomingConnection (int dataSocketFd);
+		virtual ~NsSkelRpcHttpServer();
 
-private:
-	NsSkelRpcHttpServer (const NsSkelRpcHttpServer& orig) = delete;
-};
+	protected:
+		virtual void processIncomingConnection(int dataSocketFd);
 
+	private:
+		NsSkelRpcHttpServer(const NsSkelRpcHttpServer &orig) = delete;
+	};
 }
 
 #endif /* NSSKELRPCHTTPSERVER_H */

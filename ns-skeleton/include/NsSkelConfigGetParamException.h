@@ -28,8 +28,7 @@
 
 namespace nanoservices {
 
-typedef NsException NsSkelConfigGetParamException;
-
+	typedef NsException NsSkelConfigGetParamException;
 }
 
 #endif /* NSSKELCONFIGGETPARAMEXCEPTION_H */

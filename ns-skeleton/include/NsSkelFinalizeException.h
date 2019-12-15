@@ -28,8 +28,7 @@
 
 namespace nanoservices {
 
-typedef NsException NsSkelFinalizeException;
-
+	typedef NsException NsSkelFinalizeException;
 }
 
 #endif /* NSSKELFINALIZEEXCEPTION_H */

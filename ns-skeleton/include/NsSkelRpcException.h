@@ -28,8 +28,7 @@
 
 namespace nanoservices {
 
-typedef NsException NsSkelRpcException;
-
+	typedef NsException NsSkelRpcException;
 }
 
 #endif /* NSSKELRPCEXCEPTION_H */

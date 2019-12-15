@@ -28,58 +28,59 @@
 using namespace std;
 using namespace nanoservices;
 
-NsRpcResponseError::NsRpcResponseError () :
-_errorCode (0),
-_errorDescription ("") {
+NsRpcResponseError::NsRpcResponseError() :
+		_errorCode(0),
+		_errorDescription("") {
 }
 
-NsRpcResponseError::NsRpcResponseError (int64_t errorCode, const char* errorDescription) :
-_errorCode (errorCode),
-_errorDescription (errorDescription) {
+NsRpcResponseError::NsRpcResponseError(int64_t errorCode, const char *errorDescription) :
+		_errorCode(errorCode),
+		_errorDescription(errorDescription) {
 }
 
-NsRpcResponseError::NsRpcResponseError (int64_t errorCode, string &errorDescription) :
-_errorCode (errorCode),
-_errorDescription (errorDescription) {
+NsRpcResponseError::NsRpcResponseError(int64_t errorCode, string &errorDescription) :
+		_errorCode(errorCode),
+		_errorDescription(errorDescription) {
 }
 
-NsRpcResponseError::NsRpcResponseError (int64_t errorCode, string &errorDescription, map<string, string> &optionalErrorParams) :
-_errorCode (errorCode),
-_errorDescription (errorDescription),
-_optionalErrorParams (optionalErrorParams) {
+NsRpcResponseError::NsRpcResponseError(int64_t errorCode, string &errorDescription,
+									   map<string, string> &optionalErrorParams) :
+		_errorCode(errorCode),
+		_errorDescription(errorDescription),
+		_optionalErrorParams(optionalErrorParams) {
 }
 
-NsRpcResponseError::NsRpcResponseError (int64_t errorCode, string prefix, NsException &exception) :
-_errorCode (errorCode) {
+NsRpcResponseError::NsRpcResponseError(int64_t errorCode, string prefix, NsException &exception) :
+		_errorCode(errorCode) {
 	stringstream ess;
-	ess << prefix << exception.what ();
-	_errorDescription += ess.str ();
+	ess << prefix << exception.what();
+	_errorDescription += ess.str();
 }
 
-NsRpcResponseError::NsRpcResponseError (int64_t errorCode, string prefix, std::exception &exception) :
-_errorCode (errorCode) {
+NsRpcResponseError::NsRpcResponseError(int64_t errorCode, string prefix, std::exception &exception) :
+		_errorCode(errorCode) {
 	stringstream ess;
-	ess << prefix << exception.what ();
-	_errorDescription += ess.str ();
+	ess << prefix << exception.what();
+	_errorDescription += ess.str();
 }
 
-NsRpcResponseError::NsRpcResponseError (const NsRpcResponseError& orig) :
-_errorCode (orig._errorCode),
-_errorDescription (orig._errorDescription),
-_optionalErrorParams (orig._optionalErrorParams) {
+NsRpcResponseError::NsRpcResponseError(const NsRpcResponseError &orig) :
+		_errorCode(orig._errorCode),
+		_errorDescription(orig._errorDescription),
+		_optionalErrorParams(orig._optionalErrorParams) {
 }
 
-NsRpcResponseError::~NsRpcResponseError () {
+NsRpcResponseError::~NsRpcResponseError() {
 }
 
-int64_t NsRpcResponseError::errorCode () {
+int64_t NsRpcResponseError::errorCode() {
 	return _errorCode;
 }
 
-string & NsRpcResponseError::errorDescription () {
+string &NsRpcResponseError::errorDescription() {
 	return _errorDescription;
 }
 
-map<string, string> & NsRpcResponseError::optionalErrorParams () {
+map<string, string> &NsRpcResponseError::optionalErrorParams() {
 	return _optionalErrorParams;
 }

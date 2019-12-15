@@ -36,6 +36,7 @@
 #include "NsException.h"
 
 #define MSGPACK_USE_CPP03
+
 #include <msgpack.hpp>
 
 namespace msgpack2 = msgpack::v2;
@@ -45,164 +46,171 @@ namespace msgpack2 = msgpack::v2;
 
 namespace nanoservices {
 
-std::string hexdump (const char *data, uint32_t len);
+	std::string hexdump(const char *data, uint32_t len);
 
-class NsBinaryData : public msgpack2::type::raw_ref {
-public:
+	class NsBinaryData : public msgpack2::type::raw_ref {
+	public:
 
-	NsBinaryData ();
-	NsBinaryData (const char *p, uint32_t s);
-	NsBinaryData (const NsBinaryData &orig);
-	virtual ~NsBinaryData ();
+		NsBinaryData();
 
-	void operator= (const NsBinaryData &orig);
+		NsBinaryData(const char *p, uint32_t s);
 
-	bool ownMemory ();
-	void setOwnMemory (bool ownMemory = true);
+		NsBinaryData(const NsBinaryData &orig);
 
-	template <typename Packer>
-	void msgpack_pack (Packer& pk) const {
-		//DEBUG
-		//		std::cout << "NsBinaryData msgpack_pack" << std::endl;
+		virtual ~NsBinaryData();
 
-		pk.pack_bin (size);
-		pk.pack_bin_body (ptr, size);
-	}
+		void operator=(const NsBinaryData &orig);
 
-	void msgpack_unpack (msgpack2::object const& o);
-private:
-	bool _ownMemory = false;
-};
+		bool ownMemory();
 
-typedef NsBinaryData NsSerialized;
+		void setOwnMemory(bool ownMemory = true);
 
-class NsBinBuffer : public msgpack2::sbuffer {
-public:
-	NsBinBuffer ();
-	NsBinBuffer (uint32_t s);
-	NsBinBuffer (const msgpack2::type::raw_ref &bin);
-	virtual ~NsBinBuffer ();
+		template<typename Packer>
+		void msgpack_pack(Packer &pk) const {
+			//DEBUG
+			//		std::cout << "NsBinaryData msgpack_pack" << std::endl;
 
-	std::shared_ptr<NsBinaryData> toPackable ();
-};
+			pk.pack_bin(size);
+			pk.pack_bin_body(ptr, size);
+		}
 
-template<class P>
-class NsSerializer {
-public:
+		void msgpack_unpack(msgpack2::object const &o);
 
-	NsSerializer () {
-	}
+	private:
+		bool _ownMemory = false;
+	};
 
-	virtual ~NsSerializer () {
-	}
+	typedef NsBinaryData NsSerialized;
 
-	std::shared_ptr<NsSerialized> serialize (P &toSerialize) throw (NsException) try {
-		NsBinBuffer sbuf (0);
+	class NsBinBuffer : public msgpack2::sbuffer {
+	public:
+		NsBinBuffer();
 
-		msgpack2::pack (sbuf, toSerialize);
+		NsBinBuffer(uint32_t s);
 
-		//DEBUG
-		//      uint32_t size = sbuf.size ();
-		//		std::cout << std::dec << "Serializing type " << typeid (P).name () << " (size " << size << "):" << std::endl;
-		//		std::cout << hexdump (sbuf.data (), size);
-		//		std::cout << std::endl;
+		NsBinBuffer(const msgpack2::type::raw_ref &bin);
 
-		std::shared_ptr<NsSerialized> serialized = sbuf.toPackable ();
+		virtual ~NsBinBuffer();
 
-		return serialized;
-	} catch (...) {
-		std::stringstream ess;
-		ess << "Msgpack failed to pack object of type " << typeid (P).name ();
-		throw NsException (NSE_POSITION, ess);
-	}
+		std::shared_ptr<NsBinaryData> toPackable();
+	};
 
-	std::shared_ptr<NsSerialized> serialize (std::shared_ptr<P> toSerialize) throw (NsException) try {
-		NsBinBuffer sbuf (0);
+	template<class P>
+	class NsSerializer {
+	public:
 
-		msgpack2::pack (sbuf, *toSerialize);
+		NsSerializer() {
+		}
 
-		//DEBUG
-		//      uint32_t size = sbuf.size ();
-		//		std::cout << std::dec << "Serializing type " << typeid (P).name () << " (size " << size << "):" << std::endl;
-		//		std::cout << hexdump (sbuf.data (), size);
-		//		std::cout << std::endl;
+		virtual ~NsSerializer() {
+		}
 
-		std::shared_ptr<NsSerialized> serialized = sbuf.toPackable ();
+		std::shared_ptr<NsSerialized> serialize(P &toSerialize) throw(NsException) try {
+			NsBinBuffer sbuf(0);
 
-		return serialized;
-	} catch (...) {
-		std::stringstream ess;
-		ess << "Msgpack failed to pack object of type " << typeid (P).name ();
-		throw NsException (NSE_POSITION, ess);
-	}
+			msgpack2::pack(sbuf, toSerialize);
 
-	std::shared_ptr<P> deserialize (NsSerialized &toDeserialize) throw (NsException) try {
-		//DEBUG
-		//		std::cout << std::dec << "Deserializing type " << typeid (P).name () << " (size " << toDeserialize.size << "):" << std::endl;
-		//		std::cout << hexdump (toDeserialize.ptr, toDeserialize.size);
+			//DEBUG
+			//      uint32_t size = sbuf.size ();
+			//		std::cout << std::dec << "Serializing type " << typeid (P).name () << " (size " << size << "):" << std::endl;
+			//		std::cout << hexdump (sbuf.data (), size);
+			//		std::cout << std::endl;
 
-		msgpack2::object_handle oh = msgpack2::unpack (toDeserialize.ptr, toDeserialize.size);
-		msgpack2::object obj = oh.get ();
+			std::shared_ptr<NsSerialized> serialized = sbuf.toPackable();
 
-		//DEBUG
-		//		std::cout << "Deserialized object: " << obj << std::endl;
+			return serialized;
+		} catch (...) {
+			std::stringstream ess;
+			ess << "Msgpack failed to pack object of type " << typeid(P).name();
+			throw NsException(NSE_POSITION, ess);
+		}
 
-		std::shared_ptr<P> prepared = std::make_shared<P> ();
-		obj.convert (*prepared);
+		std::shared_ptr<NsSerialized> serialize(std::shared_ptr<P> toSerialize) throw(NsException) try {
+			NsBinBuffer sbuf(0);
 
-		return prepared;
-	} catch (msgpack2::parse_error &e) {
-		std::stringstream ess;
-		ess << "Msgpack failed to unpack object of type " << typeid (P).name () << ": parse error: " << e.what ();
-		throw NsException (NSE_POSITION, ess);
-	} catch (msgpack2::unpack_error &e) {
-		std::stringstream ess;
-		ess << "Msgpack failed to unpack object of type " << typeid (P).name () << ": unpack error: " << e.what ();
-		throw NsException (NSE_POSITION, ess);
-	} catch (msgpack2::type_error &e) {
-		std::stringstream ess;
-		ess << "Msgpack failed to unpack object of type " << typeid (P).name () << ": type error: " << e.what ();
-		throw NsException (NSE_POSITION, ess);
-	} catch (...) {
-		std::stringstream ess;
-		ess << "Msgpack failed to unpack object of type " << typeid (P).name () << ": unexpected error";
-		throw NsException (NSE_POSITION, ess);
-	}
+			msgpack2::pack(sbuf, *toSerialize);
 
-	std::shared_ptr<P> deserialize (std::shared_ptr<NsSerialized> toDeserialize) throw (NsException) try {
-		//DEBUG
-		//		std::cout << std::dec << "Deserializing type " << typeid (P).name () << " (size " << toDeserialize->size << "):" << std::endl;
-		//		std::cout << hexdump (toDeserialize->ptr, toDeserialize->size);
+			//DEBUG
+			//      uint32_t size = sbuf.size ();
+			//		std::cout << std::dec << "Serializing type " << typeid (P).name () << " (size " << size << "):" << std::endl;
+			//		std::cout << hexdump (sbuf.data (), size);
+			//		std::cout << std::endl;
 
-		msgpack2::object_handle oh = msgpack2::unpack (toDeserialize->ptr, toDeserialize->size);
-		msgpack2::object obj = oh.get ();
+			std::shared_ptr<NsSerialized> serialized = sbuf.toPackable();
 
-		//DEBUG
-		//		std::cout << "Deserialized object: " << obj << std::endl;
+			return serialized;
+		} catch (...) {
+			std::stringstream ess;
+			ess << "Msgpack failed to pack object of type " << typeid(P).name();
+			throw NsException(NSE_POSITION, ess);
+		}
 
-		std::shared_ptr<P> prepared = std::make_shared<P> ();
-		obj.convert (*prepared);
+		std::shared_ptr<P> deserialize(NsSerialized &toDeserialize) throw(NsException) try {
+			//DEBUG
+			//		std::cout << std::dec << "Deserializing type " << typeid (P).name () << " (size " << toDeserialize.size << "):" << std::endl;
+			//		std::cout << hexdump (toDeserialize.ptr, toDeserialize.size);
 
-		return prepared;
-	} catch (msgpack2::parse_error &e) {
-		std::stringstream ess;
-		ess << "Msgpack failed to unpack object of type " << typeid (P).name () << ": parse error: " << e.what ();
-		throw NsException (NSE_POSITION, ess);
-	} catch (msgpack2::unpack_error &e) {
-		std::stringstream ess;
-		ess << "Msgpack failed to unpack object of type " << typeid (P).name () << ": unpack error: " << e.what ();
-		throw NsException (NSE_POSITION, ess);
-	} catch (msgpack2::type_error &e) {
-		std::stringstream ess;
-		ess << "Msgpack failed to unpack object of type " << typeid (P).name () << ": type error: " << e.what ();
-		throw NsException (NSE_POSITION, ess);
-	} catch (...) {
-		std::stringstream ess;
-		ess << "Msgpack failed to unpack object of type " << typeid (P).name () << ": unexpected error";
-		throw NsException (NSE_POSITION, ess);
-	}
-};
+			msgpack2::object_handle oh = msgpack2::unpack(toDeserialize.ptr, toDeserialize.size);
+			msgpack2::object obj = oh.get();
 
+			//DEBUG
+			//		std::cout << "Deserialized object: " << obj << std::endl;
+
+			std::shared_ptr<P> prepared = std::make_shared<P>();
+			obj.convert(*prepared);
+
+			return prepared;
+		} catch (msgpack2::parse_error &e) {
+			std::stringstream ess;
+			ess << "Msgpack failed to unpack object of type " << typeid(P).name() << ": parse error: " << e.what();
+			throw NsException(NSE_POSITION, ess);
+		} catch (msgpack2::unpack_error &e) {
+			std::stringstream ess;
+			ess << "Msgpack failed to unpack object of type " << typeid(P).name() << ": unpack error: " << e.what();
+			throw NsException(NSE_POSITION, ess);
+		} catch (msgpack2::type_error &e) {
+			std::stringstream ess;
+			ess << "Msgpack failed to unpack object of type " << typeid(P).name() << ": type error: " << e.what();
+			throw NsException(NSE_POSITION, ess);
+		} catch (...) {
+			std::stringstream ess;
+			ess << "Msgpack failed to unpack object of type " << typeid(P).name() << ": unexpected error";
+			throw NsException(NSE_POSITION, ess);
+		}
+
+		std::shared_ptr<P> deserialize(std::shared_ptr<NsSerialized> toDeserialize) throw(NsException) try {
+			//DEBUG
+			//		std::cout << std::dec << "Deserializing type " << typeid (P).name () << " (size " << toDeserialize->size << "):" << std::endl;
+			//		std::cout << hexdump (toDeserialize->ptr, toDeserialize->size);
+
+			msgpack2::object_handle oh = msgpack2::unpack(toDeserialize->ptr, toDeserialize->size);
+			msgpack2::object obj = oh.get();
+
+			//DEBUG
+			//		std::cout << "Deserialized object: " << obj << std::endl;
+
+			std::shared_ptr<P> prepared = std::make_shared<P>();
+			obj.convert(*prepared);
+
+			return prepared;
+		} catch (msgpack2::parse_error &e) {
+			std::stringstream ess;
+			ess << "Msgpack failed to unpack object of type " << typeid(P).name() << ": parse error: " << e.what();
+			throw NsException(NSE_POSITION, ess);
+		} catch (msgpack2::unpack_error &e) {
+			std::stringstream ess;
+			ess << "Msgpack failed to unpack object of type " << typeid(P).name() << ": unpack error: " << e.what();
+			throw NsException(NSE_POSITION, ess);
+		} catch (msgpack2::type_error &e) {
+			std::stringstream ess;
+			ess << "Msgpack failed to unpack object of type " << typeid(P).name() << ": type error: " << e.what();
+			throw NsException(NSE_POSITION, ess);
+		} catch (...) {
+			std::stringstream ess;
+			ess << "Msgpack failed to unpack object of type " << typeid(P).name() << ": unexpected error";
+			throw NsException(NSE_POSITION, ess);
+		}
+	};
 }
 
 #endif /* SERIALIZEDDATA_H */

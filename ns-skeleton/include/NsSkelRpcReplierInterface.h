@@ -32,21 +32,26 @@
 
 namespace nanoservices {
 
-class NsSkelRpcReplierInterface {
-public:
-	NsSkelRpcReplierInterface ();
-	virtual ~NsSkelRpcReplierInterface ();
+	class NsSkelRpcReplierInterface {
+	public:
+		NsSkelRpcReplierInterface();
 
-	virtual std::shared_ptr<std::string> methodName () throw (NsException) = 0;
-	virtual bool isThreadsafe () throw (NsException);
-	virtual std::shared_ptr<NsSerialized> processSerializedRequest (std::shared_ptr<NsSerialized> args) throw (NsException) = 0;
-	virtual std::shared_ptr<NsSerialized> processSerializedRequest (NsSerialized &args) throw (NsException) = 0;
-private:
-	NsSkelRpcReplierInterface (const NsSkelRpcReplierInterface& orig) = delete;
-	void operator= (const NsSkelRpcReplierInterface& orig) = delete;
+		virtual ~NsSkelRpcReplierInterface();
 
-};
+		virtual std::shared_ptr<std::string> methodName() throw(NsException) = 0;
 
+		virtual bool isThreadsafe() throw(NsException);
+
+		virtual std::shared_ptr<NsSerialized>
+		processSerializedRequest(std::shared_ptr<NsSerialized> args) throw(NsException) = 0;
+
+		virtual std::shared_ptr<NsSerialized> processSerializedRequest(NsSerialized &args) throw(NsException) = 0;
+
+	private:
+		NsSkelRpcReplierInterface(const NsSkelRpcReplierInterface &orig) = delete;
+
+		void operator=(const NsSkelRpcReplierInterface &orig) = delete;
+	};
 }
 
 #endif /* NSSKELRPCREPLIERBASE_H */

@@ -39,18 +39,21 @@ namespace nanoservices {
 	class NsSkelUtils {
 	public:
 		NsSkelUtils();
-		NsSkelUtils(const NsSkelUtils& orig);
+
+		NsSkelUtils(const NsSkelUtils &orig);
+
 		virtual ~NsSkelUtils();
 
 		static void log(LogLevel level, std::string &record);
+
 		static void log(LogLevel level, std::ostream &record);
 
 		static std::shared_ptr<std::string> toBase64(std::shared_ptr<NsSerialized> data);
+
 		static std::shared_ptr<NsSerialized> fromBase64(std::shared_ptr<std::string> base64);
+
 	private:
-
 	};
-
 }
 
 #endif /* NSSKELUTILS_H */

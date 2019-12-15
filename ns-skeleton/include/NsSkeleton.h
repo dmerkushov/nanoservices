@@ -38,71 +38,76 @@
 
 namespace nanoservices {
 
-class NsSkeleton {
-public:
+	class NsSkeleton {
+	public:
 
-	/**
-	 * Initialize NsSkeleton infrastructure for a given service name
-	 * @param serviceName
-	 */
-	static void init (const std::string &serviceName, const std::string &configName = "") throw (NsException);
+		/**
+		 * Initialize NsSkeleton infrastructure for a given service name
+		 * @param serviceName
+		 */
+		static void init(const std::string &serviceName, const std::string &configName = "") throw(NsException);
 
-	/**
-	 * Start the previously-initialized nanoservice
-	 */
-	static void startup () throw (NsException);
+		/**
+		 * Start the previously-initialized nanoservice
+		 */
+		static void startup() throw(NsException);
 
-	/**
-	 * Shut down the previously-initialized nanoservice
-	 */
-	static void shutdown () throw (NsException);
+		/**
+		 * Shut down the previously-initialized nanoservice
+		 */
+		static void shutdown() throw(NsException);
 
-	/**
-	 * Get the current service name
-	 * @return
-	 */
-	static std::shared_ptr<std::string> serviceName () throw (NsException);
+		/**
+		 * Get the current service name
+		 * @return
+		 */
+		static std::shared_ptr<std::string> serviceName() throw(NsException);
 
-	/**
-	 * Sleep while the current nanoservice is active
-	 */
-	static void sleepWhileActive () throw (NsException);
+		/**
+		 * Sleep while the current nanoservice is active
+		 */
+		static void sleepWhileActive() throw(NsException);
 
-	/**
-	 * Register a replier for a nanoservice method
-	 */
-	static void registerReplier (std::shared_ptr<NsSkelRpcReplierInterface> replier) throw (NsException);
-	
-	/**
-	 * Unregister the replier previously registered for a nanoservice method
-	 */
-	static void unregisterReplier (std::shared_ptr<std::string> methodName) throw (NsException);
+		/**
+		 * Register a replier for a nanoservice method
+		 */
+		static void registerReplier(std::shared_ptr<NsSkelRpcReplierInterface> replier) throw(NsException);
 
-	template<typename Args, typename Result>
-	static std::shared_ptr<Result> call (std::shared_ptr<std::string> serviceName, std::shared_ptr<std::string> methodName, std::shared_ptr<Args> args, bool waitForResponse) throw (NsException) {
+		/**
+		 * Unregister the replier previously registered for a nanoservice method
+		 */
+		static void unregisterReplier(std::shared_ptr<std::string> methodName) throw(NsException);
 
-		return nanoservices::sendRpcRequest<Args, Result> (serviceName, methodName, args, waitForResponse);
-	}
+		template<typename Args, typename Result>
+		static std::shared_ptr<Result>
+		call(std::shared_ptr<std::string> serviceName, std::shared_ptr<std::string> methodName,
+			 std::shared_ptr<Args> args, bool waitForResponse) throw(NsException) {
 
-	template<typename Args, typename Result>
-	static std::shared_ptr<Result> call (const std::string &serviceName, const std::string &methodName, std::shared_ptr<Args> args, bool waitForResponse) throw (NsException) {
+			return nanoservices::sendRpcRequest<Args, Result>(serviceName, methodName, args, waitForResponse);
+		}
 
-		std::shared_ptr<std::string> serviceNamePtr = std::make_shared<std::string> (serviceName);
-		std::shared_ptr<std::string> methodNamePtr = std::make_shared<std::string> (methodName);
+		template<typename Args, typename Result>
+		static std::shared_ptr<Result>
+		call(const std::string &serviceName, const std::string &methodName, std::shared_ptr<Args> args,
+			 bool waitForResponse) throw(NsException) {
 
-		return nanoservices::sendRpcRequest<Args, Result> (serviceNamePtr, methodNamePtr, args, waitForResponse);
-	}
+			std::shared_ptr<std::string> serviceNamePtr = std::make_shared<std::string>(serviceName);
+			std::shared_ptr<std::string> methodNamePtr = std::make_shared<std::string>(methodName);
 
-	template<typename Args, typename Result>
-	static std::shared_ptr<Result> call (const char *serviceName, const char *methodName, std::shared_ptr<Args> args, bool waitForResponse) throw (NsException) {
+			return nanoservices::sendRpcRequest<Args, Result>(serviceNamePtr, methodNamePtr, args, waitForResponse);
+		}
 
-		std::shared_ptr<std::string> serviceNamePtr = std::make_shared<std::string> (serviceName);
-		std::shared_ptr<std::string> methodNamePtr = std::make_shared<std::string> (methodName);
+		template<typename Args, typename Result>
+		static std::shared_ptr<Result>
+		call(const char *serviceName, const char *methodName, std::shared_ptr<Args> args,
+			 bool waitForResponse) throw(NsException) {
 
-		return nanoservices::sendRpcRequest<Args, Result> (serviceNamePtr, methodNamePtr, args, waitForResponse);
-	}
-};
+			std::shared_ptr<std::string> serviceNamePtr = std::make_shared<std::string>(serviceName);
+			std::shared_ptr<std::string> methodNamePtr = std::make_shared<std::string>(methodName);
 
+			return nanoservices::sendRpcRequest<Args, Result>(serviceNamePtr, methodNamePtr, args, waitForResponse);
+		}
+	};
 }
 
 #endif /* NSSKELETON_H */

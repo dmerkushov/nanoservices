@@ -39,73 +39,85 @@
 
 // Need to use MsgPack directly here, since NsSerializer makes use of NsException
 #define MSGPACK_USE_CPP03
+
 #include <msgpack.hpp>
 
 namespace msgpack2 = msgpack::v2;
 
 namespace nanoservices {
 
-class NsException : public std::exception {
-public:
-	NsException (std::string position, std::string shortDescription, const NsException &rootEx);
-	NsException (std::string position, std::stringstream &shortDescription, const NsException &rootEx);
-	NsException (std::string position, const NsException &rootEx);
-	NsException (const std::string &position, const std::stringstream &shortDescription, const std::string &rootStacktrace, const std::string &rootShortDescription, const std::string &rootFullDescription);
-	NsException (const NsException &rootEx);
-	NsException (std::string position, std::string shortDescription);
-	NsException (std::string position, std::stringstream &shortDescription);
-	NsException (std::string shortDescription);
-	NsException (std::stringstream &shortDescription);
-	virtual ~NsException () _GLIBCXX_USE_NOEXCEPT;
+	class NsException : public std::exception {
+	public:
+		NsException(std::string position, std::string shortDescription, const NsException &rootEx);
 
-	/**
-	 * Inherited from std::exception
-	 * @return The full description of the exception
-	 */
-	const char *what () const _GLIBCXX_USE_NOEXCEPT override;
+		NsException(std::string position, std::stringstream &shortDescription, const NsException &rootEx);
 
-	/**
-	 *
-	 * @return Stacktrace of the exception
-	 */
-	const std::string & stacktrace () const;
+		NsException(std::string position, const NsException &rootEx);
 
-	/**
-	 *
-	 * @return Short description of the exception
-	 */
-	const std::string & shortDescription () const;
+		NsException(const std::string &position, const std::stringstream &shortDescription,
+					const std::string &rootStacktrace, const std::string &rootShortDescription,
+					const std::string &rootFullDescription);
 
-	/**
-	 *
-	 * @return Full description of the exception; the same string as would be constructed if calling what()
-	 */
-	const std::string & fullDescription () const;
+		NsException(const NsException &rootEx);
 
-	/**
-	 *
-	 * @return Full description of the root exception; empty string if no root exception provided
-	 */
-	const std::string & rootExceptionFullDescription () const;
+		NsException(std::string position, std::string shortDescription);
 
-private:
-	std::string _shortDescription;
-	std::string _fullDescription;
-	std::string _stacktrace;
-	std::string _rootExceptionFullDescription;
+		NsException(std::string position, std::stringstream &shortDescription);
 
-	/**
-	 * Utility method to use in the constructors
-	 * @param rootExStack
-	 * @param rootExShort
-	 * @param rootExFull
-	 */
-	void init (const std::string & rootExStack = "", const std::string & rootExShort = "", const std::string & rootExFull = "");
+		NsException(std::string shortDescription);
 
-public:
-	MSGPACK_DEFINE (_shortDescription, _fullDescription, _stacktrace, _rootExceptionFullDescription);
-};
+		NsException(std::stringstream &shortDescription);
 
+		virtual ~NsException() _GLIBCXX_USE_NOEXCEPT;
+
+		/**
+		 * Inherited from std::exception
+		 * @return The full description of the exception
+		 */
+		const char *what() const _GLIBCXX_USE_NOEXCEPT override;
+
+		/**
+		 *
+		 * @return Stacktrace of the exception
+		 */
+		const std::string &stacktrace() const;
+
+		/**
+		 *
+		 * @return Short description of the exception
+		 */
+		const std::string &shortDescription() const;
+
+		/**
+		 *
+		 * @return Full description of the exception; the same string as would be constructed if calling what()
+		 */
+		const std::string &fullDescription() const;
+
+		/**
+		 *
+		 * @return Full description of the root exception; empty string if no root exception provided
+		 */
+		const std::string &rootExceptionFullDescription() const;
+
+	private:
+		std::string _shortDescription;
+		std::string _fullDescription;
+		std::string _stacktrace;
+		std::string _rootExceptionFullDescription;
+
+		/**
+		 * Utility method to use in the constructors
+		 * @param rootExStack
+		 * @param rootExShort
+		 * @param rootExFull
+		 */
+		void init(const std::string &rootExStack = "", const std::string &rootExShort = "",
+				  const std::string &rootExFull = "");
+
+	public:
+		MSGPACK_DEFINE (_shortDescription, _fullDescription, _stacktrace, _rootExceptionFullDescription);
+	};
 }
 
 #endif /* NSEXCEPTION_H */

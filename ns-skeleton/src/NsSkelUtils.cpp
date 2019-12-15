@@ -40,13 +40,13 @@
 using namespace std;
 using namespace nanoservices;
 
-NsSkelUtils::NsSkelUtils () {
+NsSkelUtils::NsSkelUtils() {
 }
 
-NsSkelUtils::NsSkelUtils (const NsSkelUtils& orig) {
+NsSkelUtils::NsSkelUtils(const NsSkelUtils &orig) {
 }
 
-NsSkelUtils::~NsSkelUtils () {
+NsSkelUtils::~NsSkelUtils() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -55,46 +55,46 @@ NsSkelUtils::~NsSkelUtils () {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-void NsSkelUtils::log (LogLevel level, ostream& record) {
+void NsSkelUtils::log(LogLevel level, ostream &record) {
 	stringstream ss;
-	ss << record.rdbuf ();
+	ss << record.rdbuf();
 
-	string recordStr = ss.str ();
+	string recordStr = ss.str();
 
-	log (level, recordStr);
+	log(level, recordStr);
 }
 
-static shared_ptr<string> loggingServiceName = make_shared<string> ("logging");
-static shared_ptr<string> loggingLogMethodName = make_shared<string> ("log");
+static shared_ptr<string> loggingServiceName = make_shared<string>("logging");
+static shared_ptr<string> loggingLogMethodName = make_shared<string>("log");
 
-void NsSkelUtils::log (LogLevel level, string& record) {
-	shared_ptr<LogArgs> args = make_shared<LogArgs> ();
+void NsSkelUtils::log(LogLevel level, string &record) {
+	shared_ptr<LogArgs> args = make_shared<LogArgs>();
 
 	args->logLevel = level;
-	args->sourceService = *(NsSkelRpcRegistry::instance ()->getLocalService ()->serviceName ());
+	args->sourceService = *(NsSkelRpcRegistry::instance()->getLocalService()->serviceName());
 	args->text = record;
-	args->time = time (nullptr);
+	args->time = time(nullptr);
 
 	try {
-		sendRpcRequest<LogArgs, NsVoidResult> (loggingServiceName, loggingLogMethodName, args, false);
+		sendRpcRequest<LogArgs, NsVoidResult>(loggingServiceName, loggingLogMethodName, args, false);
 	} catch (NsException &ex) {
 		cerr << "==============================" << endl
-				<< "WARNING: Could not write a log record to the logging service:" << endl
-				<< record << endl;
-		cerr << "because of an exception (NsException): " << ex.what () << endl
-				<< "==============================" << endl;
+			 << "WARNING: Could not write a log record to the logging service:" << endl
+			 << record << endl;
+		cerr << "because of an exception (NsException): " << ex.what() << endl
+			 << "==============================" << endl;
 	} catch (std::exception &ex) {
 		cerr << "==============================" << endl
-				<< "WARNING: Could not write a log record to the logging service:" << endl
-				<< record << endl;
-		cerr << "because of an exception (std::exception): " << ex.what () << endl
-				<< "==============================" << endl;
+			 << "WARNING: Could not write a log record to the logging service:" << endl
+			 << record << endl;
+		cerr << "because of an exception (std::exception): " << ex.what() << endl
+			 << "==============================" << endl;
 	} catch (...) {
 		cerr << "==============================" << endl
-				<< "WARNING: Could not write a log record to the logging service:" << endl
-				<< record << endl;
+			 << "WARNING: Could not write a log record to the logging service:" << endl
+			 << record << endl;
 		cerr << "because of an non-catchable exception" << endl
-				<< "==============================" << endl;
+			 << "==============================" << endl;
 	}
 }
 
@@ -113,20 +113,20 @@ namespace nanoservices {
 	static const char base64_term = '=';
 }
 
-static inline bool isBase64 (unsigned char c) {
-	return (isalnum (c) || (c == '+') || (c == '/'));
+static inline bool isBase64(unsigned char c) {
+	return (isalnum(c) || (c == '+') || (c == '/'));
 }
 
-static inline void base64_ca3_to_ca4 (unsigned char *ca3, unsigned char *ca4) {
+static inline void base64_ca3_to_ca4(unsigned char *ca3, unsigned char *ca4) {
 	ca4[0] = (ca3[0] & 0xFC) >> 2;
 	ca4[1] = ((ca3[0] & 0x03) << 4) + ((ca3[1] & 0xF0) >> 4);
 	ca4[2] = ((ca3[1] & 0x0F) << 2) + ((ca3[2] & 0xC0) >> 6);
 	ca4[3] = ca3[2] & 0x3F;
 }
 
-shared_ptr<string> NsSkelUtils::toBase64 (std::shared_ptr<NsSerialized> data) {
+shared_ptr<string> NsSkelUtils::toBase64(std::shared_ptr<NsSerialized> data) {
 	if (!data || data->size == 0) {
-		shared_ptr<string> ret = make_shared<string> ("");
+		shared_ptr<string> ret = make_shared<string>("");
 		return ret;
 	}
 
@@ -138,12 +138,12 @@ shared_ptr<string> NsSkelUtils::toBase64 (std::shared_ptr<NsSerialized> data) {
 	int i = 0;
 	int j = 0;
 
-	char *bytesToEncode = const_cast<char*> (data->ptr);
+	char *bytesToEncode = const_cast<char *> (data->ptr);
 
 	while (dataSize--) {
 		ca3[i++] = *(bytesToEncode++);
 		if (i == 3) {
-			base64_ca3_to_ca4 (ca3, ca4);
+			base64_ca3_to_ca4(ca3, ca4);
 
 			for (i = 0; i < 4; i++) {
 				retss << base64_chars[ca4[i]];
@@ -157,7 +157,7 @@ shared_ptr<string> NsSkelUtils::toBase64 (std::shared_ptr<NsSerialized> data) {
 			ca3[j] = '\0';
 		}
 
-		base64_ca3_to_ca4 (ca3, ca4);
+		base64_ca3_to_ca4(ca3, ca4);
 
 		for (j = 0; j < i + 1; j++) {
 			retss << base64_chars[ca4[j]];
@@ -168,18 +168,18 @@ shared_ptr<string> NsSkelUtils::toBase64 (std::shared_ptr<NsSerialized> data) {
 		}
 	}
 
-	shared_ptr<string> ret = make_shared<string> (retss.str ());
+	shared_ptr<string> ret = make_shared<string>(retss.str());
 	return ret;
 }
 
-static inline void base64_ca4_to_ca3 (unsigned char *ca4, unsigned char *ca3) {
+static inline void base64_ca4_to_ca3(unsigned char *ca4, unsigned char *ca3) {
 	ca3[0] = (ca4[0] << 2) + ((ca4[1] & 0x30) >> 4);
 	ca3[1] = ((ca4[1] & 0x0F) << 4) + ((ca4[2] & 0x3C) >> 2);
 	ca3[2] = ((ca4[2] & 0x03) << 6) + ca4[3];
 }
 
-shared_ptr<NsSerialized> NsSkelUtils::fromBase64 (shared_ptr<string> base64) {
-	size_t base64Size = base64->size ();
+shared_ptr<NsSerialized> NsSkelUtils::fromBase64(shared_ptr<string> base64) {
+	size_t base64Size = base64->size();
 
 	int i = 0;
 	int j = 0;
@@ -190,18 +190,18 @@ shared_ptr<NsSerialized> NsSkelUtils::fromBase64 (shared_ptr<string> base64) {
 
 	NsBinBuffer b;
 
-	while (base64Size-- && ((*base64)[in_] != base64_term) && isBase64 ((*base64)[in_])) {
+	while (base64Size-- && ((*base64)[in_] != base64_term) && isBase64((*base64)[in_])) {
 		ca4[i++] = (*base64)[in_];
 		in_++;
 
 		if (i == 4) {
 			for (i = 0; i < 4; i++) {
-				ca4[i] = base64_chars.find (ca4[i]) & 0xFF;
+				ca4[i] = base64_chars.find(ca4[i]) & 0xFF;
 			}
 
-			base64_ca4_to_ca3 (ca4, ca3);
+			base64_ca4_to_ca3(ca4, ca3);
 
-			b.write (((const char *) ca3), 3);
+			b.write(((const char *) ca3), 3);
 
 			i = 0;
 		}
@@ -209,15 +209,15 @@ shared_ptr<NsSerialized> NsSkelUtils::fromBase64 (shared_ptr<string> base64) {
 
 	if (i) {
 		for (j = 0; j < i; j++) {
-			ca4[j] = base64_chars.find (ca4[j]) & 0xFF;
+			ca4[j] = base64_chars.find(ca4[j]) & 0xFF;
 		}
 
-		base64_ca4_to_ca3 (ca4, ca3);
+		base64_ca4_to_ca3(ca4, ca3);
 
 		for (j = 0; j < i - 1; j++) {
-			b.write (((const char *) (ca3 + j)), 1);
+			b.write(((const char *) (ca3 + j)), 1);
 		}
 	}
 
-	return b.toPackable ();
+	return b.toPackable();
 }

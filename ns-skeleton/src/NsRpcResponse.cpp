@@ -25,27 +25,27 @@
 
 using namespace nanoservices;
 
-NsRpcResponse::NsRpcResponse () {
+NsRpcResponse::NsRpcResponse() {
 }
 
-NsRpcResponse::NsRpcResponse (const NsRpcResponse& orig) {
+NsRpcResponse::NsRpcResponse(const NsRpcResponse &orig) {
 }
 
-NsRpcResponse::~NsRpcResponse () {
+NsRpcResponse::~NsRpcResponse() {
 }
 
-bool NsRpcResponse::success () {
+bool NsRpcResponse::success() {
 	return _success;
 }
 
-void NsRpcResponse::setSuccess (bool success) {
+void NsRpcResponse::setSuccess(bool success) {
 	_success = success;
 }
 
-NsSerialized & NsRpcResponse::result () {
+NsSerialized &NsRpcResponse::result() {
 	return _result;
 }
 
-void NsRpcResponse::setResult (NsSerialized &result) {
+void NsRpcResponse::setResult(NsSerialized &result) {
 	_result = result;
 }

@@ -31,7 +31,6 @@ public:
 
 	NSSERIALIZER_PREPARE ();
 private:
-
 };
 
 #endif /* NSVOIDRESULT_H */

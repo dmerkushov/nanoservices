@@ -33,185 +33,204 @@
 #include "NsException.h"
 
 extern "C" {
-void nsSkelConfig (const std::string &serviceName, const std::string &configName) throw (nanoservices::NsException);
+void nsSkelConfig(const std::string &serviceName, const std::string &configName) throw(nanoservices::NsException);
 }
 
 namespace nanoservices {
 
-class NsSkelConfiguration final {
-public:
-	/**
-	 * Though NsSkelConfiguration is considered singleton, any nanoservice can read any other's configuration by calling this constructor with the other's name. It is not recommended, yet.
-	 * @param serviceName
-	 */
-	NsSkelConfiguration (const std::string &serviceName, const std::string &configName) throw (nanoservices::NsException);
+	class NsSkelConfiguration final {
+	public:
+		/**
+		 * Though NsSkelConfiguration is considered singleton, any nanoservice can read any other's configuration by calling this constructor with the other's name. It is not recommended, yet.
+		 * @param serviceName
+		 */
+		NsSkelConfiguration(const std::string &serviceName,
+							const std::string &configName) throw(nanoservices::NsException);
 
-	/**
-	 * Get the instance of NsSkelConfiguration for the current running nanoservice
-	 * @return
-	 */
-	static std::shared_ptr<NsSkelConfiguration> instance () throw (nanoservices::NsException);
+		/**
+		 * Get the instance of NsSkelConfiguration for the current running nanoservice
+		 * @return
+		 */
+		static std::shared_ptr<NsSkelConfiguration> instance() throw(nanoservices::NsException);
 
-	/**
-	 * Get the current nanoservice's name
-	 */
-	std::shared_ptr<std::string> getServiceName () throw (NsException);
+		/**
+		 * Get the current nanoservice's name
+		 */
+		std::shared_ptr<std::string> getServiceName() throw(NsException);
 
-	/**
-	 * Get the current nanoservice's config name
-	 */
-	std::shared_ptr<std::string> getConfigName () throw (NsException);
+		/**
+		 * Get the current nanoservice's config name
+		 */
+		std::shared_ptr<std::string> getConfigName() throw(NsException);
 
-	/**
-	 * Do we have the given parameter in the configuration?
-	 * @param paramName
-	 * @return
-	 */
-	bool hasParameter (std::string paramName);
+		/**
+		 * Do we have the given parameter in the configuration?
+		 * @param paramName
+		 * @return
+		 */
+		bool hasParameter(std::string paramName);
 
-	/**
-	 * Template method: set a default value for a configuration parameter, so we can later use getParameter() calls without explicitly setting the default value every time.
-	 *
-	 * The method has effect for a given parameter only on the first call and if no parameter with such a name is provided in the configuration.
-	 *
-	 * The template will be instantiated explicitly for the following parameter types:
-	 * <ul>
-	 * <li>int64_t
-	 * <li>double
-	 * <li>std::string
-	 * <li>bool
-	 * </ul>
-	 * @param paramName
-	 * @param defaultVal
-	 */
-	template<typename T1>
-	void setParameterDefault (std::string paramName, T1 defaultVal) throw (nanoservices::NsException) {
-		if (!hasParameter (paramName)) {
-			NsSkelJsonPtr v;
+		/**
+		 * Template method: set a default value for a configuration parameter, so we can later use getParameter() calls without explicitly setting the default value every time.
+		 *
+		 * The method has effect for a given parameter only on the first call and if no parameter with such a name is provided in the configuration.
+		 *
+		 * The template will be instantiated explicitly for the following parameter types:
+		 * <ul>
+		 * <li>int64_t
+		 * <li>double
+		 * <li>std::string
+		 * <li>bool
+		 * </ul>
+		 * @param paramName
+		 * @param defaultVal
+		 */
+		template<typename T1>
+		void setParameterDefault(std::string paramName, T1 defaultVal) throw(nanoservices::NsException) {
+			if (!hasParameter(paramName)) {
+				NsSkelJsonPtr v;
 
-			setNsSkelJsonPtr<T1> (v, defaultVal);
+				setNsSkelJsonPtr<T1>(v, defaultVal);
 
-			_configuration->insert (std::pair<std::string, NsSkelJsonPtr> (paramName, v));
+				_configuration->insert(std::pair<std::string, NsSkelJsonPtr>(paramName, v));
+			}
 		}
-	}
 
-private:
+	private:
 
-	/**
-	 * A special template struct to provide default parameter values to the templated getParameter() method
-	 *
-	 * The template will be instantiated explicitly for the following parameter types:
-	 * <ul>
-	 * <li>int64_t (default is 0)
-	 * <li>double (default is 0.0)
-	 * <li>std::string (default is "")
-	 * <li>bool (default is true)
-	 * </ul>
-	 * @return
-	 */
-	template<typename T0>
-	struct defaultArg {
+		/**
+		 * A special template struct to provide default parameter values to the templated getParameter() method
+		 *
+		 * The template will be instantiated explicitly for the following parameter types:
+		 * <ul>
+		 * <li>int64_t (default is 0)
+		 * <li>double (default is 0.0)
+		 * <li>std::string (default is "")
+		 * <li>bool (default is true)
+		 * </ul>
+		 * @return
+		 */
+		template<typename T0>
+		struct defaultArg {
 
-		static T0 get () {
-			return T0 ();
+			static T0 get() {
+				return T0();
+			}
+		};
+
+	public:
+
+		/**
+		 * Template method: get a configuration parameter.
+		 *
+		 * The template will be instantiated explicitly for the following parameter types:
+		 * <ul>
+		 * <li>int64_t (default is 0)
+		 * <li>double (default is 0.0)
+		 * <li>std::string (default is "")
+		 * <li>bool (default is true)
+		 * </ul>
+		 * @param paramName
+		 * @param defaultVal Used if the parameter is not provided in the configuration, and not set by setParameterDefault()
+		 * @see defaultArg
+		 */
+		template<typename T2>
+		T2 getParameter(const std::string paramName, T2 defaultVal = defaultArg<T2>::get()) throw(NsException) {
+			try {
+				if (!hasParameter(paramName)) {
+					return defaultVal;
+				}
+				NsSkelJsonPtr v = _configuration->at(paramName);
+
+				T2 returned = fromNsSkelJsonPtr<T2>(v);
+
+				return returned;
+			} catch (NsException &ex) {
+				std::stringstream ess;
+				ess << "NS Exception when reading parameter \"" << paramName << "\" : " << ex.what();
+				throw NsException(NSE_POSITION, ess);
+			} catch (std::exception &ex) {
+				std::stringstream ess;
+				ess << "Error when reading parameter \"" << paramName << "\" : " << ex.what();
+				throw NsException(NSE_POSITION, ess);
+			}
+		}
+
+	private:
+		NsSkelConfiguration(const NsSkelConfiguration &orig) = delete;
+
+		void operator=(const NsSkelConfiguration &orig) = delete;
+
+		std::shared_ptr<std::string> _serviceName;
+		std::shared_ptr<std::string> _configName;
+		NsSkelJsonObjectPtr _configuration;
+	};
+
+	template<>
+	struct NsSkelConfiguration::defaultArg<int64_t> {
+
+		static int64_t get() {
+			return 0;
 		}
 	};
 
-public:
+	template<>
+	struct NsSkelConfiguration::defaultArg<double> {
 
-	/**
-	 * Template method: get a configuration parameter.
-	 *
-	 * The template will be instantiated explicitly for the following parameter types:
-	 * <ul>
-	 * <li>int64_t (default is 0)
-	 * <li>double (default is 0.0)
-	 * <li>std::string (default is "")
-	 * <li>bool (default is true)
-	 * </ul>
-	 * @param paramName
-	 * @param defaultVal Used if the parameter is not provided in the configuration, and not set by setParameterDefault()
-	 * @see defaultArg
-	 */
-	template<typename T2>
-	T2 getParameter (const std::string paramName, T2 defaultVal = defaultArg<T2>::get ()) throw (NsException) {
-		try {
-			if (!hasParameter (paramName)) {
-				return defaultVal;
-			}
-			NsSkelJsonPtr v = _configuration->at (paramName);
-
-			T2 returned = fromNsSkelJsonPtr<T2> (v);
-
-			return returned;
-		} catch (NsException &ex) {
-			std::stringstream ess;
-			ess << "NS Exception when reading parameter \"" << paramName << "\" : " << ex.what ();
-			throw NsException (NSE_POSITION, ess);
-		} catch (std::exception &ex) {
-			std::stringstream ess;
-			ess << "Error when reading parameter \"" << paramName << "\" : " << ex.what ();
-			throw NsException (NSE_POSITION, ess);
+		static double get() {
+			return 0.0;
 		}
-	}
+	};
 
-private:
-	NsSkelConfiguration (const NsSkelConfiguration& orig) = delete;
-	void operator= (const NsSkelConfiguration& orig) = delete;
+	template<>
+	struct NsSkelConfiguration::defaultArg<std::string> {
 
-	std::shared_ptr<std::string> _serviceName;
-	std::shared_ptr<std::string> _configName;
-	NsSkelJsonObjectPtr _configuration;
-};
+		static std::string get() {
+			return "";
+		}
+	};
 
-template<> struct NsSkelConfiguration::defaultArg<int64_t> {
+	template<>
+	struct NsSkelConfiguration::defaultArg<bool> {
 
-	static int64_t get () {
-		return 0;
-	}
-};
+		static bool get() {
+			return true;
+		}
+	};
 
-template<> struct NsSkelConfiguration::defaultArg<double> {
+	template<>
+	struct NsSkelConfiguration::defaultArg<NsSkelJsonPtr> {
 
-	static double get () {
-		return 0.0;
-	}
-};
+		static NsSkelJsonPtr get() {
+			NsSkelJsonPtr p;
+			NsSkelJsonNull n;
+			setNsSkelJsonPtr<NsSkelJsonNull>(p, n);
+			return p;
+		}
+	};
 
-template<> struct NsSkelConfiguration::defaultArg<std::string> {
+	template void
+	NsSkelConfiguration::setParameterDefault<int64_t>(std::string, int64_t) throw(nanoservices::NsException);
 
-	static std::string get () {
-		return "";
-	}
-};
+	template void
+	NsSkelConfiguration::setParameterDefault<double>(std::string, double) throw(nanoservices::NsException);
 
-template<> struct NsSkelConfiguration::defaultArg<bool> {
+	template void
+	NsSkelConfiguration::setParameterDefault<std::string>(std::string, std::string) throw(nanoservices::NsException);
 
-	static bool get () {
-		return true;
-	}
-};
+	template void NsSkelConfiguration::setParameterDefault<bool>(std::string, bool) throw(nanoservices::NsException);
 
-template<> struct NsSkelConfiguration::defaultArg<NsSkelJsonPtr> {
+	template int64_t NsSkelConfiguration::getParameter<int64_t>(std::string paramName,
+																int64_t defaultVal) throw(nanoservices::NsException);
 
-	static NsSkelJsonPtr get () {
-		NsSkelJsonPtr p;
-		NsSkelJsonNull n;
-		setNsSkelJsonPtr <NsSkelJsonNull> (p, n);
-		return p;
-	}
-};
+	template double NsSkelConfiguration::getParameter<double>(std::string paramName,
+															  double defaultVal) throw(nanoservices::NsException);
 
-template void NsSkelConfiguration::setParameterDefault<int64_t> (std::string, int64_t) throw (nanoservices::NsException);
-template void NsSkelConfiguration::setParameterDefault<double> (std::string, double) throw (nanoservices::NsException);
-template void NsSkelConfiguration::setParameterDefault<std::string> (std::string, std::string) throw (nanoservices::NsException);
-template void NsSkelConfiguration::setParameterDefault<bool> (std::string, bool) throw (nanoservices::NsException);
+	template std::string NsSkelConfiguration::getParameter<std::string>(std::string paramName,
+																		std::string defaultVal) throw(nanoservices::NsException);
 
-template int64_t NsSkelConfiguration::getParameter<int64_t> (std::string paramName, int64_t defaultVal) throw (nanoservices::NsException);
-template double NsSkelConfiguration::getParameter<double> (std::string paramName, double defaultVal) throw (nanoservices::NsException);
-template std::string NsSkelConfiguration::getParameter<std::string> (std::string paramName, std::string defaultVal) throw (nanoservices::NsException);
-template bool NsSkelConfiguration::getParameter<bool> (std::string paramName, bool defaultVal) throw (nanoservices::NsException);
-
+	template bool
+	NsSkelConfiguration::getParameter<bool>(std::string paramName, bool defaultVal) throw(nanoservices::NsException);
 }
 
 #endif /* NSSKELCONFIGURATION_H */

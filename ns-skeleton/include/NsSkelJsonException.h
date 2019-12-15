@@ -28,8 +28,7 @@
 
 namespace nanoservices {
 
-typedef NsException NsSkelJsonException;
-
+	typedef NsException NsSkelJsonException;
 }
 
 #endif /* NSSKELJSONEXCEPTION_H */

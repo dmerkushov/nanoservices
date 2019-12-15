@@ -30,23 +30,27 @@
 
 namespace nanoservices {
 
-class NsRpcRequest {
-public:
-	NSSERIALIZER_PREPARE (_method, _argsSerialized, _waitForResponse);
+	class NsRpcRequest {
+	public:
+		NSSERIALIZER_PREPARE (_method, _argsSerialized, _waitForResponse);
 
-	NsRpcRequest ();
-	NsRpcRequest (std::string &method, NsSerialized &argsSerialized, bool waitForResponse = true);
-	virtual ~NsRpcRequest ();
+		NsRpcRequest();
 
-	std::string &method ();
-	NsSerialized &argsSerialized ();
-	bool waitForResponse ();
-private:
-	std::string _method;
-	NsSerialized _argsSerialized;
-	bool _waitForResponse;
-};
+		NsRpcRequest(std::string &method, NsSerialized &argsSerialized, bool waitForResponse = true);
 
+		virtual ~NsRpcRequest();
+
+		std::string &method();
+
+		NsSerialized &argsSerialized();
+
+		bool waitForResponse();
+
+	private:
+		std::string _method;
+		NsSerialized _argsSerialized;
+		bool _waitForResponse;
+	};
 }
 
 #endif /* NSRPCREQUEST_H */

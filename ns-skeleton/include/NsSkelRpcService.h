@@ -33,28 +33,36 @@
 
 namespace nanoservices {
 
-class NsSkelRpcService {
-public:
-	NsSkelRpcService (std::shared_ptr<std::string> serviceName, std::shared_ptr<std::string> host, uint16_t port, bool httpEnabled, uint16_t httpPort);
-	NsSkelRpcService (NsSkelJsonPtr serviceJson) throw (NsException);
-	virtual ~NsSkelRpcService ();
+	class NsSkelRpcService {
+	public:
+		NsSkelRpcService(std::shared_ptr<std::string> serviceName, std::shared_ptr<std::string> host, uint16_t port,
+						 bool httpEnabled, uint16_t httpPort);
 
-	std::shared_ptr<std::string> serviceName ();
-	std::shared_ptr<std::string> host ();
-	uint16_t port ();
-	bool httpEnabled ();
-	uint16_t httpPort ();
-private:
-	NsSkelRpcService (const NsSkelRpcService& orig) = delete;
-	void operator= (const NsSkelRpcService& orig) = delete;
+		NsSkelRpcService(NsSkelJsonPtr serviceJson) throw(NsException);
 
-	std::shared_ptr<std::string> _serviceName;
-	std::shared_ptr<std::string> _host;
-	uint16_t _port;
-	bool _httpEnabled;
-	uint16_t _httpPort;
-};
+		virtual ~NsSkelRpcService();
 
+		std::shared_ptr<std::string> serviceName();
+
+		std::shared_ptr<std::string> host();
+
+		uint16_t port();
+
+		bool httpEnabled();
+
+		uint16_t httpPort();
+
+	private:
+		NsSkelRpcService(const NsSkelRpcService &orig) = delete;
+
+		void operator=(const NsSkelRpcService &orig) = delete;
+
+		std::shared_ptr<std::string> _serviceName;
+		std::shared_ptr<std::string> _host;
+		uint16_t _port;
+		bool _httpEnabled;
+		uint16_t _httpPort;
+	};
 }
 
 #endif /* NSSKELRPCSERVICE_H */

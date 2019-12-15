@@ -30,24 +30,28 @@
 
 namespace nanoservices {
 
-class NsRpcResponse {
-public:
-	NSSERIALIZER_PREPARE (_success, _result);
+	class NsRpcResponse {
+	public:
+		NSSERIALIZER_PREPARE (_success, _result);
 
-	NsRpcResponse ();
-	NsRpcResponse (const NsRpcResponse& orig);
-	virtual ~NsRpcResponse ();
+		NsRpcResponse();
 
-	bool success ();
-	void setSuccess (bool success);
+		NsRpcResponse(const NsRpcResponse &orig);
 
-	NsSerialized & result ();
-	void setResult (NsSerialized & result);
-private:
-	bool _success;
-	NsSerialized _result;
-};
+		virtual ~NsRpcResponse();
 
+		bool success();
+
+		void setSuccess(bool success);
+
+		NsSerialized &result();
+
+		void setResult(NsSerialized &result);
+
+	private:
+		bool _success;
+		NsSerialized _result;
+	};
 }
 
 #endif /* NSRPCRESPONSE_H */

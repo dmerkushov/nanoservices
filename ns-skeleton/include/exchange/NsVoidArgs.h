@@ -31,7 +31,6 @@ public:
 
 	NSSERIALIZER_PREPARE ();
 private:
-
 };
 
 #endif /* NSVOIDARGS_H */

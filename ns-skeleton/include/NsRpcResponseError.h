@@ -34,28 +34,38 @@
 
 namespace nanoservices {
 
-class NsRpcResponseError {
-public:
-	NSSERIALIZER_PREPARE (_errorCode, _errorDescription, _optionalErrorParams);
+	class NsRpcResponseError {
+	public:
+		NSSERIALIZER_PREPARE (_errorCode, _errorDescription, _optionalErrorParams);
 
-	NsRpcResponseError ();
-	NsRpcResponseError (int64_t errorCode, const char *errorDescription);
-	NsRpcResponseError (int64_t errorCode, std::string &errorDescription);
-	NsRpcResponseError (int64_t errorCode, std::string &errorDescription, std::map<std::string, std::string> &optionalErrorParams);
-	NsRpcResponseError (int64_t errorCode, std::string prefix, NsException &exception);
-	NsRpcResponseError (int64_t errorCode, std::string prefix, std::exception &exception);
-	NsRpcResponseError (const NsRpcResponseError& orig);
-	virtual ~NsRpcResponseError ();
+		NsRpcResponseError();
 
-	int64_t errorCode ();
-	std::string & errorDescription ();
-	std::map<std::string, std::string> & optionalErrorParams ();
-private:
-	int64_t _errorCode;
-	std::string _errorDescription;
-	std::map<std::string, std::string> _optionalErrorParams;
-};
+		NsRpcResponseError(int64_t errorCode, const char *errorDescription);
 
+		NsRpcResponseError(int64_t errorCode, std::string &errorDescription);
+
+		NsRpcResponseError(int64_t errorCode, std::string &errorDescription,
+						   std::map<std::string, std::string> &optionalErrorParams);
+
+		NsRpcResponseError(int64_t errorCode, std::string prefix, NsException &exception);
+
+		NsRpcResponseError(int64_t errorCode, std::string prefix, std::exception &exception);
+
+		NsRpcResponseError(const NsRpcResponseError &orig);
+
+		virtual ~NsRpcResponseError();
+
+		int64_t errorCode();
+
+		std::string &errorDescription();
+
+		std::map<std::string, std::string> &optionalErrorParams();
+
+	private:
+		int64_t _errorCode;
+		std::string _errorDescription;
+		std::map<std::string, std::string> _optionalErrorParams;
+	};
 }
 
 #endif /* NSRPCRESPONSEERROR_H */

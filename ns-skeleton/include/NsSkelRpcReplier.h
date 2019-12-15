@@ -35,51 +35,53 @@
 
 namespace nanoservices {
 
-template<typename Args, typename Result>
-class NsSkelRpcReplier : public NsSkelRpcReplierInterface {
-public:
+	template<typename Args, typename Result>
+	class NsSkelRpcReplier : public NsSkelRpcReplierInterface {
+	public:
 
-	NsSkelRpcReplier () {
-	}
+		NsSkelRpcReplier() {
+		}
 
-	virtual ~NsSkelRpcReplier () {
-	}
+		virtual ~NsSkelRpcReplier() {
+		}
 
-	std::shared_ptr<NsSerialized> processSerializedRequest (std::shared_ptr<NsSerialized> sArgs) throw (NsException) override try {
-		std::shared_ptr<Args> args = _argsSerializer.deserialize (sArgs);
-		std::shared_ptr<Result> result = processRequest (args);
-		std::shared_ptr<NsSerialized> sResult = _resultSerializer.serialize (result);
-		return sResult;
-	} catch (NsException &e) {
-		throw NsException (NSE_POSITION, e.what ());
-	} catch (std::exception &e) {
-		throw NsException (NSE_POSITION, e.what ());
-	} catch (...) {
-		throw NsException (NSE_POSITION, "processSerializedRequest(): Unexpected failure");
-	}
+		std::shared_ptr<NsSerialized>
+		processSerializedRequest(std::shared_ptr<NsSerialized> sArgs) throw(NsException) override try {
+			std::shared_ptr<Args> args = _argsSerializer.deserialize(sArgs);
+			std::shared_ptr<Result> result = processRequest(args);
+			std::shared_ptr<NsSerialized> sResult = _resultSerializer.serialize(result);
+			return sResult;
+		} catch (NsException &e) {
+			throw NsException(NSE_POSITION, e.what());
+		} catch (std::exception &e) {
+			throw NsException(NSE_POSITION, e.what());
+		} catch (...) {
+			throw NsException(NSE_POSITION, "processSerializedRequest(): Unexpected failure");
+		}
 
-	std::shared_ptr<NsSerialized> processSerializedRequest (NsSerialized &sArgs) throw (NsException) override try {
-		std::shared_ptr<Args> args = _argsSerializer.deserialize (sArgs);
-		std::shared_ptr<Result> result = processRequest (args);
-		std::shared_ptr<NsSerialized> sResult = _resultSerializer.serialize (result);
-		return sResult;
-	} catch (NsException &e) {
-		throw NsException (NSE_POSITION, e.what ());
-	} catch (std::exception &e) {
-		throw NsException (NSE_POSITION, e.what ());
-	} catch (...) {
-		throw NsException (NSE_POSITION, "processSerializedRequest(): Unexpected failure");
-	}
+		std::shared_ptr<NsSerialized> processSerializedRequest(NsSerialized &sArgs) throw(NsException) override try {
+			std::shared_ptr<Args> args = _argsSerializer.deserialize(sArgs);
+			std::shared_ptr<Result> result = processRequest(args);
+			std::shared_ptr<NsSerialized> sResult = _resultSerializer.serialize(result);
+			return sResult;
+		} catch (NsException &e) {
+			throw NsException(NSE_POSITION, e.what());
+		} catch (std::exception &e) {
+			throw NsException(NSE_POSITION, e.what());
+		} catch (...) {
+			throw NsException(NSE_POSITION, "processSerializedRequest(): Unexpected failure");
+		}
 
-	virtual std::shared_ptr<Result> processRequest (std::shared_ptr<Args> args) throw (NsException) = 0;
-private:
-	NsSkelRpcReplier (const NsSkelRpcReplier& orig) = delete;
-	void operator= (const NsSkelRpcReplier& orig) = delete;
+		virtual std::shared_ptr<Result> processRequest(std::shared_ptr<Args> args) throw(NsException) = 0;
 
-	NsSerializer<Args> _argsSerializer;
-	NsSerializer<Result> _resultSerializer;
-};
+	private:
+		NsSkelRpcReplier(const NsSkelRpcReplier &orig) = delete;
 
+		void operator=(const NsSkelRpcReplier &orig) = delete;
+
+		NsSerializer<Args> _argsSerializer;
+		NsSerializer<Result> _resultSerializer;
+	};
 }
 
 #endif /* NSSKELRPCREPLIER_H */

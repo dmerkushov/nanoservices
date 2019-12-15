@@ -36,44 +36,54 @@
 
 namespace nanoservices {
 
-class NsSkelRpcServer;
+	class NsSkelRpcServer;
 
-class NsSkelRpcRegistry {
-public:
-	static std::shared_ptr<NsSkelRpcRegistry> instance ();
+	class NsSkelRpcRegistry {
+	public:
+		static std::shared_ptr<NsSkelRpcRegistry> instance();
 
-	virtual ~NsSkelRpcRegistry ();
+		virtual ~NsSkelRpcRegistry();
 
-	std::shared_ptr<NsSkelRpcReplierInterface> getReplier (std::shared_ptr<std::string> method) throw (NsException);
-	void registerReplier (std::shared_ptr<NsSkelRpcReplierInterface> replier) throw (NsException);
-	void unregisterReplier (std::shared_ptr<std::string> methodName) throw (NsException);
-	std::shared_ptr<std::vector<std::string> > methods () throw (NsException);
+		std::shared_ptr<NsSkelRpcReplierInterface> getReplier(std::shared_ptr<std::string> method) throw(NsException);
 
-	std::shared_ptr<NsSkelRpcService> getService (std::shared_ptr<std::string> serviceName) throw (NsException);
-	std::shared_ptr<NsSkelRpcService> getLocalService () throw (NsException);
+		void registerReplier(std::shared_ptr<NsSkelRpcReplierInterface> replier) throw(NsException);
 
-	void registerServer (std::shared_ptr<NsSkelRpcServer> server) throw (NsException);
-	void unregisterServer (std::shared_ptr<NsSkelRpcServer> server) throw (NsException);
-	void startupServers () throw (NsException);
-	void shutdownServers () throw (NsException);
-	std::shared_ptr<std::vector<std::shared_ptr<NsSkelRpcServer> > > servers () throw (NsException);
+		void unregisterReplier(std::shared_ptr<std::string> methodName) throw(NsException);
 
-	void initialize () throw (NsException);
-private:
-	NsSkelRpcRegistry ();
-	NsSkelRpcRegistry (const NsSkelRpcRegistry& orig) = delete;
-	void operator= (const NsSkelRpcRegistry& orig) = delete;
+		std::shared_ptr<std::vector<std::string> > methods() throw(NsException);
 
-	void prepareServicesMap () throw (NsException);
+		std::shared_ptr<NsSkelRpcService> getService(std::shared_ptr<std::string> serviceName) throw(NsException);
 
-	std::map<std::string, std::shared_ptr<NsSkelRpcReplierInterface> > _repliers;
+		std::shared_ptr<NsSkelRpcService> getLocalService() throw(NsException);
 
-	std::map<std::string, std::shared_ptr<NsSkelRpcService> > _services;
-	bool _servicesMapReady = false;
+		void registerServer(std::shared_ptr<NsSkelRpcServer> server) throw(NsException);
 
-	std::vector<std::shared_ptr<NsSkelRpcServer> > _servers;
-};
+		void unregisterServer(std::shared_ptr<NsSkelRpcServer> server) throw(NsException);
 
+		void startupServers() throw(NsException);
+
+		void shutdownServers() throw(NsException);
+
+		std::shared_ptr<std::vector<std::shared_ptr<NsSkelRpcServer> > > servers() throw(NsException);
+
+		void initialize() throw(NsException);
+
+	private:
+		NsSkelRpcRegistry();
+
+		NsSkelRpcRegistry(const NsSkelRpcRegistry &orig) = delete;
+
+		void operator=(const NsSkelRpcRegistry &orig) = delete;
+
+		void prepareServicesMap() throw(NsException);
+
+		std::map<std::string, std::shared_ptr<NsSkelRpcReplierInterface> > _repliers;
+
+		std::map<std::string, std::shared_ptr<NsSkelRpcService> > _services;
+		bool _servicesMapReady = false;
+
+		std::vector<std::shared_ptr<NsSkelRpcServer> > _servers;
+	};
 }
 
 // There is a cyclic dependency between NsSkelRpcServer and NsSkelRpcRegistry

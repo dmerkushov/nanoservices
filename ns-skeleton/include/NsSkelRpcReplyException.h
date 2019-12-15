@@ -28,8 +28,7 @@
 
 namespace nanoservices {
 
-typedef NsException NsSkelRpcReplyException;
-
+	typedef NsException NsSkelRpcReplyException;
 }
 
 #endif /* NSSKELRPCREPLYEXCEPTION_H */
