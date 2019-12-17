@@ -64,7 +64,7 @@ void NsSkelUtils::log(LogLevel level, ostream &record) {
 	log(level, recordStr);
 }
 
-static shared_ptr<string> loggingServiceName = make_shared<string>("logging");
+static shared_ptr<string> loggingServiceName = make_shared<string>("ns-logger");
 static shared_ptr<string> loggingLogMethodName = make_shared<string>("log");
 
 void NsSkelUtils::log(LogLevel level, string &record) {

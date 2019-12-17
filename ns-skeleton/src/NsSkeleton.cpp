@@ -37,20 +37,20 @@
 #include "NsSkelRpcServer.h"
 #include "NsSkelRpcHttpServer.h"
 #include "NsMonitoring.h"
+#include "NsCmdLineParameters.h"
 
 using namespace std;
 using namespace nanoservices;
 
-void NsSkeleton::init(const std::string &serviceName, const std::string &configName) throw(NsException) try {
+void NsSkeleton::init(const std::string &serviceName, int argc, char **argv) throw(NsException) try {
 
-	string configNameResult;
-	if (configName == "") {
-		configNameResult = serviceName;
-	} else {
-		configNameResult = configName;
-	}
+	string configNameResult = serviceName;
 
 	nsSkelConfig(serviceName, configNameResult);
+
+	NsCmdLineParameters::_instance = shared_ptr<NsCmdLineParameters>(new NsCmdLineParameters(argc, argv));
+	NsCmdLineParameters::_instance->parse();
+
 	shared_ptr<NsSkelRpcServer> server = make_shared<NsSkelRpcServer>();
 	NsSkelRpcRegistry::instance()->registerServer(server);
 
@@ -146,7 +146,11 @@ void NsSkeleton::unregisterReplier(std::shared_ptr<std::string> methodName) thro
 }
 
 std::shared_ptr<std::string> NsSkeleton::serviceName() throw(NsException) try {
-	return NsSkelConfiguration::instance()->getServiceName();
+	shared_ptr<string> returned = NsSkelConfiguration::instance()->getServiceName();
+	if (NsCmdLineParameters::instance()->isParam("name")) {
+		returned = make_shared<string>(NsCmdLineParameters::instance()->paramValue("name")[0]);
+	}
+	return returned;
 } catch (NsException &ex) {
 	stringstream ess;
 	ess << "NsSkeleton::serviceName(): NsException: " << ex.what();

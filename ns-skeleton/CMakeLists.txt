@@ -26,7 +26,8 @@ set(Sources
 		src/NsSkelRpcReplierInterface.cpp
 		src/NsSkelRpcServer.cpp
 		src/NsSkelRpcService.cpp
-		src/NsSkelUtils.cpp)
+		src/NsSkelUtils.cpp
+		src/NsCmdLineParameters.cpp)
 
 message("Sources: ${Sources}")
 
@@ -61,7 +62,8 @@ set(Headers
 		include/NsSkelRpcServer.h
 		include/NsSkelRpcService.h
 		include/NsSkelStartException.h
-		include/NsSkelUtils.h)
+		include/NsSkelUtils.h
+		include/NsCmdLineParameters.h)
 
 include_directories(include)
 
