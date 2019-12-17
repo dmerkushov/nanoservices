@@ -45,7 +45,7 @@ namespace nanoservices {
 		 * Initialize NsSkeleton infrastructure for a given service name
 		 * @param serviceName
 		 */
-		static void init(const std::string &serviceName, const std::string &configName = "") throw(NsException);
+		static void init(const std::string &serviceName, int argc = 0, char **argv = nullptr) throw(NsException);
 
 		/**
 		 * Start the previously-initialized nanoservice
@@ -80,16 +80,24 @@ namespace nanoservices {
 
 		template<typename Args, typename Result>
 		static std::shared_ptr<Result>
-		call(std::shared_ptr<std::string> serviceName, std::shared_ptr<std::string> methodName,
-			 std::shared_ptr<Args> args, bool waitForResponse) throw(NsException) {
+		call(
+				std::shared_ptr<std::string> serviceName,
+				std::shared_ptr<std::string> methodName,
+				std::shared_ptr<Args> args,
+				bool waitForResponse
+		) throw(NsException) {
 
 			return nanoservices::sendRpcRequest<Args, Result>(serviceName, methodName, args, waitForResponse);
 		}
 
 		template<typename Args, typename Result>
 		static std::shared_ptr<Result>
-		call(const std::string &serviceName, const std::string &methodName, std::shared_ptr<Args> args,
-			 bool waitForResponse) throw(NsException) {
+		call(
+				const std::string &serviceName,
+				const std::string &methodName,
+				std::shared_ptr<Args> args,
+				bool waitForResponse
+		) throw(NsException) {
 
 			std::shared_ptr<std::string> serviceNamePtr = std::make_shared<std::string>(serviceName);
 			std::shared_ptr<std::string> methodNamePtr = std::make_shared<std::string>(methodName);
@@ -98,9 +106,12 @@ namespace nanoservices {
 		}
 
 		template<typename Args, typename Result>
-		static std::shared_ptr<Result>
-		call(const char *serviceName, const char *methodName, std::shared_ptr<Args> args,
-			 bool waitForResponse) throw(NsException) {
+		static std::shared_ptr<Result> call(
+				const char *serviceName,
+				const char *methodName,
+				std::shared_ptr<Args> args,
+				bool waitForResponse
+		) throw(NsException) {
 
 			std::shared_ptr<std::string> serviceNamePtr = std::make_shared<std::string>(serviceName);
 			std::shared_ptr<std::string> methodNamePtr = std::make_shared<std::string>(methodName);

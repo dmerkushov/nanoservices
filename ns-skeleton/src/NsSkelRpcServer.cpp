@@ -50,6 +50,7 @@
 #include "NsRpcExecutor.h"
 #include "NsSerializer.h"
 #include "NsSkelRpcRegistry.h"
+#include "NsCmdLineParameters.h"
 
 #define BUF_SIZE 500
 #define HOST "127.0.0.1"
@@ -68,6 +69,10 @@ NsSkelRpcServer::NsSkelRpcServer() :
 		_serverStarted(false),
 		_shutdownReceived(false) {
 	_port = NsSkelRpcRegistry::instance()->getLocalService()->port();
+	if (NsCmdLineParameters::instance()->isParam("port")) {
+		string port_s = NsCmdLineParameters::instance()->paramValue("port")[0];
+		_port = stoi(port_s);
+	}
 }
 
 NsSkelRpcServer::~NsSkelRpcServer() {

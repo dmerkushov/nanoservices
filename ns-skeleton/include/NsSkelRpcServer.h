@@ -322,9 +322,19 @@ namespace nanoservices {
 	static std::shared_ptr<Result>
 	sendRpcRequest(std::shared_ptr<std::string> serviceName, std::shared_ptr<std::string> methodName,
 				   std::shared_ptr<Args> args, bool waitForResponse) throw(NsException) {
+
 		std::shared_ptr<NsSkelRpcService> service;
+		std::shared_ptr<std::string> serviceNamePtr = serviceName;
+
+		// Check simplity of service name
+		std::string::size_type pos = serviceName->find(':');
+		if (pos != std::string::npos) {
+			// Define real service name
+			serviceNamePtr = std::make_shared<std::string>(serviceName->substr(0, pos));
+		}
+
 		try {
-			service = NsSkelRpcRegistry::instance()->getService(serviceName);
+			service = NsSkelRpcRegistry::instance()->getService(serviceNamePtr);
 		} catch (NsException &ex) {
 			std::stringstream ess;
 			ess << "NsException: " << ex.what();
@@ -334,6 +344,11 @@ namespace nanoservices {
 		const char *host = service->host()->c_str();
 		uint16_t port = service->port();
 
+		if (pos != std::string::npos) {
+			// Override port from service name
+			std::string port_s = serviceName->substr(pos + 1);
+			port = stoi(port_s);
+		}
 		//	cout_lock.lock ();
 		//	std::cout << "sendRpcRequest(): Trying to connect to host " << host << ":" << port << std::endl;
 		//	cout_lock.unlock ();

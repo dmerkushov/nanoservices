@@ -97,8 +97,7 @@ void NsSkelRpcRegistry::unregisterReplier(shared_ptr<string> methodName) throw(N
 	_repliersMapMutex.unlock();
 }
 
-shared_ptr<NsSkelRpcReplierInterface>
-NsSkelRpcRegistry::getReplier(shared_ptr<string> methodName) throw(NsException) {
+shared_ptr<NsSkelRpcReplierInterface> NsSkelRpcRegistry::getReplier(shared_ptr<string> methodName) throw(NsException) {
 	shared_ptr<NsSkelRpcReplierInterface> replier;
 
 	_repliersMapMutex.lock();
