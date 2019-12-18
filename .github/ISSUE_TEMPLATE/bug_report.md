@@ -18,19 +18,21 @@ Steps to reproduce the behavior:
 **Expected behavior**
 A clear and concise description of what you expected to happen.
 
-**Logs**
-If applicable, add logs to help explain your problem.
-
-**Environment**
- - OS distribution
- - C++11 compiler type (gcc, clang, other?)
- - C++11 compiler version [e.g. 22]
- - Linux kernel version
- - libc (glibc) version
+**Building Environment**
+ - C++11 compiler type (gcc, clang, other?) and version
  - cmake version
  - make version
  - doxygen version (if applicable)
  - env output
+
+**Execution Environment**
+ - OS distribution
+ - Linux kernel version (if running on Linux)
+ - libc (glibc) version
+ - env output
+ 
+**Logs**
+If applicable, add logs to help explain your problem.
 
 **Additional context**
 Add any other context about the problem here.
