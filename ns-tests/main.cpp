@@ -16,13 +16,15 @@
 #include "testBase64.h"
 #include "testBrokenWrite.h"
 
+using namespace nanoservices::tests;
+
 /*
  *
  */
 int main(int argc, char **argv) {
-	testBase64();
-	testExceptionThrowThrough();
-	testBrokenWrite();
+	testBase64::testBase64();
+	testExceptionThrowThrough::testExceptionThrowThrough();
+	testBrokenWrite::testBrokenWrite();
 
 	testsResult();
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* 
+/*
  * File:   testExceptionThrowThrough.h
  * Author: dmerkushov
  *
@@ -36,20 +36,24 @@
 #include "NsSkelRpcRegistry.h"
 #include "NsSkelUtils.h"
 
-class MyArgs {
+namespace nanoservices {
+namespace tests {
+namespace testExceptionThrowThrough {
+
+class TestExceeptionThrowThrough_Args {
 public:
 
-	MyArgs() {
+	TestExceeptionThrowThrough_Args() {
 		::memset(k, 0, sizeof(k));
 	}
 
-	MyArgs(MyArgs &orig) {
+	TestExceeptionThrowThrough_Args(TestExceeptionThrowThrough_Args &orig) {
 		this->i = orig.i;
 		this->j = orig.j;
 		::memset(k, 0, sizeof(k));
 	}
 
-	virtual ~MyArgs() {
+	virtual ~TestExceeptionThrowThrough_Args() {
 	}
 
 	uint32_t i;
@@ -57,72 +61,56 @@ public:
 
 	uint32_t k[102400];
 
-	NSSERIALIZER_PREPARE (i, j, k
-	);
+	NSSERIALIZER_PREPARE (i, j, k);
 };
 
-class MyResult {
+class TestExceptionThrowThrough_Result {
 public:
 
-	MyResult() {
+	TestExceptionThrowThrough_Result() {
 	}
 
-	MyResult(MyResult &orig) {
+	TestExceptionThrowThrough_Result(TestExceptionThrowThrough_Result &orig) {
 		this->o = orig.o;
 	}
 
-	virtual ~MyResult() {
+	virtual ~TestExceptionThrowThrough_Result() {
 	}
 
 	uint32_t o;
 	uint32_t a = 0;
 
-	NSSERIALIZER_PREPARE (o, a
-	);
+	NSSERIALIZER_PREPARE (o, a);
 };
 
-class MyReplier : public nanoservices::NsSkelRpcReplier<MyArgs, MyResult> {
+class TestExceeptionThrowThrough_Replier
+		: public nanoservices::NsSkelRpcReplier<TestExceeptionThrowThrough_Args, TestExceptionThrowThrough_Result> {
 public:
 
-	MyReplier() {
+	TestExceeptionThrowThrough_Replier() {
 	}
 
-	virtual ~MyReplier() {
+	virtual ~TestExceeptionThrowThrough_Replier() {
 	}
 
-	virtual std::shared_ptr <std::string> methodName() throw(nanoservices::NsException) {
+	virtual std::shared_ptr<std::string> methodName() throw(nanoservices::NsException) {
 		return _methodName;
 	}
 
-	virtual std::shared_ptr <MyResult> processRequest(std::shared_ptr <MyArgs> args) throw(nanoservices::NsException) {
-		throw nanoservices::NsException(NSE_POSITION, "Exception from MyReplier:processRequest");
-
-		std::cout << "Replier: params: i=" << args->i << ", j=" << args->j << std::endl;
-
-		//		if (params->i >= 10000) {
-		//			throw (NsException (NSE_POSITION, "i is too big"));
-		//		}
-
-		std::shared_ptr <MyResult> result = std::make_shared<MyResult>();
-
-		//		try {
-		//			sendRpcRequest<MyParam, MyResult> (std::make_shared<std::string> ("sfgafs"), std::make_shared<std::string> ("skjghg"), params, true);
-		//		} catch (NsSkelRpcException ex) {
-		//			std::stringstream ess;
-		//			ess << "NsSkelRpcException: " << ex.what ();
-		//			throw NsSkelRpcException (NSE_POSITION, ess);
-		//		}
-
-		result->o = args->i + 1;
-
-		return result;
+	virtual std::shared_ptr<TestExceptionThrowThrough_Result>
+	processRequest(std::shared_ptr<TestExceeptionThrowThrough_Args> args) throw(nanoservices::NsException) {
+		throw nanoservices::NsException(NSE_POSITION,
+										"Exception from TestBrokenWrite_B_Replier:processRequest");
 	}
 
 private:
-	std::shared_ptr <std::string> _methodName = std::make_shared<std::string>("doSmth");
+	std::shared_ptr<std::string> _methodName = std::make_shared<std::string>("doSmth");
 };
 
 void testExceptionThrowThrough();
+}
+}
+}
 
 #endif /* TESTEXCEPTIONTHROWTHROUGH_H */
 

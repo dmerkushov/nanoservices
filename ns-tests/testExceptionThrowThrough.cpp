@@ -38,8 +38,9 @@
 
 using namespace std;
 using namespace nanoservices;
+using namespace nanoservices::tests::testExceptionThrowThrough;
 
-void testExceptionThrowThrough() {
+void nanoservices::tests::testExceptionThrowThrough::testExceptionThrowThrough() {
 	TEST_START;
 
 	string serviceName = "myService";
@@ -47,7 +48,7 @@ void testExceptionThrowThrough() {
 
 	cout << "Skeleton configured" << endl;
 
-	shared_ptr <NsSkelRpcReplierInterface> replier(new MyReplier());
+	shared_ptr<NsSkelRpcReplierInterface> replier(new TestExceeptionThrowThrough_Replier());
 
 	NsSkeleton::registerReplier(replier);
 
@@ -61,7 +62,7 @@ void testExceptionThrowThrough() {
 
 	sleep(1);
 
-	shared_ptr <MyArgs> params = make_shared<MyArgs>();
+	shared_ptr<TestExceeptionThrowThrough_Args> params = make_shared<TestExceeptionThrowThrough_Args>();
 	//	//	MyParam *params = new MyParam ();
 	params->i = 0;
 	params->j = 0;
@@ -96,15 +97,18 @@ void testExceptionThrowThrough() {
 	string sName = "myService";
 	string mName = "doSmth";
 	int times = 1;
-	NsSerializer <MyResult> myResultSerializer;
-	for (int i = 0; i < times; i++) {
+	NsSerializer<TestExceptionThrowThrough_Result> myResultSerializer;
+	for (
+			int i = 0; i < times; i++
+			) {
 		bool e = false;
 
 		cout << "Before sending request" << endl;
 
-		shared_ptr <MyResult> result;
+		shared_ptr<TestExceptionThrowThrough_Result> result;
 		try {
-			result = NsSkeleton::call<MyArgs, MyResult>("myService", mName, params, true);
+			result = NsSkeleton::call<TestExceeptionThrowThrough_Args, TestExceptionThrowThrough_Result>(
+					"myService", mName, params, true);
 		} catch (NsException &ex) {
 			e = true;
 			cerr << "myService called threw an exception: " << ex.shortDescription() << endl;
