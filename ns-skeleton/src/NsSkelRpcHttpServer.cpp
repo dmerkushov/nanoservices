@@ -58,8 +58,9 @@ void NsSkelRpcHttpServer::processIncomingConnection(int dataSocketFd) try {
 		cerr << "NsSkelRpcHttpServer: Unsupported HTTP method: " << method << endl;
 		cerr << "Currently, only GET is supported" << endl;
 		cout_lock.unlock();
-
-		sockstream.close();
+		sockstream << "HTTP/1.1 405 Method not allowed\n";
+		sockstream << "Connection: Close\n";
+		sockstream.close ();
 
 		return;
 	}
@@ -73,7 +74,9 @@ void NsSkelRpcHttpServer::processIncomingConnection(int dataSocketFd) try {
 		cerr << "Request string must start with a slash (/)" << endl;
 		cout_lock.unlock();
 
-		sockstream.close();
+		sockstream << "HTTP/1.1 400 Bad request\n";
+		sockstream << "Connection: Close\n";
+		sockstream.close ();
 
 		return;
 	}
@@ -86,6 +89,10 @@ void NsSkelRpcHttpServer::processIncomingConnection(int dataSocketFd) try {
 		cerr << "NsSkelRpcHttpServer: Unsupported HTTP version: " << httpVersion << endl;
 		cerr << "Currently, only HTTP/1.0 and HTTP/1.1 are supported" << endl;
 		cout_lock.unlock();
+
+		sockstream << "HTTP/1.1 400 Bad request\n";
+		sockstream << "Connection: Close\n";
+		sockstream.close ();
 
 		sockstream.close();
 
@@ -116,6 +123,7 @@ void NsSkelRpcHttpServer::processIncomingConnection(int dataSocketFd) try {
 		cout_lock.unlock();
 
 		sockstream << "HTTP/1.1 200 OK\n";
+		sockstream << "Connection: Close\n";
 		sockstream << "Content-Type: application/base64\n";
 		sockstream << "Access-Control-Allow-Origin: *\n";
 		sockstream << "Content-Length: " << resultBase64->size() << "\n\n";
@@ -136,7 +144,6 @@ void NsSkelRpcHttpServer::processIncomingConnection(int dataSocketFd) try {
 	cout << "processIncomingConnection(): closing socket" << endl;
 	cout_lock.unlock();
 
-	sockstream.close();
 } catch (NsException &ex) {
 
 	cout_lock.lock();
