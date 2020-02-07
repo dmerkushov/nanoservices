@@ -1,0 +1,41 @@
+@startuml
+participant A as a
+entity CircuitBreaker as cb
+participant B as b
+
+alt no errors
+a -> cb: call()
+activate a
+activate cb
+cb -> b: call()
+activate b
+b --> cb: response
+deactivate b
+cb --> a: response
+deactivate cb
+deactivate a
+else errors
+a -> cb: call()
+activate a
+loop while err_count < max_errors
+cb -x b: call()
+activate cb
+cb -> cb: err_count ++
+activate cb
+deactivate
+end
+cb -> cb: sleep(timeout)
+activate cb
+deactivate
+cb -x b: call()
+cb -> cb: sleep(timeout*2)
+activate cb
+deactivate
+cb -x b: call()
+cb --> a: error
+deactivate cb
+deactivate a
+end
+
+
+@enduml
