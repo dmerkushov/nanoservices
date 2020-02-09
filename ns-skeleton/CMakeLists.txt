@@ -63,7 +63,7 @@ set(Headers
 		include/NsSkelRpcService.h
 		include/NsSkelStartException.h
 		include/NsSkelUtils.h
-		include/NsCmdLineParameters.h)
+		include/NsCmdLineParameters.h include/NsCircuitBreaker.h src/NsCircuitBreaker.cpp)
 
 include_directories(include)
 

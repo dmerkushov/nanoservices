@@ -37,12 +37,12 @@ using namespace std;
 using namespace nanoservices;
 
 namespace nanoservices {
-	extern mutex cout_lock;
+extern mutex cout_lock;
 
-	NsSerializer<NsRpcRequest> _requestSerializer;
-	NsSerializer<NsRpcResponseError> _errorSerializer;
-	NsSerializer<NsRpcResponse> _responseSerializer;
-	NsSerializer<NsVoidResult> _voidResultSerializer;
+NsSerializer<NsRpcRequest> _requestSerializer;
+NsSerializer<NsRpcResponseError> _errorSerializer;
+NsSerializer<NsRpcResponse> _responseSerializer;
+NsSerializer<NsVoidResult> _voidResultSerializer;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -60,11 +60,11 @@ shared_ptr<msgpack2::object_handle> packToObj(T &t) {
 }
 
 template<typename ResultType>
-std::shared_ptr<NsSerialized> prepareSerializedResponse(std::shared_ptr<ResultType> r, bool success) noexcept try {
+shared_ptr<NsSerialized> prepareSerializedResponse(shared_ptr<ResultType> r, bool success) noexcept try {
 	NsSerializer<ResultType> serializer;
 
-	std::shared_ptr<NsSerialized> resultSerialized = serializer.serialize(r);
-	std::shared_ptr<NsRpcResponse> response = std::make_shared<NsRpcResponse>();
+	shared_ptr<NsSerialized> resultSerialized = serializer.serialize(r);
+	shared_ptr<NsRpcResponse> response = make_shared<NsRpcResponse>();
 	response->setSuccess(success);
 	response->setResult(*resultSerialized);
 
@@ -75,15 +75,15 @@ std::shared_ptr<NsSerialized> prepareSerializedResponse(std::shared_ptr<ResultTy
 	ess << "prepareSerializedResponse(): caught an NsException: " << ex.what();
 	NsException ex1(NSE_POSITION, ess);
 
-	std::shared_ptr<NsRpcResponseError> err = std::make_shared<NsRpcResponseError>(-32001, "", ex1);
+	shared_ptr<NsRpcResponseError> err = make_shared<NsRpcResponseError>(-32001, "", ex1);
 	shared_ptr<NsSerialized> responseSerialized = prepareSerializedResponse<NsRpcResponseError>(err, false);
 	return responseSerialized;
-} catch (std::exception &ex) {
+} catch (exception &ex) {
 	stringstream ess;
-	ess << "prepareSerializedResponse(): caught an std::exception: " << ex.what();
+	ess << "prepareSerializedResponse(): caught an exception: " << ex.what();
 	NsException ex1(NSE_POSITION, ess);
 
-	std::shared_ptr<NsRpcResponseError> err = std::make_shared<NsRpcResponseError>(-32001, "", ex1);
+	shared_ptr<NsRpcResponseError> err = make_shared<NsRpcResponseError>(-32001, "", ex1);
 	shared_ptr<NsSerialized> responseSerialized = prepareSerializedResponse<NsRpcResponseError>(err, false);
 	return responseSerialized;
 } catch (...) {
@@ -91,7 +91,7 @@ std::shared_ptr<NsSerialized> prepareSerializedResponse(std::shared_ptr<ResultTy
 	ess << "prepareSerializedResponse(): unexpected failure";
 	NsException ex1(NSE_POSITION, ess);
 
-	std::shared_ptr<NsRpcResponseError> err = std::make_shared<NsRpcResponseError>(-32001, "", ex1);
+	shared_ptr<NsRpcResponseError> err = make_shared<NsRpcResponseError>(-32001, "", ex1);
 	shared_ptr<NsSerialized> responseSerialized = prepareSerializedResponse<NsRpcResponseError>(err, false);
 	return responseSerialized;
 }
@@ -102,8 +102,8 @@ std::shared_ptr<NsSerialized> prepareSerializedResponse(std::shared_ptr<ResultTy
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-std::shared_ptr<NsSerialized> nanoservices::processRpcRequest(std::shared_ptr<NsSerialized> rpcRequestSerialized,
-															  bool &waitForResponse) noexcept try {
+shared_ptr<NsSerialized> processRpcRequest(shared_ptr<NsSerialized> rpcRequestSerialized,
+										   bool &waitForResponse) noexcept try {
 
 	shared_ptr<NsRpcRequest> request;
 
@@ -119,13 +119,13 @@ std::shared_ptr<NsSerialized> nanoservices::processRpcRequest(std::shared_ptr<Ns
 		cout_lock.unlock();
 
 		return prepareSerializedResponse<NsRpcResponseError>(err, false);
-	} catch (std::exception &ex) {
+	} catch (exception &ex) {
 		shared_ptr<NsRpcResponseError> err = make_shared<NsRpcResponseError>(-32001,
-																			 "processRpcRequest(): std::exception when deserializing request: ",
+																			 "processRpcRequest(): exception when deserializing request: ",
 																			 ex);
 
 		cout_lock.lock();
-		cerr << "processRpcRequest(): std::exception when deserializing request: " << ex.what() << endl;
+		cerr << "processRpcRequest(): exception when deserializing request: " << ex.what() << endl;
 		cout_lock.unlock();
 
 		return prepareSerializedResponse<NsRpcResponseError>(err, false);
@@ -199,11 +199,11 @@ std::shared_ptr<NsSerialized> nanoservices::processRpcRequest(std::shared_ptr<Ns
 	//	cout_lock.lock ();
 	//	cout << "Server: Replier found for method: " << *methodName << " (thread-safe: " << threadSafe << ")" << endl;
 	//	//DEBUG
-	//	std::cout << std::dec << "Server: before deserializing args (size " << request->argsSerialized ().size << "):" << std::hex << std::setfill ('0');
+	//	cout << dec << "Server: before deserializing args (size " << request->argsSerialized ().size << "):" << hex << setfill ('0');
 	//	for (uint32_t i = 0; i < request->argsSerialized ().size; i++) {
-	//		std::cout << " " << (unsigned) ((request->argsSerialized ().ptr[i]) & 0xFF);
+	//		cout << " " << (unsigned) ((request->argsSerialized ().ptr[i]) & 0xFF);
 	//	}
-	//	std::cout << std::endl << std::dec;
+	//	cout << endl << dec;
 	//	cout_lock.unlock ();
 
 	shared_ptr<NsSerialized> resultSerialized;
@@ -220,14 +220,14 @@ std::shared_ptr<NsSerialized> nanoservices::processRpcRequest(std::shared_ptr<Ns
 		//		cout_lock.unlock ();
 
 		// DEBUG
-		//		std::cout << "processRpcRequest(): resultSerialized: " << std::endl << hexdump (resultSerialized->ptr, resultSerialized->size) << std::endl;
+		//		cout << "processRpcRequest(): resultSerialized: " << endl << hexdump (resultSerialized->ptr, resultSerialized->size) << endl;
 
 		response->setSuccess(true);
 	} catch (NsException &ex) {
 		int32_t code = -32000;
 		string message(ex.what());
 		shared_ptr<NsRpcResponseError> err = make_shared<NsRpcResponseError>(code, message);
-		auto causePair = std::pair<string, string>("cause", ex.shortDescription());
+		auto causePair = pair<string, string>("cause", ex.shortDescription());
 		err->optionalErrorParams().insert(causePair);
 
 		cout_lock.lock();
@@ -255,11 +255,11 @@ std::shared_ptr<NsSerialized> nanoservices::processRpcRequest(std::shared_ptr<Ns
 		}
 
 		response->setSuccess(false);
-	} catch (std::exception &ex) {
+	} catch (exception &ex) {
 		int32_t code = -32001;
 
 		stringstream mss;
-		mss << "std::exception when trying to reply: " << ex.what();
+		mss << "exception when trying to reply: " << ex.what();
 		string message = mss.str();
 		shared_ptr<NsRpcResponseError> err = make_shared<NsRpcResponseError>(code, message);
 
@@ -267,7 +267,7 @@ std::shared_ptr<NsSerialized> nanoservices::processRpcRequest(std::shared_ptr<Ns
 			errorSerialized = _errorSerializer.serialize(err);
 		} catch (NsException &ex1) {
 			cout_lock.lock();
-			cerr << "Could not serialize err object (replier std::exception error): " << err->errorCode() << ": "
+			cerr << "Could not serialize err object (replier exception error): " << err->errorCode() << ": "
 				 << err->errorDescription() << endl;
 			cerr << "Serializer error: " << ex1.what() << endl;
 			cout_lock.unlock();
@@ -275,7 +275,7 @@ std::shared_ptr<NsSerialized> nanoservices::processRpcRequest(std::shared_ptr<Ns
 			responsePayloadPrepared = false;
 		} catch (...) {
 			cout_lock.lock();
-			cerr << "Could not serialize err object (replier std::exception error): " << err->errorCode() << ": "
+			cerr << "Could not serialize err object (replier exception error): " << err->errorCode() << ": "
 				 << err->errorDescription() << endl;
 			cerr << "Serializer unexpected error" << endl;
 			cout_lock.unlock();
@@ -343,7 +343,7 @@ std::shared_ptr<NsSerialized> nanoservices::processRpcRequest(std::shared_ptr<Ns
 		shared_ptr<NsSerialized> responseSerialized = _responseSerializer.serialize(response);
 
 		// DEBUG
-		//		std::cout << "processRpcRequest(): responseSerialized: " << std::endl << hexdump (responseSerialized->ptr, responseSerialized->size) << std::endl;
+		//		cout << "processRpcRequest(): responseSerialized: " << endl << hexdump (responseSerialized->ptr, responseSerialized->size) << endl;
 
 		return responseSerialized;
 	}
@@ -351,9 +351,9 @@ std::shared_ptr<NsSerialized> nanoservices::processRpcRequest(std::shared_ptr<Ns
 	shared_ptr<NsRpcResponseError> err = make_shared<NsRpcResponseError>(-32000, "processRpcRequest(): NsException: ",
 																		 ex);
 	return prepareSerializedResponse<NsRpcResponseError>(err, false);
-} catch (std::exception &ex) {
+} catch (exception &ex) {
 	shared_ptr<NsRpcResponseError> err = make_shared<NsRpcResponseError>(-32001,
-																		 "processRpcRequest(): std::exception: ", ex);
+																		 "processRpcRequest(): exception: ", ex);
 	return prepareSerializedResponse<NsRpcResponseError>(err, false);
 } catch (...) {
 	shared_ptr<NsRpcResponseError> err = make_shared<NsRpcResponseError>(-32002,

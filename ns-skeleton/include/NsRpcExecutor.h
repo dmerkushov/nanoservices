@@ -33,8 +33,8 @@
 
 namespace nanoservices {
 
-	std::shared_ptr<NsSerialized>
-	processRpcRequest(std::shared_ptr<NsSerialized> rpcRequestSerialized, bool &waitForResponse) noexcept;
+std::shared_ptr<NsSerialized>
+processRpcRequest(std::shared_ptr<NsSerialized> rpcRequestSerialized, bool &waitForResponse) noexcept;
 }
 
 #endif /* NSRPCEXECUTOR_H */
