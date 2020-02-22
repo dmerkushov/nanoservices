@@ -117,12 +117,12 @@ bool NsSkelConfiguration::hasParameter(string paramName) {
 
 namespace nanoservices {
 
-	template<>
-	NsSkelJsonPtr NsSkelConfiguration::getParameter<NsSkelJsonPtr>(std::string paramName,
-																   NsSkelJsonPtr defaultVal) throw(nanoservices::NsException) {
-		if (!hasParameter(paramName)) {
-			return defaultVal;
-		}
-		return _configuration->find(paramName)->second;
+template<>
+NsSkelJsonPtr NsSkelConfiguration::getParameter<NsSkelJsonPtr>(const std::string &paramName,
+															   NsSkelJsonPtr defaultVal) throw(nanoservices::NsException) {
+	if (!hasParameter(paramName)) {
+		return defaultVal;
 	}
+	return _configuration->find(paramName)->second;
+}
 }
