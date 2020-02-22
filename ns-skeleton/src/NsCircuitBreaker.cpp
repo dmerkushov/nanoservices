@@ -5,6 +5,7 @@
 #include "NsCircuitBreaker.h"
 
 #include <chrono>
+#include <mutex>
 
 #include "NsSkelConfiguration.h"
 
@@ -15,18 +16,44 @@
 using namespace std;
 using namespace nanoservices;
 
-CircuitBreakerStatistics::CircuitBreakerStatistics(uint64_t window) :
-		_window(window) {
+mutex statsMutex;
+
+/**
+ * @brief Lock for the statistics data for exclusive use
+ */
+class StatsLock final {
+public:
+	StatsLock() {
+		statsMutex.lock();
+	}
+
+	~StatsLock() {
+		statsMutex.unlock();
+	}
+};
+
+CircuitBreakerStatistics::CircuitBreakerStatistics(uint64_t temporalWindow) throw(NsException) :
+		_temporalWindow(temporalWindow) {
+
+	if (temporalWindow == 0) {
+		stringstream ess;
+		ess << "supplied temporalWindow is 0: " << temporalWindow;
+		throw (NsException(NSE_POSITION, ess));
+	}
 }
 
 double CircuitBreakerStatistics::successfulShare() {
 	uint64_t currentTimestamp = NS_CURRENT_TIMESTAMP;
 
-	vector<CallResult>::iterator statsIt = _stats.begin();
+	uint64_t retainSince = currentTimestamp - _temporalWindow;
+
+	StatsLock lock;    // Locking the statistics data for exclusive use
+
+	auto statsIt = _stats.begin();
 	int successfulCount = 0;
-	int totalCount;
+	int totalCount = 0;
 	while (statsIt != _stats.end()) {
-		if (statsIt->timestamp < currentTimestamp - _window) {
+		if (statsIt->timestamp < retainSince) {
 			statsIt = _stats.erase(statsIt);
 			continue;
 		}
@@ -39,13 +66,8 @@ double CircuitBreakerStatistics::successfulShare() {
 		statsIt++;
 	}
 
-	if (totalCount == 0) {
-		if (NsSkelConfiguration::instance()->getParameter<bool>(
-				CONFIG_PARAMNAME_NSCIRCUITBREAKER_STATS_NODATAISGOOD
-		)) {
-			return 1.0;
-		}
-		return 0.0;
+	if (totalCount == 0) {    // No data in the temporal success table is good
+		return 1.0;
 	}
 
 	return 1.0 * successfulCount / totalCount;
@@ -56,5 +78,6 @@ void CircuitBreakerStatistics::registerCallResult(bool success) {
 	callResult.success = success;
 	callResult.timestamp = NS_CURRENT_TIMESTAMP;
 
+	StatsLock statsLock;
 	_stats.push_back(callResult);
 }
