@@ -15,7 +15,7 @@ A clear and concise description of what the problem is.
 
 **Description of the proposed solution**
 
-What is the proposed technical solution to the problem? If there are other possible solutions you've considered, why do you reject them?
+What is the proposed technical solution to the problem (if you have one)? If there are other possible solutions you've considered, why do you reject them?
 
 > A nanoservice project contains a CMakeLists file and the nanoservices runtime framework monitors the state of the project directory. As soon as the contents of the directory change, the runtime rebuilds the nanoservice by running pre-specified commands (for example, `rm -rf build/; mkdir build/; cd build/; cmake ..; make`) and loads the new version.*
 
