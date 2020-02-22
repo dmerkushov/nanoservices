@@ -21,9 +21,9 @@ What is the proposed technical solution to the problem (if you have one)? If the
 
 **Impact on nanoservice development**
 
-How will nanoservice development benefit from the proposed solution?
+How will nanoservice development benefit from the suggested feature?
 
-Will the proposed solution affect the process of nanoservice testing? Will it be a positive impact? If the impact is negative, how can it be addressed?
+Will the suggested feature affect the process of nanoservice testing? Will it be a positive impact? If the impact is negative, how can it be addressed?
 
 **Feature optionality**
 
