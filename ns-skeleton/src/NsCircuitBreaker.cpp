@@ -32,7 +32,7 @@
 using namespace std;
 using namespace nanoservices;
 
-mutex statsMutex;
+static mutex statsMutex;
 
 /**
  * @brief Lock for the statistics data for exclusive use
