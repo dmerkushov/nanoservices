@@ -568,7 +568,7 @@ namespace nanoservices {
 
 		if (p->type() != t) {
 			std::stringstream ess;
-			ess << "Requested target type is " << verboseNsSkelJsonType(NsSkelJsonValueType::JSON_OBJECT)
+			ess << "Requested target type is " << verboseNsSkelJsonType(t)
 				<< ", but the supplied pointer is of type " << verboseNsSkelJsonType(p->type());
 			throw (NsException(NSE_POSITION, ess));
 		}
