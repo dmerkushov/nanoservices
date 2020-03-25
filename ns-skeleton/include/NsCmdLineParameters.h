@@ -82,6 +82,8 @@ namespace nanoservices {
 
 		friend class NsSkeleton;
 	};
+	
+	extern std::vector <std::string> string_split(std::string str, char ch);
 };
 
 #endif//NSCMDLINEPARAMETERS_H

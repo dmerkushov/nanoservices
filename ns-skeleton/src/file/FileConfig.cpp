@@ -1,33 +1,17 @@
-#include "FileConfig.h"
 #include <sstream>
 #include <iostream>
 #include <fstream>
 #include <regex>
 
+#include "FileConfig.h"
+#include "NsCmdLineParameters.h"
+
 using namespace std;
 using namespace nanoservices;
 
-// TODO Remove when go to another project
-/**
- * Non standart split by delimeter for std::string
- * @param str -- string for splitting
- * @param ch -- delimeter character
- */
-std::vector<std::string> string_split(const std::string& str, char ch) {
-	stringstream ss(str);
-	string item;
-	std::vector<std::string> result;
-	
-	while(getline(ss, item, ch)) {
-		result.push_back(move(item));
-	}
-	
-	return result;
-}
-
 shared_ptr<AbstractConfig> AbstractConfig::_instance = nullptr;
 
-void AbstractConfig::init(const string& uri, shared_ptr<ConfigValidator> validator) {
+void AbstractConfig::init(const string& uri, shared_ptr<ConfigValidator> validator) throw(NsException) {
 	if(_instance) {
 		throw NsException(NSE_POSITION, "Already connected!");
 	}

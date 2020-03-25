@@ -36,22 +36,24 @@ std::shared_ptr <NsCmdLineParameters> NsCmdLineParameters::_instance;
 NsCmdLineParameters::NsCmdLineParameters(int argc, char **argv) : _argc(argc), _argv(argv) {
 }
 
-/**
- * Non standart split by delimeter for std::string
- * @param str -- string for splitting
- * @param ch -- delimeter character
- */
-std::vector <std::string> string_split(std::string str, char ch) {
-	stringstream ss(str);
-	string item;
-	std::vector <std::string> result;
+namespace nanoservices {
+	/**
+	* Non standart split by delimeter for std::string
+	* @param str -- string for splitting
+	* @param ch -- delimeter character
+	*/
+	std::vector <std::string> string_split(std::string str, char ch) {
+		stringstream ss(str);
+		string item;
+		std::vector <std::string> result;
 
-	while (getline(ss, item, ch)) {
-		result.push_back(move(item));
+		while (getline(ss, item, ch)) {
+			result.push_back(move(item));
+		}
+
+		return result;
 	}
-
-	return result;
-}
+};
 
 std::map<char, NsCmdLineParameters::opt> NsCmdLineParameters::getOptionDefinitions() {
 	std::map<char, opt> long_opt;
