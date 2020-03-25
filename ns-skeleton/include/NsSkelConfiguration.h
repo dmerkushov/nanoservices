@@ -71,6 +71,11 @@ namespace nanoservices {
 		bool hasParameter(std::string paramName);
 
 		/**
+		 * Get map with services configuration
+		 */
+		NsSkelJsonObjectPtr getServices();
+		
+		/**
 		 * Template method: set a default value for a configuration parameter, so we can later use getParameter() calls without explicitly setting the default value every time.
 		 *
 		 * The method has effect for a given parameter only on the first call and if no parameter with such a name is provided in the configuration.
@@ -164,6 +169,7 @@ namespace nanoservices {
 		std::shared_ptr<std::string> _serviceName;
 		std::shared_ptr<std::string> _configName;
 		NsSkelJsonObjectPtr _configuration;
+		NsSkelJsonObjectPtr _services;
 	};
 
 	template<>

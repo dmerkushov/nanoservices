@@ -144,7 +144,7 @@ void NsSkelRpcRegistry::prepareServicesMap() throw(NsException) {
 	}
 
 	try {
-		servicesJson = NsSkelConfiguration::instance()->getParameter<NsSkelJsonPtr>("known-services");
+		servicesJson = NsSkelConfiguration::instance()->getServices();
 	} catch (NsException &ex) {
 		stringstream ess;
 		ess << "getService(): NsException: " << ex.what();
@@ -153,16 +153,16 @@ void NsSkelRpcRegistry::prepareServicesMap() throw(NsException) {
 
 	if (!servicesJson) {
 		throw (NsException(NSE_POSITION, "getService(): known-services not found"));
-	} else if (servicesJson->type() != NsSkelJsonValueType::JSON_ARRAY) {
+	} else if (servicesJson->type() != NsSkelJsonValueType::JSON_OBJECT) {
 		stringstream ess;
-		ess << "getService(): known-services is not an array: " << verboseNsSkelJsonType(servicesJson->type());
+		ess << "getService(): known-services is not an object: " << verboseNsSkelJsonType(servicesJson->type());
 		throw (NsException(NSE_POSITION, ess));
 	}
 
-	NsSkelJsonArrayPtr serviceJsonArray = castNsSkelJsonPtr<NsSkelJsonArrayPtr>(servicesJson);
+	NsSkelJsonObjectPtr servicesJsonMap = castNsSkelJsonPtr<NsSkelJsonObjectPtr>(servicesJson);
 
-	for (auto it = serviceJsonArray->begin(); it != serviceJsonArray->end(); ++it) {
-		shared_ptr<NsSkelRpcService> service = make_shared<NsSkelRpcService>(*it);
+	for (auto it = servicesJsonMap->begin(); it != servicesJsonMap->end(); ++it) {
+		shared_ptr<NsSkelRpcService> service = make_shared<NsSkelRpcService>(make_shared<string>(it->first), it->second);
 		_services[*(service->serviceName())] = service;
 	}
 

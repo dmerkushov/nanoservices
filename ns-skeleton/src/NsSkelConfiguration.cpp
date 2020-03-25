@@ -30,8 +30,9 @@
 
 #include <cstring>
 
-#include "NsSkelJson.h"
 #include "NsException.h"
+#include "AbstractConfig.h"
+
 #include "NsSkelRpcRegistry.h"
 
 using namespace std;
@@ -48,50 +49,24 @@ void nsSkelConfig(const string &serviceName, const string &configName) throw(NsE
 	_instanceOfNsSkelConfiguration_doNotUseDirectly = shared_ptr<NsSkelConfiguration>(config);
 }
 
+
 NsSkelConfiguration::NsSkelConfiguration(const string &serviceName, const string &configName) throw(NsException) {
 	_serviceName = make_shared<string>(serviceName);
 	_configName = make_shared<string>(configName);
 
-	// Local service conf
-	stringstream configFilenameS;
-	configFilenameS << CONFIGPATH_SERVICES_BASE;
-	configFilenameS << configName;
-	configFilenameS << CONFIGPATH_EXTEN;
-	string configFilename = configFilenameS.str();
-	ifstream is(configFilename);
-	if (is.fail()) {
+	// URI came from CMake
+	AbstractConfig::init(URI);
+	
+	// HEAD came from CMake
+	_services = static_pointer_cast<NsSkelJsonObject, NsSkelJsonValueBase>(AbstractConfig::instance()->read(HEAD));
+	
+	if(_services->find(configName) == _services->end()) {
 		stringstream ess;
-		ess << "Couldn't open configuration for service " << serviceName << " (file " << configFilename << "): "
-			<< strerror(errno);
+		ess << "No config for service " << configName;
 		throw NsException(NSE_POSITION, ess);
 	}
-	NsSkelJsonParser parser;
-	_configuration = parser.typedParse<NsSkelJsonObjectPtr>(is);
-
-	// DEBUG
-	//	cout << "NsSkelConfiguration: local configuration (file " << configFilename << ") before adding: " << _configuration->serialize () << endl;
-
-	// Global conf
-	stringstream globalConfigFilenameS;
-	globalConfigFilenameS << CONFIGPATH_GLOBAL << CONFIGPATH_EXTEN;
-	string globalConfigFilename = globalConfigFilenameS.str();
-	ifstream gis(globalConfigFilename);
-	if (gis.fail()) {
-		stringstream ess;
-		ess << "Couldn't open global configuration (file " << globalConfigFilename << "): " << strerror(errno);
-		throw NsException(NSE_POSITION, ess);
-	}
-	//	NsSkelJsonPtr gconfP = parser.parse (gis);
-	NsSkelJsonObjectPtr gconf = parser.typedParse<NsSkelJsonObjectPtr>(gis);
-
-	// DEBUG
-	//	cout << "NsSkelConfiguration: global configuration (file " << globalConfigFilename << ") before adding: " << gconf->serialize () << endl;
-
-	// Add the global conf to the local one, excluding repeated members
-	_configuration->add(*gconf);
-
-	// DEBUG
-	//	cout << "NsSkelConfiguration: local configuration (file " << globalConfigFilename << ") after adding: " << _configuration->serialize () << endl;
+	
+	_configuration = static_pointer_cast<NsSkelJsonObject, NsSkelJsonValueBase>(_services->at(configName));
 }
 
 shared_ptr<NsSkelConfiguration> NsSkelConfiguration::instance() throw(NsException) {
@@ -115,11 +90,15 @@ bool NsSkelConfiguration::hasParameter(string paramName) {
 	return (_configuration->find(paramName) != _configuration->end());
 }
 
+NsSkelJsonObjectPtr NsSkelConfiguration::getServices() {
+	return _services;
+}
+
 namespace nanoservices {
 
 	template<>
 	NsSkelJsonPtr NsSkelConfiguration::getParameter<NsSkelJsonPtr>(std::string paramName,
-																   NsSkelJsonPtr defaultVal) throw(nanoservices::NsException) {
+		NsSkelJsonPtr defaultVal) throw(nanoservices::NsException) {
 		if (!hasParameter(paramName)) {
 			return defaultVal;
 		}

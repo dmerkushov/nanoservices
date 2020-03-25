@@ -9,6 +9,10 @@ else ()
 	message("Preparing a standalone ns-skeleton build")
 endif ()
 
+option(ZOO "make with zoo config" ON)
+include(CMakeDependentOption)
+cmake_dependent_option(FILE "make with file config" OFF "ZOO" ON)
+
 set(Sources
 		src/NsException.cpp
 		src/NsMonitoring.cpp
@@ -27,7 +31,22 @@ set(Sources
 		src/NsSkelRpcServer.cpp
 		src/NsSkelRpcService.cpp
 		src/NsSkelUtils.cpp
+		src/ConfigValidator.cpp
+		src/CVInvalidType.cpp
+		src/CVNoNodeData.cpp
+		src/CVTooManyChildren.cpp
+		src/CVTooLongData.cpp
 		src/NsCmdLineParameters.cpp)
+
+if(FILE)
+	set(Sources ${Sources}
+		src/file/FileConfig.cpp)
+elseif(ZOO)
+	set(Sources ${Sources}
+		src/zoo/ZooConfig.cpp)
+else()
+	message(FATAL_ERROR "You cmake it wrong!!")
+endif(FILE)
 
 message("Sources: ${Sources}")
 
@@ -63,14 +82,49 @@ set(Headers
 		include/NsSkelRpcService.h
 		include/NsSkelStartException.h
 		include/NsSkelUtils.h
+		include/ConfigValidator.h
+		include/CVInvalidType.h
+		include/CVNoNodeData.h
+		include/CVTooManyChildren.h
+		include/CVTooLongData.h
 		include/NsCmdLineParameters.h)
 
+if(FILE)
+	set(Headers ${Headers}
+		include/file/FileConfig.h)
+elseif(ZOO)
+	set(Headers ${Headers}
+		include/zoo/ZooConfig.h)
+else()
+	message(FATAL_ERROR "You cmake it wrong!!")
+endif(FILE)
+
 include_directories(include)
+
+if(FILE)
+	include_directories(include/file)
+elseif(ZOO)
+	include_directories(include/zoo)
+	include_directories(/usr/include/zookeeper)
+	set(CONFIG_LIBS zookeeper_mt)
+else()
+	message(FATAL_ERROR "You cmake it wrong!!")
+endif(FILE)
+
+if(FILE)
+	add_definitions(-DURI="file:///etc/nanoservices/global.conf.json")
+	add_definitions(-DHEAD="/")	
+elseif(ZOO)
+	add_definitions(-DURI="zoo://127.0.0.1:2181")
+	add_definitions(-DHEAD="")
+else()
+	message(FATAL_ERROR "You cmake it wrong!!")
+endif(FILE)
 
 add_library(ns-skeleton SHARED ${Sources} ${Headers})
 
 find_package(Threads)
-target_link_libraries(ns-skeleton ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(ns-skeleton ${CMAKE_THREAD_LIBS_INIT} ${CONFIG_LIBS})
 
 # Documentation generation: make docs
 find_package(Doxygen)
