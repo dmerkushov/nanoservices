@@ -70,7 +70,7 @@ NsSkelRpcServer::NsSkelRpcServer() :
 		_shutdownReceived(false) {
 	_port = NsSkelRpcRegistry::instance()->getLocalService()->port();
 	if (NsCmdLineParameters::instance()->isParam("port")) {
-		string port_s = NsCmdLineParameters::instance()->paramValue("port")[0];
+		string port_s = NsCmdLineParameters::instance()->paramValue("port");
 		_port = stoi(port_s);
 	}
 }

@@ -54,10 +54,10 @@ NsSkelConfiguration::NsSkelConfiguration(const string &serviceName, const string
 	_serviceName = make_shared<string>(serviceName);
 	_configName = make_shared<string>(configName);
 
-	// URI came from CMake
+	// URI come from CMake
 	AbstractConfig::init(URI);
 	
-	// HEAD came from CMake
+	// HEAD come from CMake
 	_services = static_pointer_cast<NsSkelJsonObject, NsSkelJsonValueBase>(AbstractConfig::instance()->read(HEAD));
 	
 	if(_services->find(configName) == _services->end()) {

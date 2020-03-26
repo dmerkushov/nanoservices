@@ -47,9 +47,14 @@ void NsSkeleton::init(const std::string &serviceName, int argc, char **argv) thr
 	string configNameResult = serviceName;
 
 	nsSkelConfig(serviceName, configNameResult);
-
-	NsCmdLineParameters::_instance = shared_ptr<NsCmdLineParameters>(new NsCmdLineParameters(argc, argv));
-	NsCmdLineParameters::_instance->parse();
+	
+	NsSkelJsonPtr paramKeys = nullptr;
+	if (NsSkelConfiguration::instance()->hasParameter("param-keys")) {
+		paramKeys = NsSkelConfiguration::instance()->getParameter<NsSkelJsonPtr>("param-keys");
+	}
+	auto optionsDef = getOptionDefinitions(paramKeys);
+	
+	NsCmdLineParameters::init(optionsDef, argc, argv);
 
 	shared_ptr<NsSkelRpcServer> server = make_shared<NsSkelRpcServer>();
 	NsSkelRpcRegistry::instance()->registerServer(server);
@@ -148,7 +153,7 @@ void NsSkeleton::unregisterReplier(std::shared_ptr<std::string> methodName) thro
 std::shared_ptr<std::string> NsSkeleton::serviceName() throw(NsException) try {
 	shared_ptr<string> returned = NsSkelConfiguration::instance()->getServiceName();
 	if (NsCmdLineParameters::instance()->isParam("name")) {
-		returned = make_shared<string>(NsCmdLineParameters::instance()->paramValue("name")[0]);
+		returned = make_shared<string>(NsCmdLineParameters::instance()->paramValue("name"));
 	}
 	return returned;
 } catch (NsException &ex) {
