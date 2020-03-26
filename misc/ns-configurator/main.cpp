@@ -17,7 +17,7 @@ int main(int argc, char** argv) {
 		{'\0', {0,0,0,0}}
 	};
 	NsCmdLineParameters::init(prms, argc, argv);
-	AbstractConfig::init(URL);
+	AbstractConfig::init(URI);
 	if(NsCmdLineParameters::instance()->isParam("create")) {
 		string path = NsCmdLineParameters::instance()->paramValue("path");
 		string json = NsCmdLineParameters::instance()->paramValue("data");
