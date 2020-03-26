@@ -9,6 +9,10 @@
 using namespace std;
 using namespace nanoservices;
 
+const string ConfigValidator::dataFieldName = "__data__";
+const string ConfigValidator::descFieldName = "__description__";
+
+
 // TODO: Move field count and field names to public static constants
 void ConfigValidator::validate(const string& path, nanoservices::NsSkelJsonPtr data) {
 	if(!data) {
@@ -24,10 +28,10 @@ void ConfigValidator::validateObject(const std::string& path, const std::string&
 	switch(data->type()) {
 	case JSON_OBJECT: {
 		auto obj = fromNsSkelJsonPtr<NsSkelJsonObject>(data);
-		if(obj.size() > 1024) {
+		if(obj.size() > childrenCount) {
 			throw CVTooManyChildren(string() + "Too many children at \"" + path + "\".");
 		}
-		if(!(obj.find("__description__") != obj.end())) {
+		if(!(obj.find(descFieldName) != obj.end())) {
 			// TODO: use logger(?!)
 			cerr << "[WARNING] Node " << path << " hasn't description!" << endl;
 		}
@@ -38,18 +42,23 @@ void ConfigValidator::validateObject(const std::string& path, const std::string&
 	}
 	case JSON_STRING: {
 		auto str = fromNsSkelJsonPtr<string>(data);
-		if(!(name == "__data__" || name == "__description__")) {
-			throw CVNoNodeData(string() + "No data for \"" + path + "\".");
-		}
-		if(str.size() > 1024*1024) {
+		if(str.size() > maxDataSize) {
 			throw CVTooLongData(string() + "Too long data as \"" + path + "\".");
 		}
-		break;
+		// Descriptions string only
+		if(name == descFieldName) {
+			break;
+		}
 	}
+	case JSON_NUMBER:
+	case JSON_BOOLEAN:
 	case JSON_NULL:
+		if(name != dataFieldName) {
+			throw CVNoNodeData(string() + "No data for \"" + path + "\".");
+		}
 		break;
 	default:
-		throw CVInvalidType("Support only string and objects!");
+		throw CVInvalidType("Json type " + verboseNsSkelJsonType(data->type()) + " not supported!");
 		break;
 	}
 }

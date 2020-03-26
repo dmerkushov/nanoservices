@@ -9,10 +9,6 @@ else ()
 	message("Preparing a standalone ns-skeleton build")
 endif ()
 
-option(ZOO "make with zoo config" ON)
-include(CMakeDependentOption)
-cmake_dependent_option(FILE "make with file config" OFF "ZOO" ON)
-
 set(Sources
 		src/NsException.cpp
 		src/NsMonitoring.cpp
@@ -115,8 +111,11 @@ if(FILE)
 	add_definitions(-DURI="file:///etc/nanoservices/global.conf.json")
 	add_definitions(-DHEAD="/")	
 elseif(ZOO)
+	# Connection string to zookeeper instance
 	add_definitions(-DURI="zoo://127.0.0.1:2181")
 	add_definitions(-DHEAD="")
+	# Prefix for root config node in zookeeper
+	add_definitions(-DPREFIX="/ru/cniiag/webmaps")
 else()
 	message(FATAL_ERROR "You cmake it wrong!!")
 endif(FILE)

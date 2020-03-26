@@ -53,6 +53,9 @@ void FileConfig::init(const std::string& configPath) {
 void FileConfig::create(const std::string& path, nanoservices::NsSkelJsonPtr data) {
 	_validator->validate(path, data);
 	NsSkelJsonPtr conf = read("/"), nodeobj = conf;
+	if(path[0] != '/') {
+		throw NsException(NSE_POSITION, "Path must start from \'/\'!");
+	}
 	auto vnodes = string_split(path.substr(1), '/');
 	string last_node = vnodes.back();
 	vnodes.pop_back();
@@ -79,6 +82,9 @@ void FileConfig::create(const std::string& path, nanoservices::NsSkelJsonPtr dat
 }
 
 NsSkelJsonPtr FileConfig::read(const std::string& path) {
+	if(path[0] != '/') {
+		throw NsException(NSE_POSITION, "Path must start from \'/\'!");
+	}
 	ifstream dataf (_configPath);
 	NsSkelJsonParser parser;
 	NsSkelJsonObjectPtr dataj = parser.typedParse<NsSkelJsonObjectPtr> (dataf);
@@ -100,6 +106,9 @@ NsSkelJsonPtr FileConfig::read(const std::string& path) {
 
 void FileConfig::update(const std::string& path, nanoservices::NsSkelJsonPtr data) {
 	_validator->validate(path, data);
+	if(path[0] != '/') {
+		throw NsException(NSE_POSITION, "Path must start from \'/\'!");
+	}
 	
 }
 

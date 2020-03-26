@@ -36,10 +36,18 @@ namespace nanoservices {
 		void updateDict(const std::string& path, nanoservices::NsSkelJsonPtr data);
 		std::vector<std::string> getChildren(const std::string& path);
 		void delAll(const std::string& path);
-
-		std::string _prefixpath[3] = {"/ru", "/ru/cniiag", "/ru/cniiag/webmaps"};
+		
+		// PREFIX come from CMake
+		std::string _prefix = PREFIX;
+		std::vector<std::string> _prefixpath;
+		void checkAndCreatePrefixPath();
+		
+		std::vector<char> typedByte = {'\0', '\0', '\0', 's', 'd', 'b'};
+		NsSkelJsonPtr jsonTypeFromData(const std::string& path, const std::string& data);
+		
 		zhandle_t* _zooconnection;
 		std::shared_ptr<ConfigValidator> _validator;
+		static const char delimeter = '/';
 
 		friend class AbstractConfig;
 	};

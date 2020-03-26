@@ -4,7 +4,10 @@
 #include <future>
 #include <regex>
 
+#include <iostream>
+
 #include "ZooConfig.h"
+#include "NsCmdLineParameters.h"
 
 using namespace std;
 using namespace nanoservices;
@@ -56,10 +59,12 @@ void ZooConfig::init(const string& host, int port) throw(NsException) {
 	};
 	string url = host;
 	url += ":" + to_string(port);
+	// TODO: Use logger ??
 	auto log_fp_ = fopen("/dev/null", "w");
 	zoo_set_log_stream(log_fp_);
 	zoo_set_debug_level(ZOO_LOG_LEVEL_DEBUG);
 	promise<int> connect_wait;
+	// TODO: move to constant
 	int timeoutms = 3000;
 	zhandle_t* zh = zookeeper_init(url.c_str(), [](zhandle_t *zh, int type, int state, const char *path, void *watcherCtx) {
 		if(watcherCtx) {
@@ -75,12 +80,12 @@ void ZooConfig::init(const string& host, int port) throw(NsException) {
 		throw NsException(NSE_POSITION, strerror(errno));
 	}
 	ZHCloser c(zh);
-	auto f = connect_wait.get_future();
+	auto future_conn = connect_wait.get_future();
 	thread([&](){
 		this_thread::sleep_for(std::chrono::milliseconds(timeoutms));
-		connect_wait.set_exception(make_exception_ptr(NsException(NSE_POSITION, "Coudn't connect!")));
+		connect_wait.set_exception(make_exception_ptr(NsException(NSE_POSITION, "Coudn't connect to zookeeper!")));
 	}).detach();
-	int state = f.get();
+	int state = future_conn.get();
 	if(state == ZOO_CONNECTED_STATE) {
 		this->_zooconnection = zh;
 		c._zh = 0;
@@ -90,22 +95,25 @@ void ZooConfig::init(const string& host, int port) throw(NsException) {
 		zoo_set_watcher(zh, 0);
 
 	} else {
-		throw NsException(NSE_POSITION, "Coudn't connect!");
+		throw NsException(NSE_POSITION, "Coudn't connect to zookeeper!");
 	}
 }
 
 void ZooConfig::create(const std::string& path, nanoservices::NsSkelJsonPtr data) {
 	_validator->validate(path, data);
-	int res = zoo_exists(_zooconnection, _prefixpath[2].c_str(), 0, 0);
-	if(res == ZNONODE) {
-		for(auto p: _prefixpath) {
-			int res = zoo_exists(_zooconnection, p.c_str(), 0, 0);
-			if(res == ZNONODE) {
-				res = zoo_create(_zooconnection, p.c_str(), 0, 0, &ZOO_OPEN_ACL_UNSAFE, 0, 0, 0);
-			}
+	checkAndCreatePrefixPath();
+	createDict(_prefix + path, "", "", data);
+}
+
+void ZooConfig::checkAndCreatePrefixPath() {
+	string path = "";
+	for(auto p: _prefixpath) {
+		path += delimeter + p;
+		int res = zoo_exists(_zooconnection, path.c_str(), 0, 0);
+		if(res == ZNONODE) {
+			res = zoo_create(_zooconnection, path.c_str(), 0, 0, &ZOO_OPEN_ACL_UNSAFE, 0, 0, 0);
 		}
 	}
-	createDict(_prefixpath[2] + path, "", "", data);
 }
 
 void ZooConfig::createDict(const std::string& path, const std::string& parent_path, const std::string name, nanoservices::NsSkelJsonPtr data) {
@@ -114,17 +122,19 @@ void ZooConfig::createDict(const std::string& path, const std::string& parent_pa
 		auto obj = fromNsSkelJsonPtr<NsSkelJsonObject>(data);
 		createSimpleNode(path);
 		for(auto it: obj) {
-			createDict(path + "/" + it.first, path, it.first, it.second);
+			createDict(path + delimeter + it.first, path, it.first, it.second);
 		}
 		break;
 	}
-	case JSON_STRING: {
-		auto str = fromNsSkelJsonPtr<string>(data);
-		if(name == "__data__") {
-			setNodeData(parent_path, str);
+	case JSON_STRING: 
+	case JSON_NUMBER:
+	case JSON_BOOLEAN: {
+		auto str = data->serialize();
+		if(name == ConfigValidator::dataFieldName) {
+			setNodeData(parent_path, typedByte[data->type()] + str);
 		}
-		if(name == "__description__") {
-			createSimpleNode(path, str);
+		if(name == ConfigValidator::descFieldName) {
+			createSimpleNode(path, typedByte[JSON_STRING] + str);
 		}
 		break;
 	}
@@ -145,12 +155,12 @@ void ZooConfig::createSimpleNode(const string& path, const string& data) {
 }
 
 NsSkelJsonPtr ZooConfig::read(const string& path) {
-	return readDict(_prefixpath[2] + path);
+	return readDict(_prefix + path);
 }
 
 vector<string> ZooConfig::getChildren(const string& path) {
-	promise<vector<string>> chp;
-	auto f1 = chp.get_future();
+	promise<vector<string>> child_v_p;
+	auto child_v_f = child_v_p.get_future();
 	int res = zoo_aget_children(_zooconnection, path.c_str(), 0, [](int rc, const struct String_vector *strings, const void *data){
 		auto pptr = (promise<vector<string>>*)data;
 		if(rc != ZOK) {
@@ -164,18 +174,34 @@ vector<string> ZooConfig::getChildren(const string& path) {
 			}
 		}
 		pptr->set_value(move(ch));
-	}, &chp);
+	}, &child_v_p);
 	if(res != ZOK) {
 		throw NsException(NSE_POSITION, zerror(res));
 	}
-	auto children = f1.get();
-	return children;
+	return child_v_f.get();
+}
+
+NsSkelJsonPtr ZooConfig::jsonTypeFromData(const string& path, const string& data) {
+	char type = data[0];
+	switch(type) {
+	case 's':
+	case 'd':
+	case 'b':
+		break;
+	default:
+		stringstream ess;
+		ess <<  "Data at \"" << path << "\" corrupted or used unknown type specifier!";
+		throw NsException(NSE_POSITION, ess);
+	}
+	string to_parse = data.substr(1);
+	NsSkelJsonParser parser;
+	return parser.parse(to_parse);
 }
 
 NsSkelJsonPtr ZooConfig::readDict(const string& path) {
 	auto children = getChildren(path);
-	promise<string> datap;
-	auto f2 = datap.get_future();
+	promise<string> data_p;
+	auto data_f = data_p.get_future();
 	int res = zoo_aget(_zooconnection, path.c_str(), 0, [](int rc, const char *value, int value_len, const struct Stat *stat, const void *data){
 		auto pptr = (promise<string>*)data;
 		if(rc != ZOK) {
@@ -183,24 +209,24 @@ NsSkelJsonPtr ZooConfig::readDict(const string& path) {
 			return;
 		}
 		pptr->set_value(move(string(value, value_len)));
-	}, &datap);
+	}, &data_p);
 	if(res != ZOK) {
 		throw NsException(NSE_POSITION, zerror(res));
 	}
-	auto data = f2.get();
+	auto data = data_f.get();
 	NsSkelJsonPtr result = NsSkelJsonPtr (new NsSkelJsonNull());
 	if(children.size() > 0) {
 		map<std::string, NsSkelJsonPtr> map;
 		if(data.size() > 0) {
-			map["__data__"] = NsSkelJsonPtr (new NsSkelJsonString(data));
+			map[ConfigValidator::dataFieldName] = jsonTypeFromData(path, data);
 		}
 		for(auto child: children) {
-			map[child] = readDict(path+"/"+child);
+			map[child] = readDict(path+delimeter+child);
 		}
 		result = NsSkelJsonPtr (new NsSkelJsonObject(map));
 	} else {
 		if(data.size() > 0) {
-			result = NsSkelJsonPtr (new NsSkelJsonString(data));
+			result = jsonTypeFromData(path, data);
 		}
 	}
 	return result;
@@ -208,7 +234,7 @@ NsSkelJsonPtr ZooConfig::readDict(const string& path) {
 
 void ZooConfig::update(const std::string& path, nanoservices::NsSkelJsonPtr data) {
 	_validator->validate(path, data);
-	updateDict(_prefixpath[2] + path, data);
+	updateDict(_prefix + path, data);
 }
 
 void ZooConfig::updateDict(const std::string& path, nanoservices::NsSkelJsonPtr data) {
@@ -216,24 +242,26 @@ void ZooConfig::updateDict(const std::string& path, nanoservices::NsSkelJsonPtr 
 	case JSON_OBJECT: {
 		auto obj = fromNsSkelJsonPtr<NsSkelJsonObject>(data);
 		for(auto it: obj) {
-			if(it.first != "__data__") {
-				updateDict(path + "/" + it.first, it.second);
+			if(it.first != ConfigValidator::dataFieldName) {
+				updateDict(path + delimeter + it.first, it.second);
 			} else {
-				auto str = fromNsSkelJsonPtr<string>(it.second);
-				setNodeData(path, str);
+				auto str = it.second->serialize();
+				setNodeData(path, typedByte[it.second->type()] + str);
 			}
 		}
 		break;
 	}
-	case JSON_STRING: {
-		auto str = fromNsSkelJsonPtr<string>(data);
-		setNodeData(path, str);
+	case JSON_NULL:
+	case JSON_STRING: 
+	case JSON_NUMBER:
+	case JSON_BOOLEAN: {
+		auto str = data->serialize();
+		setNodeData(path, typedByte[data->type()] + str);
 		break;
 	}
 	default:
 		break;
 	}
-
 }
 
 void ZooConfig::setNodeData(const std::string& path, const std::string& data) {
@@ -244,13 +272,13 @@ void ZooConfig::setNodeData(const std::string& path, const std::string& data) {
 }
 
 void ZooConfig::del(const std::string& path) {
-	delAll(_prefixpath[2] + path);
+	delAll(_prefix + path);
 }
 
 void ZooConfig::delAll(const std::string& path) {
 	auto children = getChildren(path);
 	for(auto child: children) {
-		delAll(path + "/" + child);
+		delAll(path + delimeter + child);
 	}
 	int res = zoo_delete(_zooconnection, path.c_str(), -1);
 	if(res != ZOK) {
@@ -259,6 +287,7 @@ void ZooConfig::delAll(const std::string& path) {
 }
 
 ZooConfig::ZooConfig(std::shared_ptr<ConfigValidator> validator):_zooconnection(0), _validator(validator) {
+	_prefixpath = string_split(_prefix, delimeter);
 }
 
 ZooConfig::~ZooConfig() {
