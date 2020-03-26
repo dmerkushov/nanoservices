@@ -1,3 +1,6 @@
+cmake_minimum_required(VERSION 3.0)
+project(ns_configurator)
+
 set(Sources 
 		main.cpp
 		${ns_skeleton_SOURCE_DIR}/src/NsException.cpp
@@ -52,3 +55,4 @@ target_link_libraries(ns-configurator ${CMAKE_THREAD_LIBS_INIT} ${CONFIG_LIBS})
 install(TARGETS ns-configurator
         RUNTIME DESTINATION bin/nanoservices
         COMPONENT misc)
+
