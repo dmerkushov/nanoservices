@@ -22,7 +22,7 @@ set(Headers
 		testBase64.h
 		testExceptionThrowThrough.h)
 
-include_directories(../ns-skeleton/include)
+include_directories(${ns_skeleton_SOURCE_DIR}/include)
 
 add_executable(ns-tests ${Sources} ${Headers})
 

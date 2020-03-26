@@ -1,30 +1,30 @@
 set(Sources 
 		main.cpp
-		../ns-skeleton/src/NsException.cpp
-		../ns-skeleton/src/NsSkelJson.cpp
-		../ns-skeleton/src/ConfigValidator.cpp
-		../ns-skeleton/src/CVInvalidType.cpp
-		../ns-skeleton/src/CVNoNodeData.cpp
-		../ns-skeleton/src/CVTooManyChildren.cpp
-		../ns-skeleton/src/CVTooLongData.cpp
-		../ns-skeleton/src/NsCmdLineParameters.cpp)
+		${ns_skeleton_SOURCE_DIR}/src/NsException.cpp
+		${ns_skeleton_SOURCE_DIR}/src/NsSkelJson.cpp
+		${ns_skeleton_SOURCE_DIR}/src/ConfigValidator.cpp
+		${ns_skeleton_SOURCE_DIR}/src/CVInvalidType.cpp
+		${ns_skeleton_SOURCE_DIR}/src/CVNoNodeData.cpp
+		${ns_skeleton_SOURCE_DIR}/src/CVTooManyChildren.cpp
+		${ns_skeleton_SOURCE_DIR}/src/CVTooLongData.cpp
+		${ns_skeleton_SOURCE_DIR}/src/NsCmdLineParameters.cpp)
 
 if(FILE)
 	set(Sources ${Sources}
-		../ns-skeleton/src/file/FileConfig.cpp)
+		${ns_skeleton_SOURCE_DIR}/src/file/FileConfig.cpp)
 elseif(ZOO)
 	set(Sources ${Sources}
-		../ns-skeleton/src/zoo/ZooConfig.cpp)
+		${ns_skeleton_SOURCE_DIR}/src/zoo/ZooConfig.cpp)
 else()
 	message(FATAL_ERROR "You cmake it wrong!!")
 endif(FILE)
 
-include_directories(../ns-skeleton/include)
+include_directories(${ns_skeleton_SOURCE_DIR}/include)
 
 if(FILE)
-	include_directories(../ns-skeleton/include/file)
+	include_directories(${ns_skeleton_SOURCE_DIR}/include/file)
 elseif(ZOO)
-	include_directories(../ns-skeleton/include/zoo)
+	include_directories(${ns_skeleton_SOURCE_DIR}/include/zoo)
 	include_directories(/usr/include/zookeeper)
 	set(CONFIG_LIBS zookeeper_mt)
 else()
