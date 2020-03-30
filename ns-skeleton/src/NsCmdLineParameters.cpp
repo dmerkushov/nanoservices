@@ -22,11 +22,8 @@
  * Created on Dec 9, 2019, 1:03 PM
  */
  
-#include <unistd.h>
-#include <regex>
-#include <iostream>
-
 #include "NsCmdLineParameters.h"
+#include "NsUtils.h"
 
 using namespace std;
 using namespace nanoservices;
@@ -41,31 +38,20 @@ NsCmdLineParameters::NsCmdLineParameters(std::map<char, NsCmdLineParameters::opt
 	parse(param_defs);
 }
 
-namespace nanoservices {
-	/**
-	* Non standart split by delimeter for std::string
-	* @param str -- string for splitting
-	* @param ch -- delimeter character
-	*/
-	std::vector <std::string> string_split(std::string str, char ch) {
-		stringstream ss(str);
-		string item;
-		std::vector <std::string> result;
-
-		while (getline(ss, item, ch)) {
-			result.push_back(move(item));
-		}
-
-		return result;
-	}
-	
+namespace nanoservices {	
 	std::map<char, struct option> getOptionDefinitions(NsSkelJsonPtr paramsKeys) {
 		std::map<char, struct option> long_opt;
 
 		if(paramsKeys) {
-			auto params = castNsSkelJsonPtr<NsSkelJsonArrayPtr>(paramsKeys);
+			auto params = castNsSkelJsonPtr<NsSkelJsonObjectPtr>(paramsKeys);
 			for (auto it = params->begin(); it != params->end(); ++it) {
-				auto param = castNsSkelJsonPtr<NsSkelJsonObjectPtr>(*it);
+				if (it->first == string("name")) {
+					throw NsException(NSE_POSITION, "Parameter option 'name' is reserved!");
+				}
+				if (it->first == string("port")) {
+					throw NsException(NSE_POSITION, "Parameter option 'port' is reserved!");
+				}
+				auto param = castNsSkelJsonPtr<NsSkelJsonObjectPtr>(it->second);
 				if (param->count("key") == 0) {
 					throw NsException(NSE_POSITION, "Parameter options not contains 'key'!");
 				}
@@ -74,15 +60,6 @@ namespace nanoservices {
 				}
 				if (fromNsSkelJsonPtr<string>(param->at("key")) == string("p")) {
 					throw NsException(NSE_POSITION, "Parameter option 'key' = 'p' is reserved!");
-				}
-				if (param->count("long-key") == 0) {
-					throw NsException(NSE_POSITION, "Parameter options not contains 'long-key'!");
-				}
-				if (fromNsSkelJsonPtr<string>(param->at("long-key")) == string("name")) {
-					throw NsException(NSE_POSITION, "Parameter option 'long-key' = 'name' is reserved!");
-				}
-				if (fromNsSkelJsonPtr<string>(param->at("long-key")) == string("port")) {
-					throw NsException(NSE_POSITION, "Parameter option 'long-key' = 'port' is reserved!");
 				}
 				if (param->count("isRequired") == 0) {
 					throw NsException(NSE_POSITION, "Parameter options not contains 'isRequired'!");
@@ -94,7 +71,7 @@ namespace nanoservices {
 					throw NsException(NSE_POSITION, "Parameter option 'key' have size more 1 character!!");
 				}
 
-				string longKey_s = fromNsSkelJsonPtr<string>(param->at("long-key"));
+				string longKey_s = it->first;
 				bool argsReq = fromNsSkelJsonPtr<bool>(param->at("isRequired"));
 				char shortKey = key[0];
 				char *longKey = new char[longKey_s.size() + 1];

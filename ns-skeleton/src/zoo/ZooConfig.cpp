@@ -7,7 +7,7 @@
 #include <iostream>
 
 #include "ZooConfig.h"
-#include "NsCmdLineParameters.h"
+#include "NsUtils.h"
 
 using namespace std;
 using namespace nanoservices;

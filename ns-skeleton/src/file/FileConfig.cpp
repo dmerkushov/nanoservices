@@ -4,7 +4,7 @@
 #include <regex>
 
 #include "FileConfig.h"
-#include "NsCmdLineParameters.h"
+#include "NsUtils.h"
 
 using namespace std;
 using namespace nanoservices;

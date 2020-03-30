@@ -5,6 +5,7 @@ set(Sources
 		main.cpp
 		${ns_skeleton_SOURCE_DIR}/src/NsException.cpp
 		${ns_skeleton_SOURCE_DIR}/src/NsSkelJson.cpp
+		${ns_skeleton_SOURCE_DIR}/src/NsUtils.cpp
 		${ns_skeleton_SOURCE_DIR}/src/ConfigValidator.cpp
 		${ns_skeleton_SOURCE_DIR}/src/CVInvalidType.cpp
 		${ns_skeleton_SOURCE_DIR}/src/CVNoNodeData.cpp

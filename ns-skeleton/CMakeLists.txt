@@ -27,6 +27,7 @@ set(Sources
 		src/NsSkelRpcServer.cpp
 		src/NsSkelRpcService.cpp
 		src/NsSkelUtils.cpp
+		src/NsUtils.cpp
 		src/ConfigValidator.cpp
 		src/CVInvalidType.cpp
 		src/CVNoNodeData.cpp
@@ -78,6 +79,7 @@ set(Headers
 		include/NsSkelRpcService.h
 		include/NsSkelStartException.h
 		include/NsSkelUtils.h
+		include/NsUtils.h
 		include/ConfigValidator.h
 		include/CVInvalidType.h
 		include/CVNoNodeData.h
