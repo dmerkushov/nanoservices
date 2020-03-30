@@ -31,13 +31,7 @@ if (${GLOBAL_BUILD})
 	target_link_libraries(ns-tests ns-skeleton)
 	
 	# This for use pretty json in json-*.txt	
-	if(FILE)
-		set(JSON_FILE json-zoo.txt)	
-	elseif(ZOO)
-		set(JSON_FILE json-zoo.txt)	
-	else()
-		message(FATAL_ERROR "You cmake it wrong!!")
-	endif(FILE)	
+	set(JSON_FILE json.txt)
 	set(SET_UP_CMD "${ns_configurator_BINARY_DIR}/ns-configurator -c -p '/myService' -a \"$(cat\ ${JSON_FILE})\"")
 	set(TEAR_DOWN_CMD "${ns_configurator_BINARY_DIR}/ns-configurator -d -p '/myService'")
 
