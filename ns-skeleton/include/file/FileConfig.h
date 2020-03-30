@@ -12,7 +12,7 @@ namespace nanoservices {
 		/**
 		*
 		*/
-		virtual nanoservices::NsSkelJsonPtr read(const std::string& path);
+		virtual nanoservices::NsSkelJsonPtr read(const std::string& path, bool desc = false);
 		/**
 		*
 		*/

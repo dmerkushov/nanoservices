@@ -81,7 +81,7 @@ void FileConfig::create(const std::string& path, nanoservices::NsSkelJsonPtr dat
 	dataf.write(content.c_str(), content.size());
 }
 
-NsSkelJsonPtr FileConfig::read(const std::string& path) {
+NsSkelJsonPtr FileConfig::read(const std::string& path, bool) {
 	if(path[0] != '/') {
 		throw NsException(NSE_POSITION, "Path must start from \'/\'!");
 	}
@@ -109,6 +109,7 @@ void FileConfig::update(const std::string& path, nanoservices::NsSkelJsonPtr dat
 	if(path[0] != '/') {
 		throw NsException(NSE_POSITION, "Path must start from \'/\'!");
 	}
+	
 	
 }
 

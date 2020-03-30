@@ -58,15 +58,23 @@ NsSkelConfiguration::NsSkelConfiguration(const string &serviceName, const string
 	AbstractConfig::init(URI);
 	
 	// HEAD come from CMake
-	_services = static_pointer_cast<NsSkelJsonObject, NsSkelJsonValueBase>(AbstractConfig::instance()->read(HEAD));
+	auto confData = AbstractConfig::instance()->read(HEAD);
+	
+	if(confData->type() != JSON_OBJECT) {
+		stringstream ess;
+		ess << "Empty configuration";
+		throw NsException(NSE_POSITION, ess);		
+	}
+	
+	_services = castNsSkelJsonPtr<NsSkelJsonObjectPtr>(confData);
 	
 	if(_services->find(configName) == _services->end()) {
 		stringstream ess;
-		ess << "No config for service " << configName;
+		ess << "No configuration for service " << configName;
 		throw NsException(NSE_POSITION, ess);
 	}
 	
-	_configuration = static_pointer_cast<NsSkelJsonObject, NsSkelJsonValueBase>(_services->at(configName));
+	_configuration = castNsSkelJsonPtr<NsSkelJsonObjectPtr>(_services->at(configName));
 }
 
 shared_ptr<NsSkelConfiguration> NsSkelConfiguration::instance() throw(NsException) {

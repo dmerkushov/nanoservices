@@ -13,7 +13,7 @@ namespace nanoservices {
 		/**
 		*
 		*/
-		virtual nanoservices::NsSkelJsonPtr read(const std::string& path);
+		virtual nanoservices::NsSkelJsonPtr read(const std::string& path, bool desc);
 		/**
 		*
 		*/
@@ -32,7 +32,7 @@ namespace nanoservices {
 		void createDict(const std::string& path, const std::string& parent_path, const std::string name, nanoservices::NsSkelJsonPtr data);
 		void createSimpleNode(const std::string& path, const std::string& data="");
 		void setNodeData(const std::string& path, const std::string& data);
-		nanoservices::NsSkelJsonPtr readDict(const std::string& path);
+		nanoservices::NsSkelJsonPtr readDict(const std::string& path, bool desc);
 		void updateDict(const std::string& path, nanoservices::NsSkelJsonPtr data);
 		std::vector<std::string> getChildren(const std::string& path);
 		void delAll(const std::string& path);

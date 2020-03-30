@@ -154,8 +154,8 @@ void ZooConfig::createSimpleNode(const string& path, const string& data) {
 	}
 }
 
-NsSkelJsonPtr ZooConfig::read(const string& path) {
-	return readDict(_prefix + path);
+NsSkelJsonPtr ZooConfig::read(const string& path, bool desc) {
+	return readDict(_prefix + path, desc);
 }
 
 vector<string> ZooConfig::getChildren(const string& path) {
@@ -198,7 +198,7 @@ NsSkelJsonPtr ZooConfig::jsonTypeFromData(const string& path, const string& data
 	return parser.parse(to_parse);
 }
 
-NsSkelJsonPtr ZooConfig::readDict(const string& path) {
+NsSkelJsonPtr ZooConfig::readDict(const string& path, bool desc) {
 	auto children = getChildren(path);
 	promise<string> data_p;
 	auto data_f = data_p.get_future();
@@ -215,13 +215,16 @@ NsSkelJsonPtr ZooConfig::readDict(const string& path) {
 	}
 	auto data = data_f.get();
 	NsSkelJsonPtr result = NsSkelJsonPtr (new NsSkelJsonNull());
-	if(children.size() > 0) {
+	bool descPresent = find(children.begin(), children.end(), ConfigValidator::descFieldName) != children.end();
+	if((children.size() - ((descPresent && !desc)?1:0)) > 0) {
 		map<std::string, NsSkelJsonPtr> map;
 		if(data.size() > 0) {
 			map[ConfigValidator::dataFieldName] = jsonTypeFromData(path, data);
 		}
 		for(auto child: children) {
-			map[child] = readDict(path+delimeter+child);
+			if(child != ConfigValidator::descFieldName || desc) {
+				map[child] = readDict(path+delimeter+child, desc);
+			}
 		}
 		result = NsSkelJsonPtr (new NsSkelJsonObject(map));
 	} else {
@@ -287,7 +290,7 @@ void ZooConfig::delAll(const std::string& path) {
 }
 
 ZooConfig::ZooConfig(std::shared_ptr<ConfigValidator> validator):_zooconnection(0), _validator(validator) {
-	_prefixpath = string_split(_prefix, delimeter);
+	_prefixpath = string_split(_prefix.substr(1), delimeter);
 }
 
 ZooConfig::~ZooConfig() {
