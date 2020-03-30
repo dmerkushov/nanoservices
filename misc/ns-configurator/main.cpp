@@ -1,4 +1,5 @@
 #include <iostream>
+#include <numeric>
 
 #include "AbstractConfig.h"
 #include "NsCmdLineParameters.h"
@@ -20,7 +21,13 @@ int main(int argc, char** argv) {
 	AbstractConfig::init(URI);
 	if(NsCmdLineParameters::instance()->isParam("create")) {
 		string path = NsCmdLineParameters::instance()->paramValue("path");
-		string json = NsCmdLineParameters::instance()->paramValue("data");
+		vector<string> json_parts = NsCmdLineParameters::instance()->paramValues("data");
+		
+		string json = std::accumulate(std::next(json_parts.begin()), json_parts.end(),
+                                    json_parts[0], // start with first element
+                                    [](string a, string b) {
+								         return std::move(a) + ' ' + std::move(b);
+								     });
 
 		NsSkelJsonPtr obj = NsSkelJsonParser().parse(json);
 		AbstractConfig::instance()->create(path, obj);
