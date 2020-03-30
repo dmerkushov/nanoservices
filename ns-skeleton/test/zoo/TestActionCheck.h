@@ -7,14 +7,15 @@
 #define BADURI "zoo://google:80"
 #define LESSBADURI "zoo://127.0.0.1:2180"
 #define URI "zoo://127.0.0.1:2181"
+#define PREFIX "/ru/cniiag/webmaps"
 
 #define CONFIGEXCEPTION NsException
 #define TAC_ASSERT_EQUALS(path, str) { \
 	zhandle_t* zh = zookeeper_init("127.0.0.1:2181", 0, 5000, 0, 0, 0); \
-	TS_ASSERT_EQUALS(zoo_exists(zh, "/ru/cniiag/webmaps" path, 0, 0), ZOK); \
+	TS_ASSERT_EQUALS(zoo_exists(zh, PREFIX path, 0, 0), ZOK); \
 	promise<string> ps; \
 	auto f1 = ps.get_future(); \
-	TS_ASSERT_EQUALS(zoo_aget(zh, "/ru/cniiag/webmaps" path, 0, [](int rc, const char *value, int value_len, const struct Stat *stat, const void *data){ \
+	TS_ASSERT_EQUALS(zoo_aget(zh, PREFIX path, 0, [](int rc, const char *value, int value_len, const struct Stat *stat, const void *data){ \
 		auto p = (promise<string>*)data; \
 		p->set_value(move(string(value, value_len))); \
 	}, &ps), ZOK);\
@@ -31,7 +32,7 @@
 
 #define TAC_ASSERT_NOT_EXISTS(path) { \
 	zhandle_t* zh = zookeeper_init("127.0.0.1:2181", 0, 5000, 0, 0, 0); \
-	TS_ASSERT_EQUALS(zoo_exists(zh, "/ru/cniiag/webmaps" path, 0, 0), ZNONODE); \
+	TS_ASSERT_EQUALS(zoo_exists(zh, PREFIX path, 0, 0), ZNONODE); \
 	zookeeper_close(zh); \
 }
 
