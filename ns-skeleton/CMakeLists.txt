@@ -156,6 +156,24 @@ if (DOXYGEN_FOUND)
 
 endif (DOXYGEN_FOUND)
 
+find_package(CxxTest)
+if(CXXTEST_FOUND)
+	include_directories(${CXXTEST_INCLUDE_DIR})
+	enable_testing()
+	CXXTEST_ADD_TEST(config-tests config.cc ${CMAKE_CURRENT_SOURCE_DIR}/test/AbstractConfigTest.h)
+	if(FILE)
+		include_directories(test/file)
+	elseif(ZOO)
+		include_directories(test/zoo)
+	else()
+		message(FATAL_ERROR "You cmake it wrong!!")
+	endif(FILE)
+	target_link_libraries(config-tests ns-skeleton)
+	add_custom_command(TARGET config-tests
+                        POST_BUILD
+                        COMMAND ${CMAKE_CURRENT_BINARY_DIR}/config-tests -v)
+endif(CXXTEST_FOUND)
+
 install(TARGETS ns-skeleton
         LIBRARY DESTINATION lib/nanoservices
         COMPONENT lib)
