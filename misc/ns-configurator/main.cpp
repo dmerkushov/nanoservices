@@ -39,6 +39,8 @@ int main(int argc, char** argv) {
 		string path = NsCmdLineParameters::instance()->paramValue("path");
 
 		AbstractConfig::instance()->del(path);
+	} else {
+		//TODO: print help message
 	}
 	AbstractConfig::close();
 	return 0;
