@@ -229,7 +229,6 @@ public:
 	}
 
 	void testUpdateOK(void) {
-		TS_SKIP("Not work for file :(");
 		TS_TRACE("");
 		NsSkelJsonPtr data = NsSkelJsonPtr (new NsSkelJsonString(newdata[0]));
 		map<std::string, NsSkelJsonPtr> map;
@@ -255,7 +254,6 @@ public:
 	}
 
 	void testDeleteOK(void) {
-		TS_SKIP("Not work for file :(");
 		TS_TRACE("");
 		TS_ASSERT_THROWS_NOTHING(AbstractConfig::instance()->del(string() + "/" + str[0]));
 		TAC_ASSERT_NOT_EXISTS("/test");

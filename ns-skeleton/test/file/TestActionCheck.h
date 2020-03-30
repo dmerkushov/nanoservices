@@ -10,13 +10,23 @@
 
 #define CONFIGEXCEPTION NsException
 #define TAC_ASSERT_EQUALS(path, str) { \
+	ifstream idataf (PATH); \
+	NsSkelJsonParser parser; \
+	NsSkelJsonObjectPtr dataj = parser.typedParse<NsSkelJsonObjectPtr> (idataf); \
+	string ipath = string(path).substr(1); \
+	auto node = (*dataj)[ipath]; \
+	TS_ASSERT_EQUALS(node->type(), JSON_OBJECT); \
+	node = fromNsSkelJsonPtr<NsSkelJsonObject>(node)[ConfigValidator::dataFieldName]; \
+	TS_ASSERT_EQUALS(fromNsSkelJsonPtr<NsSkelJsonString>(node), str); \
 }
 
 #define TAC_CLEAN() { \
 	ifstream idataf (PATH); \
 	NsSkelJsonParser parser; \
 	NsSkelJsonObjectPtr dataj = parser.typedParse<NsSkelJsonObjectPtr> (idataf); \
-	dataj->erase(dataj->find("test")); \
+	if(dataj->find("test") != dataj->end()) {\
+		dataj->erase(dataj->find("test")); \
+	} \
 	string content = dataj->serialize(); \
 	ofstream odataf(PATH); \
 	odataf.write(content.c_str(), content.size()); \
@@ -34,9 +44,13 @@
 	ifstream idataf (PATH); \
 	NsSkelJsonParser parser; \
 	NsSkelJsonObjectPtr dataj = parser.typedParse<NsSkelJsonObjectPtr> (idataf); \
-	string json = "{\"__data__\":\"" + str[0] + "\", \"" + str[1] + "\":\"" + str[1] + "\", \"" + str[2] + "\":\"" + str[2] + "\"}"; \
+	string json = "{\"__data__\":\"" + str[0] + "\", \"" + str[1] + "\":{\"__data__\":\"" + str[1] + "\"}, \"" + str[2] + "\":{\"__data__\":\"" + str[2] + "\"}}"; \
 	(*dataj)[str[0]] = NsSkelJsonParser().parse(json); \
 	string content = dataj->serialize(); \
 	ofstream odataf(PATH); \
 	odataf.write(content.c_str(), content.size()); \
 }
+
+namespace test_file {
+	
+};

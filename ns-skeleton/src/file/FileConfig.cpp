@@ -50,17 +50,12 @@ void FileConfig::init(const std::string& configPath) {
 	_configPath = configPath;
 }
 
-void FileConfig::create(const std::string& path, nanoservices::NsSkelJsonPtr data) {
-	_validator->validate(path, data);
-	NsSkelJsonPtr conf = read("/"), nodeobj = conf;
-	if(path[0] != '/') {
-		throw NsException(NSE_POSITION, "Path must start from \'/\'!");
-	}
+pair<NsSkelJsonPtr, string> FileConfig::goThroughPath(const std::string& path, nanoservices::NsSkelJsonPtr nodeobj) {
 	auto vnodes = string_split(path.substr(1), '/');
 	string last_node = vnodes.back();
 	vnodes.pop_back();
 	for(auto node : vnodes) {
-		auto obj = static_pointer_cast<NsSkelJsonObject, NsSkelJsonValueBase>(nodeobj);
+		auto obj = castNsSkelJsonPtr<NsSkelJsonObjectPtr>(nodeobj);
 		if(obj->find (node) != obj->end ()) {
 			if((*obj)[node]->type() == JSON_OBJECT) {
 				nodeobj = (*obj)[node];
@@ -71,17 +66,59 @@ void FileConfig::create(const std::string& path, nanoservices::NsSkelJsonPtr dat
 			throw NsException(NSE_POSITION, "Part of path not found");
 		}
 	}
-	auto addnode = static_pointer_cast<NsSkelJsonObject, NsSkelJsonValueBase>(nodeobj);
-	if(addnode->find(last_node) != addnode->end()) {
+	return {nodeobj, last_node};
+}
+
+void FileConfig::create(const std::string& path, nanoservices::NsSkelJsonPtr data) {
+	_validator->validate(path, data);
+	NsSkelJsonPtr conf = readWhole("/");
+	if(path[0] != '/') {
+		throw NsException(NSE_POSITION, "Path must start from \'/\'!");
+	}
+	auto nodepair = goThroughPath(path, conf);
+	auto addnode = castNsSkelJsonPtr<NsSkelJsonObjectPtr>(nodepair.first);
+	if(addnode->find(nodepair.second) != addnode->end()) {
 		throw NsException(NSE_POSITION, "Path already exists");
 	}
-	(*addnode)[last_node] = data;
+	(*addnode)[nodepair.second] = data;
 	string content = conf->serialize();
 	ofstream dataf(_configPath);
 	dataf.write(content.c_str(), content.size());
 }
 
-NsSkelJsonPtr FileConfig::read(const std::string& path, bool) {
+NsSkelJsonPtr FileConfig::processData(NsSkelJsonPtr data, bool desc) {
+	NsSkelJsonPtr processed;
+	if(data->type() == JSON_OBJECT) {
+		auto map = make_shared<NsSkelJsonObject>();
+		NsSkelJsonPtr nodedata;	
+		for(auto it: fromNsSkelJsonPtr<NsSkelJsonObject>(data)) {
+			if(desc || it.first != ConfigValidator::descFieldName) {
+				if(it.first != ConfigValidator::dataFieldName) {
+					map->insert({it.first, processData(it.second, desc)});
+				} else {
+					nodedata = processData(it.second, desc);
+				}
+			}
+		}
+		if(map->size() > 0) {
+			if(nodedata) {
+				map->insert({ConfigValidator::dataFieldName, nodedata});
+			}
+			processed = map;
+		} else {
+			processed = nodedata;
+		}
+	} else {
+		processed = data ;
+	}
+	return processed;
+}
+
+NsSkelJsonPtr FileConfig::read(const std::string& path, bool desc) {
+	return processData(readWhole(path), desc);
+}
+
+NsSkelJsonPtr FileConfig::readWhole(const std::string& path) {
 	if(path[0] != '/') {
 		throw NsException(NSE_POSITION, "Path must start from \'/\'!");
 	}
@@ -101,21 +138,41 @@ NsSkelJsonPtr FileConfig::read(const std::string& path, bool) {
 			throw NsException(NSE_POSITION, "Part of path not json-object");
 		}
 	}
+
 	return result;
 }
 
 void FileConfig::update(const std::string& path, nanoservices::NsSkelJsonPtr data) {
 	_validator->validate(path, data);
+	NsSkelJsonPtr conf = readWhole("/");
 	if(path[0] != '/') {
 		throw NsException(NSE_POSITION, "Path must start from \'/\'!");
 	}
-	
-	
+	auto nodepair = goThroughPath(path, conf);
+	auto addnode = castNsSkelJsonPtr<NsSkelJsonObjectPtr>(nodepair.first);
+	if(addnode->find(nodepair.second) == addnode->end()) {
+		throw NsException(NSE_POSITION, "Path not exists");
+	}
+	(*addnode)[nodepair.second] = data;
+	string content = conf->serialize();
+	ofstream dataf(_configPath);
+	dataf.write(content.c_str(), content.size());	
 }
 
 void FileConfig::del(const std::string& path) {
-	NsSkelJsonPtr conf = read("/"), nodeobj = conf;
-	auto vnodes = string_split(path.substr(1), '/');
+	NsSkelJsonPtr conf = readWhole("/");
+	if(path[0] != '/') {
+		throw NsException(NSE_POSITION, "Path must start from \'/\'!");
+	}
+	auto nodepair = goThroughPath(path, conf);
+	auto delnode = castNsSkelJsonPtr<NsSkelJsonObjectPtr>(nodepair.first);
+	auto delit = delnode->find(nodepair.second);
+	if(delit != delnode->end()) {
+		delnode->erase(delit);
+	}
+	string content = conf->serialize();
+	ofstream dataf(_configPath);
+	dataf.write(content.c_str(), content.size());
 }
 
 FileConfig::~FileConfig() {
