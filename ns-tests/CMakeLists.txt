@@ -29,7 +29,25 @@ add_executable(ns-tests ${Sources} ${Headers})
 if (${GLOBAL_BUILD})
 	message("ns-tests: Will link ns-tests with ${ns_skeleton_BINARY_DIR}/libns-skeleton.so")
 	target_link_libraries(ns-tests ns-skeleton)
-	add_custom_command(TARGET ns-tests POST_BUILD COMMAND ${ns_tests_BINARY_DIR}/ns-tests)
+	
+	# This for use pretty json in json-*.txt	
+	if(FILE)
+		set(JSON_FILE json-file.txt)	
+	elseif(ZOO)
+		set(JSON_FILE json-zoo.txt)	
+	else()
+		message(FATAL_ERROR "You cmake it wrong!!")
+	endif(FILE)	
+	set(CMD "${ns_configurator_BINARY_DIR}/ns-configurator -c -p '/myService' -a \"$(cat\ ${JSON_FILE})\"")
+
+	add_custom_command(TARGET ns-tests
+                        POST_BUILD
+                        COMMAND bash -c "${CMD}"
+                        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+			VERBATIM
+                        )	
+	add_custom_command(TARGET ns-tests POST_BUILD COMMAND ${CMAKE_CURRENT_BINARY_DIR}/ns-tests)
+	add_custom_command(TARGET ns-tests POST_BUILD COMMAND ${ns_configurator_BINARY_DIR}/ns-configurator "-d -p '/myService'")
 else ()
 	message(WARNING "ns-tests: Not a global build, so no libns-skeleton.so to link with")
 endif ()
