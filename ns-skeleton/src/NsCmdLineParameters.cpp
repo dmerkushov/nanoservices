@@ -31,8 +31,8 @@ using namespace nanoservices;
 std::shared_ptr<NsCmdLineParameters> NsCmdLineParameters::_instance;
 
 void NsCmdLineParameters::init(std::map<char, NsCmdLineParameters::opt>& param_defs, int argc, char** argv) {
-	// if no argument provided, no instance generated
-	if(argc) {
+	// if no argument provided, no instance reinitialised
+	if(argc || !_instance) {
 		_instance = std::shared_ptr<NsCmdLineParameters>(new NsCmdLineParameters(param_defs, argc, argv));
 	}
 }
