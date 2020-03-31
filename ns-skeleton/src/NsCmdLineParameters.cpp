@@ -31,16 +31,28 @@ using namespace nanoservices;
 std::shared_ptr<NsCmdLineParameters> NsCmdLineParameters::_instance;
 
 void NsCmdLineParameters::init(std::map<char, NsCmdLineParameters::opt>& param_defs, int argc, char** argv) {
-	_instance = std::shared_ptr<NsCmdLineParameters>(new NsCmdLineParameters(param_defs, argc, argv));
+	// if no argument provided, no instance generated
+	if(argc) {
+		_instance = std::shared_ptr<NsCmdLineParameters>(new NsCmdLineParameters(param_defs, argc, argv));
+	}
 }
 
 NsCmdLineParameters::NsCmdLineParameters(std::map<char, NsCmdLineParameters::opt>& param_defs, int argc, char** argv):_argc(argc), _argv(argv) {
-	parse(param_defs);
+	// if no argument provided, no parse doing
+	if(argc) {
+		parse(param_defs);
+	}
+}
+
+char* new_c_str(std::string str) {
+	char* res = new char[str.size() + 1];
+	strcpy(res, str.c_str());
+	return res;
 }
 
 namespace nanoservices {	
-	std::map<char, struct option> getOptionDefinitions(NsSkelJsonPtr paramsKeys) {
-		std::map<char, struct option> long_opt;
+	std::map<char, struct argp_option> getOptionDefinitions(NsSkelJsonPtr paramsKeys) {
+		std::map<char, struct argp_option> argp_opt;
 
 		if(paramsKeys) {
 			auto params = castNsSkelJsonPtr<NsSkelJsonObjectPtr>(paramsKeys);
@@ -53,7 +65,7 @@ namespace nanoservices {
 				}
 				auto param = castNsSkelJsonPtr<NsSkelJsonObjectPtr>(it->second);
 				if (param->count("key") == 0) {
-					throw NsException(NSE_POSITION, "Parameter options not contains 'key'!");
+					throw NsException(NSE_POSITION, "Options for parameter \""+it->first+"\" not contains 'key'!");
 				}
 				if (fromNsSkelJsonPtr<string>(param->at("key")) == string("n")) {
 					throw NsException(NSE_POSITION, "Parameter option 'key' = 'n' is reserved!");
@@ -62,7 +74,14 @@ namespace nanoservices {
 					throw NsException(NSE_POSITION, "Parameter option 'key' = 'p' is reserved!");
 				}
 				if (param->count("isRequired") == 0) {
-					throw NsException(NSE_POSITION, "Parameter options not contains 'isRequired'!");
+					throw NsException(NSE_POSITION, "Options for parameter \""+it->first+"\" not contains 'isRequired'!");
+				}
+				if (param->count("desc") == 0) {
+					throw NsException(NSE_POSITION, "Options for parameter \""+it->first+"\" not contains 'desc'!");
+				}
+				bool argsReq = fromNsSkelJsonPtr<bool>(param->at("isRequired"));
+				if (argsReq && param->count("argName") == 0) {
+					throw NsException(NSE_POSITION, "Options for parameter \""+it->first+"\" not contains 'argName'!");
 				}
 
 				string key = fromNsSkelJsonPtr<string>(param->at("key"));
@@ -71,49 +90,30 @@ namespace nanoservices {
 					throw NsException(NSE_POSITION, "Parameter option 'key' have size more 1 character!!");
 				}
 
-				string longKey_s = it->first;
-				bool argsReq = fromNsSkelJsonPtr<bool>(param->at("isRequired"));
+				string longKey = it->first;
+				string argName;
+				string desc = fromNsSkelJsonPtr<string>(param->at("desc"));
+				if(argsReq) {
+					argName = fromNsSkelJsonPtr<string>(param->at("argName"));
+				}
+				
 				char shortKey = key[0];
-				char *longKey = new char[longKey_s.size() + 1];
-				strcpy(longKey, longKey_s.c_str());
 
-				long_opt[shortKey] = {longKey, argsReq ? required_argument : no_argument, 0, shortKey};
+				argp_opt[shortKey] = {new_c_str(longKey), shortKey, argsReq ? new_c_str(argName) : 0, 0, new_c_str(desc), 0};
 			}
 		}
 
 		// Option for change monitoring service name
-		long_opt['n'] = {"name", required_argument, 0, 'n'};
+		argp_opt['n'] = {"name", 'n', "SERVICE", 0, "Change name to SERVICE", 0};
 		// Option for change service port
-		long_opt['p'] = {"port", required_argument, 0, 'p'};
+		argp_opt['p'] = {"port", 'p', "PORT", 0, "Change binding port to PORT", 0};
 		// Sequence of option struct must be zero termninated
-		long_opt['\0'] = {0, 0, 0, 0};
+		argp_opt['\0'] = {0};
 
-		return long_opt;
+		return argp_opt;
 	}
 
 };
-
-char* NsCmdLineParameters::getShortOptions(std::map<char, NsCmdLineParameters::opt>& map) {
-	std::vector<char> short_v;
-	for(auto it = map.rbegin(); it != map.rend(); ++it) {
-		short_v.push_back(it->first);
-		switch(it->second.has_arg) {
-			case required_argument:
-				short_v.push_back(':');
-				break;
-			case no_argument:
-				break;
-			case optional_argument:
-				short_v.push_back(':');
-				short_v.push_back(':');
-				break;
-		}
-	}
-
-	char* res = new char[short_v.size()];
-	copy(short_v.begin(), short_v.end(), res);
-	return res;
-}
 
 NsCmdLineParameters::opt* NsCmdLineParameters::getLongOptions(std::map<char, NsCmdLineParameters::opt>& map) {
 	opt* res = new opt[map.size()];
@@ -125,26 +125,20 @@ NsCmdLineParameters::opt* NsCmdLineParameters::getLongOptions(std::map<char, NsC
 	return res;
 }
 
-void NsCmdLineParameters::parse(std::map<char, NsCmdLineParameters::opt>& map) {
-	int opt;
-	int option_index = 0;
-
-	char* optionString = getShortOptions(map);
-	auto options = getLongOptions(map);
-
-	opterr = 0;
-
-	while ((opt = getopt_long (_argc, _argv, optionString, options, &option_index)) != -1) {
-		if(! (opt == '?' || opt == ':')) {
-			_params[map[opt].name] = string_split(string((map[opt].has_arg == required_argument)?optarg:""), ' ');
-		} else {
-			_unparsed.push_back(_argv[optind-1]);
+void NsCmdLineParameters::parse(std::map<char, NsCmdLineParameters::opt>& opts) {
+	int optind = _argc;
+	auto options = getLongOptions(opts);
+	struct argp argp = { options, [](int key, char *arg, struct argp_state *state) -> error_t {
+		auto [that, opts] = *((pair<NsCmdLineParameters*, map<char, NsCmdLineParameters::opt>*>*)state->input);
+		if(key == ARGP_KEY_ARG) {
+			that->_unparsed.push_back(arg);
+		} else if(opts->count(key) != 0) {
+			that->_params.insert({(*opts)[key].name, string_split((arg ? arg : ""), ' ')});
 		}
-	}
-
-	for(int i = optind; i < _argc; i++) {
-		_unparsed.push_back(_argv[i]);
-	}
+		return 0;
+	}, 0, "\013Powered by nanoservices library v" VERSION };
+	auto data = make_pair(this, &opts);
+	argp_parse (&argp, _argc, _argv, 0, &optind, &data);
 }
 
 std::shared_ptr<NsCmdLineParameters> NsCmdLineParameters::instance () throw (NsException){

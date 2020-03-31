@@ -100,7 +100,7 @@ NsSkelJsonPtr FileConfig::processData(NsSkelJsonPtr data, bool desc) {
 				}
 			}
 		}
-		if(map->size() > 0) {
+		if(map->size() > 0 || !nodedata) {
 			if(nodedata) {
 				map->insert({ConfigValidator::dataFieldName, nodedata});
 			}

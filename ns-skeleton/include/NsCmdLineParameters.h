@@ -24,7 +24,7 @@
 #ifndef NSCMDLINEPARAMETERS_H
 #define NSCMDLINEPARAMETERS_H
 
-#include <getopt.h>
+#include <argp.h>
 #include "NsSkelJson.h"
 
 namespace nanoservices {
@@ -64,7 +64,7 @@ namespace nanoservices {
 		/**
 		 * Alias for type from getopt.h
 		 */
-		using opt = struct option;
+		using opt = struct argp_option;
 		/**
 		 * Initializing function
 		 * @param param_defs -- command line parameters definitions
@@ -78,7 +78,6 @@ namespace nanoservices {
 		void parse(std::map<char, opt>& map);
 
 		opt* getLongOptions(std::map<char, opt>& map);
-		char* getShortOptions(std::map<char, opt>& map);
 
 		std::map<std::string, std::vector<std::string>> _params;
 		std::vector<std::string> _unparsed;
@@ -89,7 +88,7 @@ namespace nanoservices {
 		friend class NsSkeleton;
 	};
 	
-	extern std::map<char, struct option> getOptionDefinitions(NsSkelJsonPtr paramsKeys);
+	extern std::map<char, struct argp_option> getOptionDefinitions(NsSkelJsonPtr paramsKeys);
 
 };
 

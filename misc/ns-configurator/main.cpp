@@ -9,12 +9,12 @@ using namespace nanoservices;
 
 int main(int argc, char** argv) {
 	map<char, NsCmdLineParameters::opt> prms = {
-		{'p' , {"path", required_argument, 0, 'p'}},
-		{'a' , {"data", required_argument, 0, 'a'}},
-		{'c' , {"create", no_argument, 0, 'c'}},
-		{'r' , {"read", no_argument, 0, 'r'}},
-		{'u' , {"update", no_argument, 0, 'u'}},
-		{'d' , {"delete", no_argument, 0, 'd'}},
+		{'p' , {"path", 'p', "PATH", 0, "Path to config node", 2}},
+		{'a' , {"data", 'a', "DATA", 0, "Data for create or update operation", 2}},
+		{'c' , {"create", 'c', 0, 0, "create config node at PATH with DATA", 1}},
+		{'r' , {"read", 'r', 0, 0, "read config node data from PATH", 1}},
+		{'u' , {"update", 'u', 0, 0, "update config node at PATH as DATA", 1}},
+		{'d' , {"delete", 'd', 0, 0, "delete config node at PATH", 1}},
 		{'\0', {0,0,0,0}}
 	};
 	NsCmdLineParameters::init(prms, argc, argv);
@@ -39,8 +39,6 @@ int main(int argc, char** argv) {
 		string path = NsCmdLineParameters::instance()->paramValue("path");
 
 		AbstractConfig::instance()->del(path);
-	} else {
-		//TODO: print help message
 	}
 	AbstractConfig::close();
 	return 0;

@@ -16,6 +16,9 @@
 			},
 			"isRequired": {
 				"__data__": false
+			},
+			"desc": {
+				"__data__": "fuse service"
 			}
 		}
 	},

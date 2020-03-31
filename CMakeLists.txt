@@ -7,6 +7,9 @@ cmake_dependent_option(FILE "make with file config" OFF "ZOO" ON)
 
 set(GLOBAL_BUILD true)
 
+file(STRINGS "VERSION.txt" VERSION)
+add_definitions(-DVERSION="${VERSION}")
+
 add_subdirectory(ns-skeleton)
 add_subdirectory(misc)
 add_subdirectory(ns-tests)
@@ -25,7 +28,6 @@ SET(CPACK_PACKAGE_CONTACT "d.merkushov@gmail.com")
 SET(CPACK_DEB_COMPONENT_INSTALL ON)
 SET(CPACK_COMPONENTS_ALL lib dev misc)
 SET(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
-file(STRINGS "VERSION.txt" VERSION)
 SET(CPACK_PACKAGE_VERSION ${VERSION})
 SET(CPACK_DEBIAN_ENABLE_COMPONENT_DEPENDS ON)
 SET(CPACK_COMPONENT_DEV_DEPENDS lib)
