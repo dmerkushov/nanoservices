@@ -188,7 +188,7 @@ install(FILES ns-skeleton.conf
 
 install(FILES FindNanoservices.cmake
         DESTINATION /usr/share/cmake-3.10/Modules/
-        COMPONENT lib)
+        COMPONENT dev)
 
 install(DIRECTORY include/
         DESTINATION /usr/include/nanoservices
