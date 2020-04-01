@@ -162,7 +162,9 @@ find_package(CxxTest)
 if(CXXTEST_FOUND)
 	include_directories(${CXXTEST_INCLUDE_DIR})
 	enable_testing()
-	CXXTEST_ADD_TEST(config-tests config.cc ${CMAKE_CURRENT_SOURCE_DIR}/test/AbstractConfigTest.h)
+	set(Tests
+		${CMAKE_CURRENT_SOURCE_DIR}/test/AbstractConfigTest.h)
+	CXXTEST_ADD_TEST(config-tests config.cc ${Tests})
 	if(FILE)
 		include_directories(test/file)
 	elseif(ZOO)
@@ -178,6 +180,14 @@ endif(CXXTEST_FOUND)
 
 install(TARGETS ns-skeleton
         LIBRARY DESTINATION lib/nanoservices
+        COMPONENT lib)
+
+install(FILES ns-skeleton.conf
+        DESTINATION /etc/ld.so.conf.d/
+        COMPONENT lib)
+
+install(FILES FindNanoservices.cmake
+        DESTINATION /usr/share/cmake-3.10/Modules/
         COMPONENT lib)
 
 install(DIRECTORY include/

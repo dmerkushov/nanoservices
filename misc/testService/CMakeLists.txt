@@ -1,8 +1,11 @@
+cmake_minimum_required(VERSION 3.0)
 project(test_service)
 
 set(Source main.cpp)
 
-include_directories(/usr/include/nanoservices)
-
 add_executable(testService ${Source})
-target_link_libraries(testService ns-skeleton)
+
+find_package(Nanoservices)
+
+include_directories(${LIBNSSKELETON_INCLUDE_DIRS})
+target_link_libraries(testService ${LIBNSSKELETON_LIBRARIES})
