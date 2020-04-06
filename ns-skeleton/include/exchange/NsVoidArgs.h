@@ -29,7 +29,8 @@
 class NsVoidArgs {
 public:
 
-	NSSERIALIZER_PREPARE ();
+	NSSERIALIZER_PREPARE();
+
 private:
 };
 

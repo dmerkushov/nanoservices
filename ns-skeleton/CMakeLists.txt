@@ -26,7 +26,8 @@ set(Sources
 		src/NsSkelRpcReplierInterface.cpp
 		src/NsSkelRpcServer.cpp
 		src/NsSkelRpcService.cpp
-		src/NsSkelUtils.cpp)
+		src/NsSkelUtils.cpp
+		src/NsCmdLineParameters.cpp)
 
 message("Sources: ${Sources}")
 
@@ -61,7 +62,8 @@ set(Headers
 		include/NsSkelRpcServer.h
 		include/NsSkelRpcService.h
 		include/NsSkelStartException.h
-		include/NsSkelUtils.h)
+		include/NsSkelUtils.h
+		include/NsCmdLineParameters.h)
 
 include_directories(include)
 
@@ -100,3 +102,24 @@ if (DOXYGEN_FOUND)
 			WORKING_DIRECTORY ${DOXYGEN_OUTPUT_DIR})
 
 endif (DOXYGEN_FOUND)
+
+install(TARGETS ns-skeleton
+        LIBRARY DESTINATION lib/nanoservices
+        COMPONENT lib)
+
+install(DIRECTORY include/
+        DESTINATION /usr/include/nanoservices
+        COMPONENT dev)
+
+SET(CPACK_GENERATOR "DEB")
+SET(CPACK_PACKAGE_NAME "nanoservices")
+SET(CPACK_PACKAGE_VENDOR "dmerkushov and Co")
+SET(CPACK_PACKAGE_CONTACT "dmerkushov@github.info")
+SET(CPACK_DEB_COMPONENT_INSTALL ON)
+SET(CPACK_COMPONENTS_ALL lib dev)
+SET(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+SET(CPACK_PACKAGE_VERSION "0.1.0")
+SET(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
+SET(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}_${CPACK_PACKAGE_VERSION}_${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}")
+
+INCLUDE(CPack)

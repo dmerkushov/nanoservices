@@ -97,8 +97,10 @@ namespace nanoservices {
 		template<typename T>
 		void add(const T &val) {
 			std::shared_ptr<NsMonitoringType<T> > tptr = std::make_shared<NsMonitoringType<T> >(val);
-			std::shared_ptr<NsMonitoringTypeBase> bptr = std::static_pointer_cast<NsMonitoringTypeBase, NsMonitoringType<T> >(
-					tptr);
+			std::shared_ptr<NsMonitoringTypeBase> bptr =
+					std::static_pointer_cast<NsMonitoringTypeBase, NsMonitoringType<T> >(
+							tptr
+					);
 			push_back(bptr);
 		}
 
@@ -439,25 +441,44 @@ namespace nanoservices {
 		static void monitorShutdown();
 
 		static void
-		monitorSendRpcRequest(std::shared_ptr<std::string> remoteServiceName,
-							  std::shared_ptr<std::string> remoteMethod,
-							  const uint64_t requestId);
+		monitorSendRpcRequest(
+				std::shared_ptr<std::string> remoteServiceName,
+				std::shared_ptr<std::string> remoteMethod,
+				const uint64_t requestId
+		);
 
-		static void monitorSendRpcRequestError(std::shared_ptr<std::string> remoteServiceName,
-											   std::shared_ptr<std::string> remoteMethod, const uint64_t requestId,
-											   const char *errorDescription);
+		static void monitorSendRpcRequestError(
+				std::shared_ptr<std::string> remoteServiceName,
+				std::shared_ptr<std::string> remoteMethod,
+				const uint64_t requestId,
+				const char *errorDescription
+		);
 
-		static void monitorReceiveRpcResponse(const uint64_t requestId);
+		static void monitorReceiveRpcResponse(
+				const uint64_t requestId
+		);
 
-		static void monitorReceiveRpcResponseError(const uint64_t requestId, const char *errorDescription);
+		static void monitorReceiveRpcResponseError(
+				const uint64_t requestId,
+				const char *errorDescription
+		);
 
-		static void monitorReceiveRpcRequest(const uint64_t requestId, std::shared_ptr<std::string> method);
+		static void monitorReceiveRpcRequest(
+				const uint64_t requestId,
+				std::shared_ptr<std::string> method
+		);
 
-		static void monitorReceiveRpcRequestError(const char *errorDescription);
+		static void monitorReceiveRpcRequestError(
+				const char *errorDescription
+		);
 
-		static void monitorSendRpcResponse(const uint64_t requestId);
+		static void monitorSendRpcResponse(
+				const uint64_t requestId
+		);
 
-		static void monitorSendRpcResponseError(const char *errorDescription);
+		static void monitorSendRpcResponseError(
+				const char *errorDescription
+		);
 
 	private:
 		static std::stringstream *sendMonStart();
