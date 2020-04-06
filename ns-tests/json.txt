@@ -7,6 +7,13 @@
 		"__data__":12345,
 		"__description__":"Service port"
 	},
+	"http-enabled": {
+		"__data__":true
+	},
+	"http-port": {
+		"__data__":8082,
+		"__description__":"Service HTTP port"
+	},
 	"param-keys": {
 		"__description__":"Service command args",
 		"fuse": {
