@@ -80,12 +80,15 @@ void ZooConfig::init(const string& host, int port) throw(NsException) {
 		throw NsException(NSE_POSITION, strerror(errno));
 	}
 	ZHCloser c(zh);
+	int state = -1;
 	auto future_conn = connect_wait.get_future();
 	thread([&](){
 		this_thread::sleep_for(std::chrono::milliseconds(timeoutms));
-		connect_wait.set_exception(make_exception_ptr(NsException(NSE_POSITION, "Coudn't connect to zookeeper!")));
+		if(state == -1) {
+			connect_wait.set_exception(make_exception_ptr(NsException(NSE_POSITION, "Coudn't connect to zookeeper!")));
+		}
 	}).detach();
-	int state = future_conn.get();
+	state = future_conn.get();
 	if(state == ZOO_CONNECTED_STATE) {
 		this->_zooconnection = zh;
 		c._zh = 0;
