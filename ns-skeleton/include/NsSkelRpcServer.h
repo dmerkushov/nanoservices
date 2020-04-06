@@ -84,9 +84,9 @@ namespace nanoservices {
 
 		virtual ~NsSkelRpcServer();
 
-		void startup() throw(NsException);
+		virtual void startup() throw(NsException);
 
-		void shutdown();
+		virtual void shutdown();
 
 		bool active();
 
@@ -99,6 +99,9 @@ namespace nanoservices {
 
 		virtual void processIncomingConnection(int dataSocketFd);
 
+		std::thread _serverThread;
+		std::atomic<bool> _serverActive;
+
 	private:
 		NsSkelRpcServer(const NsSkelRpcServer &orig) = delete;
 
@@ -106,8 +109,6 @@ namespace nanoservices {
 
 		uint16_t _port;
 		int _serverSocketFd;
-		std::thread _serverThread;
-		std::atomic<bool> _serverActive;
 		std::atomic<bool> _serverStarted;
 		std::atomic<bool> _shutdownReceived;
 		std::map<int, std::shared_ptr<std::thread> > _threads;

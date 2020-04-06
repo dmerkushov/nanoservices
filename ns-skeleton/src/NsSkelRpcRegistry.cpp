@@ -312,9 +312,9 @@ void NsSkelRpcRegistry::startupServers() throw(NsException) {
 
 void NsSkelRpcRegistry::shutdownServers() throw(NsException) {
 	_serversVectorMutex.lock();
-	vector<shared_ptr<NsSkelRpcServer> >::iterator it;
+	vector<shared_ptr<NsSkelRpcServer> >::reverse_iterator it;
 	try {
-		for (it = _servers.begin(); it != _servers.end(); it++) {
+		for (it = _servers.rbegin(); it != _servers.rend(); it++) {
 			it->get()->shutdown();
 		}
 	} catch (NsException &e) {
