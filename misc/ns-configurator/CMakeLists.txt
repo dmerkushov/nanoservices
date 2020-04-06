@@ -24,6 +24,8 @@ else()
 endif(FILE)
 
 include_directories(${ns_skeleton_SOURCE_DIR}/include)
+# Header-only MSGPACK realisation
+include_directories(${nanoservices_SOURCE_DIR}/third-party/msgpack-c/include)
 
 if(FILE)
 	include_directories(${ns_skeleton_SOURCE_DIR}/include/file)

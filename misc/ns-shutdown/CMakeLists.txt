@@ -6,6 +6,8 @@ set(Sources main.cpp)
 message("Sources: ${Sources}")
 
 include_directories(${ns_skeleton_SOURCE_DIR}/include)
+# Header-only MSGPACK realisation
+include_directories(${nanoservices_SOURCE_DIR}/third-party/msgpack-c/include)
 
 add_executable(ns-shutdown ${Sources})
 

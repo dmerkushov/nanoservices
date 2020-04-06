@@ -98,6 +98,10 @@ else()
 endif(FILE)
 
 include_directories(include)
+# Header-only HTTP/HTTPS server
+include_directories(${nanoservices_SOURCE_DIR}/third-party/cpp-httplib)
+# Header-only MSGPACK realisation
+include_directories(${nanoservices_SOURCE_DIR}/third-party/msgpack-c/include)
 
 if(FILE)
 	include_directories(include/file)
@@ -192,4 +196,8 @@ install(FILES FindNanoservices.cmake
 
 install(DIRECTORY include/
         DESTINATION /usr/include/nanoservices
+        COMPONENT dev)
+
+install(DIRECTORY ${nanoservices_SOURCE_DIR}/third-party/msgpack-c/include/
+        DESTINATION /usr/include
         COMPONENT dev)
