@@ -66,6 +66,10 @@ set(Headers
 		include/NsCmdLineParameters.h)
 
 include_directories(include)
+# Header-only HTTP/HTTPS server
+include_directories(${nanoservices_SOURCE_DIR}/third-party/cpp-httplib)
+# Header-only MSGPACK realisation
+include_directories(${nanoservices_SOURCE_DIR}/third-party/msgpack-c/include)
 
 add_library(ns-skeleton SHARED ${Sources} ${Headers})
 
@@ -123,3 +127,6 @@ SET(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
 SET(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}_${CPACK_PACKAGE_VERSION}_${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}")
 
 INCLUDE(CPack)
+install(DIRECTORY ${nanoservices_SOURCE_DIR}/third-party/msgpack-c/include/
+        DESTINATION /usr/include
+        COMPONENT dev)

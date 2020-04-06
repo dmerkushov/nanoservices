@@ -22,7 +22,9 @@ set(Headers
 		testBase64.h
 		testExceptionThrowThrough.h)
 
-include_directories(../ns-skeleton/include)
+include_directories(${ns_skeleton_SOURCE_DIR}/include)
+# Header-only MSGPACK realisation
+include_directories(${nanoservices_SOURCE_DIR}/third-party/msgpack-c/include)
 
 add_executable(ns-tests ${Sources} ${Headers})
 
