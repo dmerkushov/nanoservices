@@ -37,7 +37,7 @@ namespace nanoservices {
 		 * Get the instance of NsCmdLineParameters for command line parameters of the current running nanoservice
 		 * @return
 		 */
-		static std::shared_ptr<NsCmdLineParameters> instance () throw (nanoservices::NsException);
+		static std::shared_ptr<NsCmdLineParameters> instance() throw (nanoservices::NsException);
 		/**
 		 * Check specific key in parsed command line parameters 
 		 * @param keyName
