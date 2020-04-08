@@ -4,23 +4,18 @@
 #include "AbstractConfig.h"
 
 namespace nanoservices {
+	/**
+	 * @see AbstractConfig
+	 */
 	class ZooConfig : public AbstractConfig {
 	public:
-		/**
-		*
-		*/
+		
 		virtual void create(const std::string& path, nanoservices::NsSkelJsonPtr data);
-		/**
-		*
-		*/
+		
 		virtual nanoservices::NsSkelJsonPtr read(const std::string& path, bool desc);
-		/**
-		*
-		*/
+		
 		virtual void update(const std::string& path, nanoservices::NsSkelJsonPtr data);
-		/**
-		*
-		*/
+		
 		virtual void del(const std::string& path);
 		virtual ~ZooConfig();
 	private:
@@ -42,6 +37,7 @@ namespace nanoservices {
 		std::vector<std::string> _prefixpath;
 		void checkAndCreatePrefixPath();
 		
+		// Convert NsSkelJsonValueType into single byte and back
 		std::vector<char> typedByte = {'\0', '\0', '\0', 's', 'd', 'b'};
 		NsSkelJsonPtr jsonTypeFromData(const std::string& path, const std::string& data);
 		

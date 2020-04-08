@@ -41,6 +41,11 @@ extern mutex cout_lock;
 NsSkelRpcHttpServer::NsSkelRpcHttpServer() : NsSkelRpcServer() {
 	setPort(NsSkelRpcRegistry::instance()->getLocalService()->httpPort());
 	_serverptr = make_shared<Server>();
+
+	/*
+	 * Set method on path /[same base64] 
+	 *   in base64 encoded same method call, that can be received from TCP
+	 */
 	_serverptr->Get(R"(/((?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$))", [&](const Request& req, Response& res) {
 		shared_ptr<string> requestBase64 = make_shared<string>(req.matches[1]);
 		shared_ptr<NsSerialized> rpcRequestSerialized = NsSkelUtils::fromBase64(requestBase64);
