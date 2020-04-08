@@ -10,7 +10,7 @@ using namespace nanoservices;
 
 int main(int argc, char** argv) {
 	map<char, NsCmdLineParameters::opt> prms = {
-		{'n' , {"name", 'n', "NAME", 0, "Name for shutdowning service"}},
+		{'n' , {"name", 'n', "NAME", 0, "Name of service to shutdown"}},
 		{'p' , {"port", 'p', "PORT", 0, "Port of shutdowning service"}},
 		{'h' , {"host", 'h', "HOST", 0, "Host of shutdowning service"}},
 		{'\0', {0,0,0,0}}
