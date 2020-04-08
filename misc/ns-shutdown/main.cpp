@@ -42,6 +42,6 @@ int main(int argc, char** argv) {
 		sendPackRpcRequest(serviceName, host, port, request);
 		return 0;
 	}
-	cerr << "Parameter 'name' must be set" << endl;
+	cerr << "Parameter 'name' must be set." << endl;
 	return 1;
 }

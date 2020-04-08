@@ -19,7 +19,7 @@ if(FILE)
 elseif(ZOO)
 	SET(CPACK_PACKAGE_NAME ${CMAKE_PROJECT_NAME}-zoo)
 else()
-	message(FATAL_ERROR "You cmake it wrong!!")
+	message(FATAL_ERROR "Only one of FILE or ZOO must be set.")
 endif(FILE)
         
 SET(CPACK_GENERATOR "DEB")

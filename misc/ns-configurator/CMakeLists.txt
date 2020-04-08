@@ -20,7 +20,7 @@ elseif(ZOO)
 	set(Sources ${Sources}
 		${ns_skeleton_SOURCE_DIR}/src/zoo/ZooConfig.cpp)
 else()
-	message(FATAL_ERROR "You cmake it wrong!!")
+	message(FATAL_ERROR "Only one of FILE or ZOO must be set.")
 endif(FILE)
 
 include_directories(${ns_skeleton_SOURCE_DIR}/include)
@@ -34,7 +34,7 @@ elseif(ZOO)
 	include_directories(/usr/include/zookeeper)
 	set(CONFIG_LIBS zookeeper_mt)
 else()
-	message(FATAL_ERROR "You cmake it wrong!!")
+	message(FATAL_ERROR "Only one of FILE or ZOO must be set.")
 endif(FILE)
 
 if(FILE)
@@ -47,7 +47,7 @@ elseif(ZOO)
 	# Prefix for root config node in zookeeper
 	add_definitions(-DPREFIX="/ru/cniiag/webmaps")
 else()
-	message(FATAL_ERROR "You cmake it wrong!!")
+	message(FATAL_ERROR "Only one of FILE or ZOO must be set.")
 endif(FILE)
 
 add_executable(ns-configurator ${Sources} ${Headers})
