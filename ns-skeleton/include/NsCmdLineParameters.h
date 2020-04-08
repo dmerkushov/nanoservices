@@ -62,7 +62,7 @@ namespace nanoservices {
 		std::vector<std::string> unparsedParameters();
 		
 		/**
-		 * Alias for type from getopt.h
+		 * Alias for option type from argp.h
 		 */
 		using opt = struct argp_option;
 		/**
