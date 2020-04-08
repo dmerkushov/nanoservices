@@ -32,16 +32,15 @@ After a successful build and all the tests passing the resulting shared object w
 
 Header files to include to use the library will be in `nanoservices/ns-skeleton/include/`
 
-Also successful build generate misc tool `ns-configurator` at `nanoservices/build/misc/ns-configurator`
+A successful build will also generate the `ns-configurator` executable at `nanoservices/build/misc/ns-configurator`
 
 Build debian packages
 ---------------------
 
-For build debian packages from builded sources
+To build debian packages from built sources
 
 ```bash
 cd build/
 cpack
 ```
-
 
