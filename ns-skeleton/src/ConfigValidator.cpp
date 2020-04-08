@@ -27,7 +27,7 @@ void ConfigValidator::validateObject(const std::string& path, const std::string&
 	switch(data->type()) {
 	case JSON_OBJECT: {
 		auto obj = fromNsSkelJsonPtr<NsSkelJsonObject>(data);
-		if(obj.size() > childrenCount) {
+		if(obj.size() > MAX_CHILDREN_COUNT) {
 			throw CVTooManyChildren(string() + "Too many children at \"" + path + "\".");
 		}
 		if(!(obj.find(descFieldName) != obj.end())) {
@@ -41,7 +41,7 @@ void ConfigValidator::validateObject(const std::string& path, const std::string&
 	}
 	case JSON_STRING: {
 		auto str = fromNsSkelJsonPtr<string>(data);
-		if(str.size() > maxDataSize) {
+		if(str.size() > MAX_DATA_SIZE) {
 			throw CVTooLongData(string() + "Too long data as \"" + path + "\".");
 		}
 		// Descriptions are string only
