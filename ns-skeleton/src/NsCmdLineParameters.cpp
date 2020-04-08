@@ -87,8 +87,6 @@ namespace nanoservices {
 		argp_opt['n'] = {"name", 'n', "SERVICE", 0, "Change name to SERVICE", 0};
 		// Option for change service port
 		argp_opt['p'] = {"port", 'p', "PORT", 0, "Change binding port to PORT", 0};
-		// Sequence of option struct must be zero termninated
-		argp_opt['\0'] = {0};
 
 		return argp_opt;
 	}
@@ -102,6 +100,8 @@ void NsCmdLineParameters::init(std::map<char, NsCmdLineParameters::opt>& param_d
 }
 
 NsCmdLineParameters::NsCmdLineParameters(std::map<char, NsCmdLineParameters::opt>& param_defs, int argc, char** argv):_argc(argc), _argv(argv) {
+	// Sequence of option struct must be zero termninated
+	param_defs['\0'] = {0};
 	// if no argument provided, no parse doing
 	if(argc) {
 		parse(param_defs);

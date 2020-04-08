@@ -26,8 +26,7 @@ int main(int argc, char** argv) {
 		{'c' , {"create", 'c', 0, 0, "create config node at PATH with DATA", 1}},
 		{'r' , {"read", 'r', 0, 0, "read config node data from PATH", 1}},
 		{'u' , {"update", 'u', 0, 0, "update config node at PATH as DATA", 1}},
-		{'d' , {"delete", 'd', 0, 0, "delete config node at PATH", 1}},
-		{'\0', {0,0,0,0}}
+		{'d' , {"delete", 'd', 0, 0, "delete config node at PATH", 1}}
 	};
 	NsCmdLineParameters::init(prms, argc, argv);
 
