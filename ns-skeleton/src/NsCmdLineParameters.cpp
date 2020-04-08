@@ -30,27 +30,7 @@ using namespace nanoservices;
 
 std::shared_ptr<NsCmdLineParameters> NsCmdLineParameters::_instance;
 
-void NsCmdLineParameters::init(std::map<char, NsCmdLineParameters::opt>& param_defs, int argc, char** argv) {
-	// if no argument provided, no instance reinitialised
-	if(argc || !_instance) {
-		_instance = std::shared_ptr<NsCmdLineParameters>(new NsCmdLineParameters(param_defs, argc, argv));
-	}
-}
-
-NsCmdLineParameters::NsCmdLineParameters(std::map<char, NsCmdLineParameters::opt>& param_defs, int argc, char** argv):_argc(argc), _argv(argv) {
-	// if no argument provided, no parse doing
-	if(argc) {
-		parse(param_defs);
-	}
-}
-
-char* new_c_str(std::string str) {
-	char* res = new char[str.size() + 1];
-	strcpy(res, str.c_str());
-	return res;
-}
-
-namespace nanoservices {	
+namespace nanoservices {
 	std::map<char, struct argp_option> getOptionDefinitions(NsSkelJsonPtr paramsKeys) {
 		std::map<char, struct argp_option> argp_opt;
 
@@ -112,8 +92,21 @@ namespace nanoservices {
 
 		return argp_opt;
 	}
-
 };
+
+void NsCmdLineParameters::init(std::map<char, NsCmdLineParameters::opt>& param_defs, int argc, char** argv) {
+	// if no argument provided, no instance reinitialised
+	if(argc || !_instance) {
+		_instance = std::shared_ptr<NsCmdLineParameters>(new NsCmdLineParameters(param_defs, argc, argv));
+	}
+}
+
+NsCmdLineParameters::NsCmdLineParameters(std::map<char, NsCmdLineParameters::opt>& param_defs, int argc, char** argv):_argc(argc), _argv(argv) {
+	// if no argument provided, no parse doing
+	if(argc) {
+		parse(param_defs);
+	}
+}
 
 NsCmdLineParameters::opt* NsCmdLineParameters::getLongOptions(std::map<char, NsCmdLineParameters::opt>& map) {
 	opt* res = new opt[map.size()];

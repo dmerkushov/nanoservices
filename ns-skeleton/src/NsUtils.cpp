@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <sstream>
+#include <cstring>
 
 #include "NsUtils.h"
 
@@ -17,5 +18,11 @@ namespace nanoservices {
 		}
 
 		return result;
+	}
+
+	char* new_c_str(std::string str) {
+		char* res = new char[str.size() + 1];
+		strcpy(res, str.c_str());
+		return res;
 	}
 };

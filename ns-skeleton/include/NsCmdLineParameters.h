@@ -88,6 +88,10 @@ namespace nanoservices {
 		friend class NsSkeleton;
 	};
 	
+	/**
+	 * Convert json from config to map of argp option definitions
+	 * @param paramsKeys -- json object, usually extracted from service config
+	 */
 	extern std::map<char, struct argp_option> getOptionDefinitions(NsSkelJsonPtr paramsKeys);
 
 };
