@@ -92,6 +92,8 @@ namespace nanoservices {
 
 		void sleepWhileActive();
 
+		std::shared_ptr<std::string> host();
+
 		uint16_t port();
 
 	protected:
@@ -107,6 +109,7 @@ namespace nanoservices {
 
 		void operator=(NsSkelRpcServer &orig) = delete;
 
+		std::shared_ptr<std::string> _host;
 		uint16_t _port;
 		int _serverSocketFd;
 		std::atomic<bool> _serverStarted;

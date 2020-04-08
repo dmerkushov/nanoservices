@@ -1,6 +1,6 @@
 {
 	"host": {
-		"__data__":"localhost",
+		"__data__":"0.0.0.0",
 		"__description__":"Service host"
 	},
 	"port": {

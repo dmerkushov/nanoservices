@@ -68,6 +68,7 @@ NsSkelRpcServer::NsSkelRpcServer() :
 		_serverActive(false),
 		_serverStarted(false),
 		_shutdownReceived(false) {
+	_host = NsSkelRpcRegistry::instance()->getLocalService()->host();
 	_port = NsSkelRpcRegistry::instance()->getLocalService()->port();
 	if (NsCmdLineParameters::instance()->isParam("port")) {
 		string port_s = NsCmdLineParameters::instance()->paramValue("port");
@@ -207,6 +208,10 @@ void NsSkelRpcServer::sleepWhileActive() {
 	while (_serverActive.load()) {
 		::sleep(1);
 	}
+}
+
+shared_ptr<string> NsSkelRpcServer::host() {
+	return _host;
 }
 
 uint16_t NsSkelRpcServer::port() {
