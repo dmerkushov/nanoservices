@@ -10,7 +10,7 @@ It is in development by now, a more meaningful readme will be added later
 How to build
 ------------
 
-You'll need: `cmake` (minimum version is 3.0), `make`, `libzookeeper-mt2`, local instance of `zookeeper` and a C++11 compiler (the framework is tested with gcc 4.7)
+You'll need: `cmake` (minimum version is 3.0), `make`, `libzookeeper-mt-dev`, running local instance of `zookeeper` and a C++11 compiler (the framework is tested with gcc 6+)
 
 ```bash
 git clone git@github.com:dmerkushov/nanoservices.git`
@@ -32,7 +32,8 @@ After a successful build and all the tests passing the resulting shared object w
 
 Header files to include to use the library will be in `nanoservices/ns-skeleton/include/`
 
-A successful build will also generate the `ns-configurator` executable at `nanoservices/build/misc/ns-configurator`
+A successful build will also generate some tools in `nanoservices/build/misc/` folder. 
+More info about [here](/misc/README.md)
 
 Build debian packages
 ---------------------
