@@ -29,6 +29,8 @@
 
 #include <memory>
 #include <sstream>
+#include <numeric>
+#include <regex>
 
 #include <cstdint>
 #include <cstring>
@@ -41,10 +43,68 @@
 
 namespace msgpack2 = msgpack::v2;
 
-#define NSSERIALIZER_PREPARE MSGPACK_DEFINE
+#define NSSERIALIZER_PREPARE_SYS MSGPACK_DEFINE
+#define NSSERIALIZER_PREPARE(...) std::vector<std::string> __names__ = nanoservices::ListTypeNames(__VA_ARGS__); \
+NSSERIALIZER_PREPARE_SYS(__VA_ARGS__)
 #define NSSERIALIZER_ADD_ENUM MSGPACK_ADD_ENUM
 
 namespace nanoservices {
+
+	template<class ...Ts> struct TypeList {};
+
+	template<class T> constexpr std::string helper() {
+		return __PRETTY_FUNCTION__;
+	};
+	
+	template<class T> constexpr std::string getTypeName() {
+		std::smatch sm;
+ 
+		std::regex re1(R"(\[with T = (.*);)");
+		auto search = helper<T>();
+		std::regex_search(search, sm, re1);
+		return sm.str(1);
+	};
+
+	template<typename ...Ts> constexpr std::vector<std::string> ListTypeNames(Ts... args) {
+		return {nanoservices::getTypeName<Ts>()...};
+	};
+
+	class NsTypeInfo {
+		std::string _name;
+		std::vector<std::string> _fields;
+	public:
+		NsTypeInfo(std::string name, std::vector<std::string> fields) {
+			_name = name;
+			_fields = fields;
+		};
+
+		inline std::string getName() {return _name;};
+		inline std::string getDefinition() {
+			std::string resultText = "// Definition of " + _name + "\n\nclass ";
+			resultText += _name;
+			resultText += "{\npublic:\n";
+			int i = 1;
+			std::vector<std::string> fnames;
+			for(auto fieldType: _fields) {
+				std::string fname = "_" + std::to_string(i++);
+				fnames.push_back(fname);
+				resultText += "\t" + fieldType + " " + fname + ";\n";
+			}
+			resultText += "\tNSSERIALIZER_PREPARE(" + std::accumulate(std::next(fnames.begin()), fnames.end(),
+                                    fnames[0], // start with first element
+                                    [](std::string a, std::string b) {
+				         return std::move(a) + ',' + std::move(b);
+				     }) + ");\n};";
+			return resultText;
+		};
+	};
+
+	using NsTypeInfoPtr = std::shared_ptr<NsTypeInfo>;
+
+	template<class T> constexpr NsTypeInfoPtr getFullTypeName() {
+		auto fnames = (T()).__names__;
+		return std::make_shared<NsTypeInfo>(getTypeName<T>(), fnames);
+	};
 
 	std::string hexdump(const char *data, uint32_t len);
 

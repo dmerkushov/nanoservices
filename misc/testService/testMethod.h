@@ -6,7 +6,8 @@ class TestMethodArgs {
 public:
 	int32_t a;
 	int32_t b;
-	NSSERIALIZER_PREPARE(a,b);
+	std::vector<std::string> descs;
+	NSSERIALIZER_PREPARE(a,b, descs);
 };
 
 class TestMethodResult {
