@@ -13,7 +13,6 @@ const string ConfigValidator::dataFieldName = "__data__";
 const string ConfigValidator::descFieldName = "__description__";
 
 
-// TODO: Move field count and field names to public static constants
 void ConfigValidator::validate(const string& path, nanoservices::NsSkelJsonPtr data) {
 	if(!data) {
 		throw NsException("data is null");
@@ -45,7 +44,7 @@ void ConfigValidator::validateObject(const std::string& path, const std::string&
 		if(str.size() > maxDataSize) {
 			throw CVTooLongData(string() + "Too long data as \"" + path + "\".");
 		}
-		// Descriptions string only
+		// Descriptions are string only
 		if(name == descFieldName) {
 			break;
 		}
