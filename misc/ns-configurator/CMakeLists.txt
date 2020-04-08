@@ -15,10 +15,10 @@ set(Sources
 
 if(FILE)
 	set(Sources ${Sources}
-		${ns_skeleton_SOURCE_DIR}/src/file/FileConfig.cpp)
+		${ns_skeleton_SOURCE_DIR}/src/file_config/FileConfig.cpp)
 elseif(ZOO)
 	set(Sources ${Sources}
-		${ns_skeleton_SOURCE_DIR}/src/zoo/ZooConfig.cpp)
+		${ns_skeleton_SOURCE_DIR}/src/zoo_config/ZooConfig.cpp)
 else()
 	message(FATAL_ERROR "Only one of FILE or ZOO must be set.")
 endif(FILE)
@@ -28,9 +28,9 @@ include_directories(${ns_skeleton_SOURCE_DIR}/include)
 include_directories(${nanoservices_SOURCE_DIR}/third-party/msgpack-c/include)
 
 if(FILE)
-	include_directories(${ns_skeleton_SOURCE_DIR}/include/file)
+	include_directories(${ns_skeleton_SOURCE_DIR}/include/file_config)
 elseif(ZOO)
-	include_directories(${ns_skeleton_SOURCE_DIR}/include/zoo)
+	include_directories(${ns_skeleton_SOURCE_DIR}/include/zoo_config)
 	include_directories(/usr/include/zookeeper)
 	set(CONFIG_LIBS zookeeper_mt)
 else()
