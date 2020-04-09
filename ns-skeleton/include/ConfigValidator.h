@@ -5,13 +5,15 @@
 class ConfigValidator {
 public:
 	/**
-	 * Valide data, path used only for generate errors messages
-	 *   Now check:
-	 *    - count of subnodes at one node
-	 *    - size of node data 
-	 *    - using appropriate types for define node data
-	 *    - definition of data for leaf subnodes
-	 * @param path
+	 * Valide configuration data
+	 *   By now, checks are:
+	 * <ul>
+	 * <li>count of subnodes at one node
+	 * <li>size of node data 
+	 * <li>usage of appropriate types to define node data
+	 * <li>definition of data for leaf subnodes
+	 * </ul>
+	 * @param path used only to generate error messages
 	 * @param data
 	 */
 	virtual void validate(const std::string& path, nanoservices::NsSkelJsonPtr data);

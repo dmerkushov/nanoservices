@@ -26,9 +26,9 @@ void AbstractConfig::init(const string& uri, shared_ptr<ConfigValidator> validat
 	int port = 0;
     
 	if (regex_match(uri, pieces_match, pieces_regex)) {
-		// Extract data from 1st parentsizes
+		// Extract data from 1st parentheses
 		host = pieces_match[1].str();
-		// Extract data from 2nd parentsizes
+		// Extract data from 2nd parentheses
 		port_s = pieces_match[2].str();
 		port = stoi(port_s);
 	} else {
@@ -85,7 +85,7 @@ void ZooConfig::init(const string& host, int port) throw(NsException) {
 	thread([&](){
 		this_thread::sleep_for(std::chrono::milliseconds(timeoutms));
 		if(state == -1) {
-			connect_wait.set_exception(make_exception_ptr(NsException(NSE_POSITION, "Coudn't connect to zookeeper!")));
+			connect_wait.set_exception(make_exception_ptr(NsException(NSE_POSITION, "Couldn't connect to zookeeper!")));
 		}
 	}).detach();
 	state = future_conn.get();
@@ -193,7 +193,7 @@ NsSkelJsonPtr ZooConfig::jsonTypeFromData(const string& path, const string& data
 		break;
 	default:
 		stringstream ess;
-		ess <<  "Data at \"" << path << "\" corrupted or used unknown type specifier!";
+		ess <<  "Data at \"" << path << "\" is corrupt or uses an unknown type specifier!";
 		throw NsException(NSE_POSITION, ess);
 	}
 	string to_parse = data.substr(1);
