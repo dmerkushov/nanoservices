@@ -120,7 +120,7 @@ NsSkelJsonPtr FileConfig::read(const std::string& path, bool desc) {
 
 NsSkelJsonPtr FileConfig::readWhole(const std::string& path) {
 	if(path[0] != '/') {
-		throw NsException(NSE_POSITION, "Path must start from \'/\'!");
+		throw NsException(NSE_POSITION, "Path must start with \'/\'!");
 	}
 	ifstream dataf (_configPath);
 	NsSkelJsonParser parser;

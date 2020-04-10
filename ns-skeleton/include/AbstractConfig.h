@@ -8,11 +8,11 @@ namespace nanoservices {
 	class AbstractConfig {
 	public:
 		/**
-		 * Get instance of current realisation of AbstractConfig
+		 * Get a singleton instance of the currently configured implementation of AbstractConfig
 		 */
 		static std::shared_ptr<AbstractConfig> instance();
 		/**
-		 * Initialisation connection to config source
+		 * Connect to the configuration source
 		 * @param uri -- URI to config source
 		 * @param validator -- validator for data used in create and update methods
 		 */
@@ -23,7 +23,7 @@ namespace nanoservices {
 		static void close();
 		/**
 		 * Create config node at path with data.
-		 *   If data define subnodes, they created too
+		 *   If data has subnodes, they are created too
 		 * @param path -- path to creating node, all parent node must exists
 		 * @param data
 		 */
@@ -34,14 +34,14 @@ namespace nanoservices {
 		 */
 		virtual nanoservices::NsSkelJsonPtr read(const std::string& path, bool desc = false) = 0;
 		/**
-		 * Update config node at path use data
+		 * Update config node at path using the given data
 		 * @param path -- path to updating node
 		 * @param data
 		 */
 		virtual void update(const std::string& path, nanoservices::NsSkelJsonPtr data) = 0;
 		/**
 		 * Delete config node at path
-		 *   All subnodes delete too.
+		 *   All subnodes will be deleted too.
 		 * @param path -- path to node
 		 */
 		virtual void del(const std::string& path) = 0;
