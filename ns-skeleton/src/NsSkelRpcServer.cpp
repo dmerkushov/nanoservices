@@ -182,7 +182,7 @@ void NsSkelRpcServer::serverThreadWork() {
 	_serverActive = false;
 }
 
-void NsSkelRpcServer::startup() throw(NsException) {
+void NsSkelRpcServer::startup() {
 	if (_serverStarted) {
 		return;
 	}

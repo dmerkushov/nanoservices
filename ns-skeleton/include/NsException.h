@@ -38,8 +38,6 @@
 #endif
 
 // Need to use MsgPack directly here, since NsSerializer makes use of NsException
-#define MSGPACK_USE_CPP03
-
 #include <msgpack.hpp>
 
 namespace msgpack2 = msgpack::v2;

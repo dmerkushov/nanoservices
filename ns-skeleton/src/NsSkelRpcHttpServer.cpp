@@ -78,7 +78,7 @@ NsSkelRpcHttpServer::NsSkelRpcHttpServer() : NsSkelRpcServer() {
 NsSkelRpcHttpServer::~NsSkelRpcHttpServer() {
 }
 
-void NsSkelRpcHttpServer::startup() throw(NsException) {
+void NsSkelRpcHttpServer::startup() {
 	_serverThread = std::thread([&]() {this->_serverptr->listen(this->host()->c_str(), this->port());});
 	_serverThread.detach();
 }

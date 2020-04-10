@@ -9,20 +9,20 @@ namespace nanoservices {
 	 */
 	class ZooConfig : public AbstractConfig {
 	public:
-		
+
 		virtual void create(const std::string& path, nanoservices::NsSkelJsonPtr data);
-		
+
 		virtual nanoservices::NsSkelJsonPtr read(const std::string& path, bool desc);
-		
+
 		virtual void update(const std::string& path, nanoservices::NsSkelJsonPtr data);
-		
+
 		virtual void del(const std::string& path);
 		virtual ~ZooConfig();
 	private:
 		ZooConfig(std::shared_ptr<ConfigValidator> validator);
 		ZooConfig(ZooConfig&) = delete;
 		ZooConfig& operator=(ZooConfig&) = delete;
-		void init(const std::string& host, int port) throw(nanoservices::NsException);
+		void init(const std::string& host, int port);
 		void close();
 		void createDict(const std::string& path, const std::string& parent_path, const std::string name, nanoservices::NsSkelJsonPtr data);
 		void createSimpleNode(const std::string& path, const std::string& data="");

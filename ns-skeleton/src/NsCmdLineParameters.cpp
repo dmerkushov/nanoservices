@@ -21,7 +21,7 @@
  *
  * Created on Dec 9, 2019, 1:03 PM
  */
- 
+
 #include "NsCmdLineParameters.h"
 #include "NsUtils.h"
 
@@ -76,7 +76,7 @@ namespace nanoservices {
 				if(argsReq) {
 					argName = fromNsSkelJsonPtr<string>(param->at("argName"));
 				}
-				
+
 				char shortKey = key[0];
 
 				argp_opt[shortKey] = {new_c_str(longKey), shortKey, argsReq ? new_c_str(argName) : 0, 0, new_c_str(desc), 0};
@@ -134,7 +134,7 @@ void NsCmdLineParameters::parse(std::map<char, NsCmdLineParameters::opt>& opts) 
 	argp_parse (&argp, _argc, _argv, 0, &optind, &data);
 }
 
-std::shared_ptr<NsCmdLineParameters> NsCmdLineParameters::instance () throw (NsException){
+std::shared_ptr<NsCmdLineParameters> NsCmdLineParameters::instance () {
 	if(!_instance) {
 		throw NsException (NSE_POSITION, "Call of NsCmdLineParameters::instance() before calling NsSkeleton::init()");
 	}

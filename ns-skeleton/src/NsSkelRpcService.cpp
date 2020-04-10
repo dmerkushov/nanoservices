@@ -40,7 +40,7 @@ NsSkelRpcService::NsSkelRpcService(shared_ptr<string> serviceName, shared_ptr<st
 		_httpPort(httpPort) {
 }
 
-NsSkelRpcService::NsSkelRpcService(shared_ptr<string> serviceName, NsSkelJsonPtr serviceJson) throw(NsException) {
+NsSkelRpcService::NsSkelRpcService(shared_ptr<string> serviceName, NsSkelJsonPtr serviceJson) {
 	NsSkelJsonObject serviceJsonObj = fromNsSkelJsonPtr<NsSkelJsonObject>(serviceJson);
 
 	if (serviceJsonObj.find("host") == serviceJsonObj.end()) {

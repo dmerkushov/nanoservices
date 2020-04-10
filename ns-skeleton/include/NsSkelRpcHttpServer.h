@@ -35,7 +35,7 @@ namespace nanoservices {
 
 		virtual ~NsSkelRpcHttpServer();
 
-		virtual void startup() throw(NsException);
+		virtual void startup();
 
 		virtual void shutdown();
 

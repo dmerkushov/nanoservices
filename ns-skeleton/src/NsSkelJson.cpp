@@ -299,13 +299,13 @@ std::string NsSkelJsonBoolean::serialize(bool prettyPrint, uint32_t depth) {
 NsSkelJsonParser::NsSkelJsonParser() {
 }
 
-NsSkelJsonPtr NsSkelJsonParser::parse(std::string &s) throw(NsException) {
+NsSkelJsonPtr NsSkelJsonParser::parse(std::string &s) {
 	std::stringstream ss;
 	ss << s;
 	return parse(ss);
 }
 
-NsSkelJsonPtr NsSkelJsonParser::parse(istream &is) throw(NsException) {
+NsSkelJsonPtr NsSkelJsonParser::parse(istream &is) {
 	char c;
 	is.get(c);
 	skipSpaces(is, c);
@@ -327,7 +327,7 @@ void NsSkelJsonParser::skipSpaces(istream &is, char &c) {
 	}
 }
 
-NsSkelJsonPtr NsSkelJsonParser::parseBasedOnFirst(istream &is, char &c) throw(NsException) {
+NsSkelJsonPtr NsSkelJsonParser::parseBasedOnFirst(istream &is, char &c) {
 	//		cout << "parseBasedOnFirst" << endl;
 
 	if (is.eof()) {
@@ -352,7 +352,7 @@ NsSkelJsonPtr NsSkelJsonParser::parseBasedOnFirst(istream &is, char &c) throw(Ns
 	}
 }
 
-NsSkelJsonPtr NsSkelJsonParser::parseNull(istream &is, char &c) throw(NsException) {
+NsSkelJsonPtr NsSkelJsonParser::parseNull(istream &is, char &c) {
 	//		cout << "parseNull" << endl;
 
 	int u = is.get();
@@ -373,7 +373,7 @@ NsSkelJsonPtr NsSkelJsonParser::parseNull(istream &is, char &c) throw(NsExceptio
 	return NsSkelJsonPtr(new NsSkelJsonNull());
 }
 
-NsSkelJsonPtr NsSkelJsonParser::parseObject(istream &is, char &c) throw(NsException) {
+NsSkelJsonPtr NsSkelJsonParser::parseObject(istream &is, char &c) {
 	//		cout << "parseObject" << endl;
 
 	shared_ptr<NsSkelJsonObject> object = make_shared<NsSkelJsonObject>();
@@ -420,7 +420,7 @@ NsSkelJsonPtr NsSkelJsonParser::parseObject(istream &is, char &c) throw(NsExcept
 	return object;
 }
 
-NsSkelJsonPtr NsSkelJsonParser::parseArray(istream &is, char &c) throw(NsException) {
+NsSkelJsonPtr NsSkelJsonParser::parseArray(istream &is, char &c) {
 	//		cout << "parseArray" << endl;
 
 	shared_ptr<NsSkelJsonArray> array = make_shared<NsSkelJsonArray>();
@@ -455,7 +455,7 @@ NsSkelJsonPtr NsSkelJsonParser::parseArray(istream &is, char &c) throw(NsExcepti
 	return array;
 }
 
-NsSkelJsonPtr NsSkelJsonParser::parseString(istream &is, char &c) throw(NsException) {
+NsSkelJsonPtr NsSkelJsonParser::parseString(istream &is, char &c) {
 	//		cout << "parseString" << endl;
 
 	std::stringstream ss;
@@ -492,7 +492,7 @@ NsSkelJsonPtr NsSkelJsonParser::parseString(istream &is, char &c) throw(NsExcept
 	return NsSkelJsonPtr(new NsSkelJsonString(s));
 }
 
-NsSkelJsonPtr NsSkelJsonParser::parseNumber(istream &is, char &c) throw(NsException) {
+NsSkelJsonPtr NsSkelJsonParser::parseNumber(istream &is, char &c) {
 	//		cout << "parseNumber" << endl;
 
 	std::stringstream nss;
@@ -513,7 +513,7 @@ NsSkelJsonPtr NsSkelJsonParser::parseNumber(istream &is, char &c) throw(NsExcept
 	return NsSkelJsonPtr(new NsSkelJsonNumber(d));
 }
 
-NsSkelJsonPtr NsSkelJsonParser::parseBoolean(istream &is, char &c) throw(NsException) {
+NsSkelJsonPtr NsSkelJsonParser::parseBoolean(istream &is, char &c) {
 	//		cout << "parseBoolean" << endl;
 
 	if (c == 't' || c == 'T') { // Parsing true
@@ -561,7 +561,7 @@ namespace nanoservices {
 
 // Checker function useful for casts
 
-	void checkNsSkelJsonPtr(const NsSkelJsonPtr &p, const NsSkelJsonValueType &t) throw(NsException) {
+	void checkNsSkelJsonPtr(const NsSkelJsonPtr &p, const NsSkelJsonValueType &t) {
 		if (!p) {
 			throw NsException(NSE_POSITION, "Empty NsSkelJsonPtr provided");
 		}
@@ -577,44 +577,44 @@ namespace nanoservices {
 /////////////////// Specializations for castNsSkelJsonPtr()
 
 	template<class T>
-	T _doCastNsSkelJsonPtr(const NsSkelJsonPtr &p, NsSkelJsonValueType &t) throw(NsException) {
+	T _doCastNsSkelJsonPtr(const NsSkelJsonPtr &p, NsSkelJsonValueType &t) {
 		checkNsSkelJsonPtr(p, t);
 
 		return std::dynamic_pointer_cast<typename T::element_type>(p);
 	}
 
 	template<>
-	NsSkelJsonNullPtr castNsSkelJsonPtr(const NsSkelJsonPtr &p) throw(NsException) {
+	NsSkelJsonNullPtr castNsSkelJsonPtr(const NsSkelJsonPtr &p) {
 		NsSkelJsonValueType t = JSON_NULL;
 		return _doCastNsSkelJsonPtr<NsSkelJsonNullPtr>(p, t);
 	}
 
 	template<>
-	NsSkelJsonObjectPtr castNsSkelJsonPtr(const NsSkelJsonPtr &p) throw(NsException) {
+	NsSkelJsonObjectPtr castNsSkelJsonPtr(const NsSkelJsonPtr &p) {
 		NsSkelJsonValueType t = JSON_OBJECT;
 		return _doCastNsSkelJsonPtr<NsSkelJsonObjectPtr>(p, t);
 	}
 
 	template<>
-	NsSkelJsonArrayPtr castNsSkelJsonPtr(const NsSkelJsonPtr &p) throw(NsException) {
+	NsSkelJsonArrayPtr castNsSkelJsonPtr(const NsSkelJsonPtr &p) {
 		NsSkelJsonValueType t = JSON_ARRAY;
 		return _doCastNsSkelJsonPtr<NsSkelJsonArrayPtr>(p, t);
 	}
 
 	template<>
-	NsSkelJsonStringPtr castNsSkelJsonPtr(const NsSkelJsonPtr &p) throw(NsException) {
+	NsSkelJsonStringPtr castNsSkelJsonPtr(const NsSkelJsonPtr &p) {
 		NsSkelJsonValueType t = JSON_STRING;
 		return _doCastNsSkelJsonPtr<NsSkelJsonStringPtr>(p, t);
 	}
 
 	template<>
-	NsSkelJsonNumberPtr castNsSkelJsonPtr(const NsSkelJsonPtr &p) throw(NsException) {
+	NsSkelJsonNumberPtr castNsSkelJsonPtr(const NsSkelJsonPtr &p) {
 		NsSkelJsonValueType t = JSON_NUMBER;
 		return _doCastNsSkelJsonPtr<NsSkelJsonNumberPtr>(p, t);
 	}
 
 	template<>
-	NsSkelJsonBooleanPtr castNsSkelJsonPtr(const NsSkelJsonPtr &p) throw(NsException) {
+	NsSkelJsonBooleanPtr castNsSkelJsonPtr(const NsSkelJsonPtr &p) {
 		NsSkelJsonValueType t = JSON_BOOLEAN;
 		return _doCastNsSkelJsonPtr<NsSkelJsonBooleanPtr>(p, t);
 	}
@@ -622,7 +622,7 @@ namespace nanoservices {
 /////////////////// Specializations for fromNsSkelJsonPtr()
 
 	template<typename T>
-	T _doFromNsSkelJsonPtr(const NsSkelJsonPtr &p, const NsSkelJsonValueType &t) throw(NsException) {
+	T _doFromNsSkelJsonPtr(const NsSkelJsonPtr &p, const NsSkelJsonValueType &t) {
 		checkNsSkelJsonPtr(p, t);
 
 		std::shared_ptr<T> op = castNsSkelJsonPtr<std::shared_ptr<T> >(p);
@@ -630,115 +630,115 @@ namespace nanoservices {
 	}
 
 	template<>
-	NsSkelJsonObject fromNsSkelJsonPtr(const NsSkelJsonPtr &p) throw(NsException) {
+	NsSkelJsonObject fromNsSkelJsonPtr(const NsSkelJsonPtr &p) {
 		NsSkelJsonValueType t = JSON_OBJECT;
 		return _doFromNsSkelJsonPtr<NsSkelJsonObject>(p, t);
 	}
 
 	template<>
-	std::map<std::string, NsSkelJsonPtr> fromNsSkelJsonPtr(const NsSkelJsonPtr &p) throw(NsException) {
+	std::map<std::string, NsSkelJsonPtr> fromNsSkelJsonPtr(const NsSkelJsonPtr &p) {
 		NsSkelJsonValueType t = JSON_OBJECT;
 		return _doFromNsSkelJsonPtr<NsSkelJsonObject>(p, t);
 	}
 
 	template<>
-	NsSkelJsonArray fromNsSkelJsonPtr(const NsSkelJsonPtr &p) throw(NsException) {
+	NsSkelJsonArray fromNsSkelJsonPtr(const NsSkelJsonPtr &p) {
 		NsSkelJsonValueType t = JSON_ARRAY;
 		return _doFromNsSkelJsonPtr<NsSkelJsonArray>(p, t);
 	}
 
 	template<>
-	std::vector<NsSkelJsonPtr> fromNsSkelJsonPtr(const NsSkelJsonPtr &p) throw(NsException) {
+	std::vector<NsSkelJsonPtr> fromNsSkelJsonPtr(const NsSkelJsonPtr &p) {
 		NsSkelJsonValueType t = JSON_ARRAY;
 		return _doFromNsSkelJsonPtr<NsSkelJsonArray>(p, t);
 	}
 
 	template<>
-	NsSkelJsonString fromNsSkelJsonPtr(const NsSkelJsonPtr &p) throw(NsException) {
+	NsSkelJsonString fromNsSkelJsonPtr(const NsSkelJsonPtr &p) {
 		NsSkelJsonValueType t = JSON_STRING;
 		return _doFromNsSkelJsonPtr<NsSkelJsonString>(p, t);
 	}
 
 	template<>
-	std::string fromNsSkelJsonPtr(const NsSkelJsonPtr &p) throw(NsException) {
+	std::string fromNsSkelJsonPtr(const NsSkelJsonPtr &p) {
 		NsSkelJsonValueType t = JSON_STRING;
 		return _doFromNsSkelJsonPtr<NsSkelJsonString>(p, t);
 	}
 
 	template<>
-	NsSkelJsonNumber fromNsSkelJsonPtr(const NsSkelJsonPtr &p) throw(NsException) {
+	NsSkelJsonNumber fromNsSkelJsonPtr(const NsSkelJsonPtr &p) {
 		NsSkelJsonValueType t = JSON_NUMBER;
 		return _doFromNsSkelJsonPtr<NsSkelJsonNumber>(p, t);
 	}
 
 	template<>
-	double fromNsSkelJsonPtr(const NsSkelJsonPtr &p) throw(NsException) {
+	double fromNsSkelJsonPtr(const NsSkelJsonPtr &p) {
 		NsSkelJsonValueType t = JSON_NUMBER;
 		return _doFromNsSkelJsonPtr<NsSkelJsonNumber>(p, t).value();
 	}
 
 	template<>
-	int64_t fromNsSkelJsonPtr(const NsSkelJsonPtr &p) throw(NsException) {
+	int64_t fromNsSkelJsonPtr(const NsSkelJsonPtr &p) {
 		NsSkelJsonValueType t = JSON_NUMBER;
 		return _doFromNsSkelJsonPtr<NsSkelJsonNumber>(p, t).value();
 	}
 
 	template<>
-	uint64_t fromNsSkelJsonPtr(const NsSkelJsonPtr &p) throw(NsException) {
+	uint64_t fromNsSkelJsonPtr(const NsSkelJsonPtr &p) {
 		NsSkelJsonValueType t = JSON_NUMBER;
 		return _doFromNsSkelJsonPtr<NsSkelJsonNumber>(p, t).value();
 	}
 
 	template<>
-	int32_t fromNsSkelJsonPtr(const NsSkelJsonPtr &p) throw(NsException) {
+	int32_t fromNsSkelJsonPtr(const NsSkelJsonPtr &p) {
 		NsSkelJsonValueType t = JSON_NUMBER;
 		return _doFromNsSkelJsonPtr<NsSkelJsonNumber>(p, t).value();
 	}
 
 	template<>
-	uint32_t fromNsSkelJsonPtr(const NsSkelJsonPtr &p) throw(NsException) {
+	uint32_t fromNsSkelJsonPtr(const NsSkelJsonPtr &p) {
 		NsSkelJsonValueType t = JSON_NUMBER;
 		return _doFromNsSkelJsonPtr<NsSkelJsonNumber>(p, t).value();
 	}
 
 	template<>
-	int16_t fromNsSkelJsonPtr(const NsSkelJsonPtr &p) throw(NsException) {
+	int16_t fromNsSkelJsonPtr(const NsSkelJsonPtr &p) {
 		NsSkelJsonValueType t = JSON_NUMBER;
 		return _doFromNsSkelJsonPtr<NsSkelJsonNumber>(p, t).value();
 	}
 
 	template<>
-	uint16_t fromNsSkelJsonPtr(const NsSkelJsonPtr &p) throw(NsException) {
+	uint16_t fromNsSkelJsonPtr(const NsSkelJsonPtr &p) {
 		NsSkelJsonValueType t = JSON_NUMBER;
 		return _doFromNsSkelJsonPtr<NsSkelJsonNumber>(p, t).value();
 	}
 
 	template<>
-	int8_t fromNsSkelJsonPtr(const NsSkelJsonPtr &p) throw(NsException) {
+	int8_t fromNsSkelJsonPtr(const NsSkelJsonPtr &p) {
 		NsSkelJsonValueType t = JSON_NUMBER;
 		return _doFromNsSkelJsonPtr<NsSkelJsonNumber>(p, t).value();
 	}
 
 	template<>
-	uint8_t fromNsSkelJsonPtr(const NsSkelJsonPtr &p) throw(NsException) {
+	uint8_t fromNsSkelJsonPtr(const NsSkelJsonPtr &p) {
 		NsSkelJsonValueType t = JSON_NUMBER;
 		return _doFromNsSkelJsonPtr<NsSkelJsonNumber>(p, t).value();
 	}
 
 	template<>
-	NsSkelJsonBoolean fromNsSkelJsonPtr(const NsSkelJsonPtr &p) throw(NsException) {
+	NsSkelJsonBoolean fromNsSkelJsonPtr(const NsSkelJsonPtr &p) {
 		NsSkelJsonValueType t = JSON_BOOLEAN;
 		return _doFromNsSkelJsonPtr<NsSkelJsonBoolean>(p, t);
 	}
 
 	template<>
-	bool fromNsSkelJsonPtr(const NsSkelJsonPtr &p) throw(NsException) {
+	bool fromNsSkelJsonPtr(const NsSkelJsonPtr &p) {
 		NsSkelJsonValueType t = JSON_BOOLEAN;
 		return _doFromNsSkelJsonPtr<NsSkelJsonBoolean>(p, t).value();
 	}
 
 	template<>
-	NsSkelJsonNull fromNsSkelJsonPtr(const NsSkelJsonPtr &p) throw(NsException) {
+	NsSkelJsonNull fromNsSkelJsonPtr(const NsSkelJsonPtr &p) {
 		NsSkelJsonValueType t = NsSkelJsonValueType::JSON_NULL;
 		checkNsSkelJsonPtr(p, t);
 
@@ -749,97 +749,97 @@ namespace nanoservices {
 /////////////////// Specializations for setNsSkelJsonPtr()
 
 	template<>
-	void setNsSkelJsonPtr(NsSkelJsonPtr &p, NsSkelJsonObject &v) throw(NsException) {
+	void setNsSkelJsonPtr(NsSkelJsonPtr &p, NsSkelJsonObject &v) {
 		p = std::make_shared<NsSkelJsonObject>(v);
 	}
 
 	template<>
-	void setNsSkelJsonPtr(NsSkelJsonPtr &p, std::map<std::string, NsSkelJsonPtr> &v) throw(NsException) {
+	void setNsSkelJsonPtr(NsSkelJsonPtr &p, std::map<std::string, NsSkelJsonPtr> &v) {
 		p = std::make_shared<NsSkelJsonObject>(v);
 	}
 
 	template<>
-	void setNsSkelJsonPtr(NsSkelJsonPtr &p, NsSkelJsonArray &v) throw(NsException) {
+	void setNsSkelJsonPtr(NsSkelJsonPtr &p, NsSkelJsonArray &v) {
 		p = std::make_shared<NsSkelJsonArray>(v);
 	}
 
 	template<>
-	void setNsSkelJsonPtr(NsSkelJsonPtr &p, std::vector<NsSkelJsonPtr> &v) throw(NsException) {
+	void setNsSkelJsonPtr(NsSkelJsonPtr &p, std::vector<NsSkelJsonPtr> &v) {
 		p = std::make_shared<NsSkelJsonArray>(v);
 	}
 
 	template<>
-	void setNsSkelJsonPtr(NsSkelJsonPtr &p, NsSkelJsonString &v) throw(NsException) {
+	void setNsSkelJsonPtr(NsSkelJsonPtr &p, NsSkelJsonString &v) {
 		p = std::make_shared<NsSkelJsonString>(v);
 	}
 
 	template<>
-	void setNsSkelJsonPtr(NsSkelJsonPtr &p, std::string &v) throw(NsException) {
+	void setNsSkelJsonPtr(NsSkelJsonPtr &p, std::string &v) {
 		p = std::make_shared<NsSkelJsonString>(v);
 	}
 
 	template<>
-	void setNsSkelJsonPtr(NsSkelJsonPtr &p, NsSkelJsonNumber &v) throw(NsException) {
+	void setNsSkelJsonPtr(NsSkelJsonPtr &p, NsSkelJsonNumber &v) {
 		p = std::make_shared<NsSkelJsonNumber>(v.value());
 	}
 
 	template<>
-	void setNsSkelJsonPtr(NsSkelJsonPtr &p, double &v) throw(NsException) {
+	void setNsSkelJsonPtr(NsSkelJsonPtr &p, double &v) {
 		p = std::make_shared<NsSkelJsonNumber>(v);
 	}
 
 	template<>
-	void setNsSkelJsonPtr(NsSkelJsonPtr &p, int64_t &v) throw(NsException) {
+	void setNsSkelJsonPtr(NsSkelJsonPtr &p, int64_t &v) {
 		p = std::make_shared<NsSkelJsonNumber>((double) v);
 	}
 
 	template<>
-	void setNsSkelJsonPtr(NsSkelJsonPtr &p, uint64_t &v) throw(NsException) {
+	void setNsSkelJsonPtr(NsSkelJsonPtr &p, uint64_t &v) {
 		p = std::make_shared<NsSkelJsonNumber>((double) v);
 	}
 
 	template<>
-	void setNsSkelJsonPtr(NsSkelJsonPtr &p, int32_t &v) throw(NsException) {
+	void setNsSkelJsonPtr(NsSkelJsonPtr &p, int32_t &v) {
 		p = std::make_shared<NsSkelJsonNumber>((double) v);
 	}
 
 	template<>
-	void setNsSkelJsonPtr(NsSkelJsonPtr &p, uint32_t &v) throw(NsException) {
+	void setNsSkelJsonPtr(NsSkelJsonPtr &p, uint32_t &v) {
 		p = std::make_shared<NsSkelJsonNumber>((double) v);
 	}
 
 	template<>
-	void setNsSkelJsonPtr(NsSkelJsonPtr &p, int16_t &v) throw(NsException) {
+	void setNsSkelJsonPtr(NsSkelJsonPtr &p, int16_t &v) {
 		p = std::make_shared<NsSkelJsonNumber>((double) v);
 	}
 
 	template<>
-	void setNsSkelJsonPtr(NsSkelJsonPtr &p, uint16_t &v) throw(NsException) {
+	void setNsSkelJsonPtr(NsSkelJsonPtr &p, uint16_t &v) {
 		p = std::make_shared<NsSkelJsonNumber>((double) v);
 	}
 
 	template<>
-	void setNsSkelJsonPtr(NsSkelJsonPtr &p, int8_t &v) throw(NsException) {
+	void setNsSkelJsonPtr(NsSkelJsonPtr &p, int8_t &v) {
 		p = std::make_shared<NsSkelJsonNumber>((double) v);
 	}
 
 	template<>
-	void setNsSkelJsonPtr(NsSkelJsonPtr &p, uint8_t &v) throw(NsException) {
+	void setNsSkelJsonPtr(NsSkelJsonPtr &p, uint8_t &v) {
 		p = std::make_shared<NsSkelJsonNumber>((double) v);
 	}
 
 	template<>
-	void setNsSkelJsonPtr(NsSkelJsonPtr &p, NsSkelJsonBoolean &v) throw(NsException) {
+	void setNsSkelJsonPtr(NsSkelJsonPtr &p, NsSkelJsonBoolean &v) {
 		p = std::make_shared<NsSkelJsonBoolean>(v.value());
 	}
 
 	template<>
-	void setNsSkelJsonPtr(NsSkelJsonPtr &p, bool &v) throw(NsException) {
+	void setNsSkelJsonPtr(NsSkelJsonPtr &p, bool &v) {
 		p = std::make_shared<NsSkelJsonBoolean>(v);
 	}
 
 	template<>
-	void setNsSkelJsonPtr(NsSkelJsonPtr &p, NsSkelJsonNull &v) throw(NsException) {
+	void setNsSkelJsonPtr(NsSkelJsonPtr &p, NsSkelJsonNull &v) {
 		p = std::make_shared<NsSkelJsonNull>();
 	}
 } // namespace nanoservices

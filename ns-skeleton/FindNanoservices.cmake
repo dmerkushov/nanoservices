@@ -39,7 +39,7 @@ get_filename_component(LIBNSSKELETON_LIBRARY_DIR ${LIBNSSKELETON_LIBRARY} PATH)
 str_right(${SKELETON_DEV_DEB} 1 SKELETON_DEV_DEB)
 
 execute_process(COMMAND dpkg -L ${SKELETON_DEV_DEB}
-		COMMAND grep "[.]h"
+		COMMAND grep "Ns.*[.]h$"
 		COMMAND sed -e "s/\\(.*\\)\\/.*[.]h/\\1/"
 		COMMAND sort -u
 		COMMAND head -1

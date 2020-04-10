@@ -14,17 +14,17 @@ using namespace nanoservices;
 
 shared_ptr<AbstractConfig> AbstractConfig::_instance = nullptr;
 
-void AbstractConfig::init(const string& uri, shared_ptr<ConfigValidator> validator) throw(NsException) {
+void AbstractConfig::init(const string& uri, shared_ptr<ConfigValidator> validator) {
 	if(_instance) {
 		throw NsException(NSE_POSITION, "Already connected!");
 	}
 	regex pieces_regex("zoo://([a-z0-9\\.]+):([0-9]+)");
 	smatch pieces_match;
- 
+
 	string host = "";
 	string port_s = "";
 	int port = 0;
-    
+
 	if (regex_match(uri, pieces_match, pieces_regex)) {
 		// Extract data from 1st parentheses
 		host = pieces_match[1].str();
@@ -50,7 +50,7 @@ shared_ptr<AbstractConfig> AbstractConfig::instance() {
 	return _instance;
 }
 
-void ZooConfig::init(const string& host, int port) throw(NsException) {
+void ZooConfig::init(const string& host, int port) {
 	class ZHCloser {
 	public:
 		ZHCloser(zhandle_t* zh):_zh(zh) {};

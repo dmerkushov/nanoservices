@@ -44,13 +44,13 @@ const std::string CONFIGPATH_EXTEN = ".conf.json";
 
 static shared_ptr<NsSkelConfiguration> _instanceOfNsSkelConfiguration_doNotUseDirectly;
 
-void nsSkelConfig(const string &serviceName, const string &configName) throw(NsException) {
+void nsSkelConfig(const string &serviceName, const string &configName) {
 	NsSkelConfiguration *config = new NsSkelConfiguration(serviceName, configName);
 	_instanceOfNsSkelConfiguration_doNotUseDirectly = shared_ptr<NsSkelConfiguration>(config);
 }
 
 
-NsSkelConfiguration::NsSkelConfiguration(const string &serviceName, const string &configName) throw(NsException) {
+NsSkelConfiguration::NsSkelConfiguration(const string &serviceName, const string &configName) {
 	_serviceName = make_shared<string>(serviceName);
 	_configName = make_shared<string>(configName);
 
@@ -77,19 +77,19 @@ NsSkelConfiguration::NsSkelConfiguration(const string &serviceName, const string
 	_configuration = castNsSkelJsonPtr<NsSkelJsonObjectPtr>(_services->at(configName));
 }
 
-shared_ptr<NsSkelConfiguration> NsSkelConfiguration::instance() throw(NsException) {
+shared_ptr<NsSkelConfiguration> NsSkelConfiguration::instance() {
 	if (!_instanceOfNsSkelConfiguration_doNotUseDirectly) {
 		throw NsException(NSE_POSITION, "Call of NsSkelConfiguration::getInstance() before calling nsSkelConfig()");
 	}
 	return _instanceOfNsSkelConfiguration_doNotUseDirectly;
 }
 
-shared_ptr<string> NsSkelConfiguration::getServiceName() throw(NsException) {
+shared_ptr<string> NsSkelConfiguration::getServiceName() {
 	shared_ptr<string> returned = _serviceName;
 	return returned;
 }
 
-shared_ptr<string> NsSkelConfiguration::getConfigName() throw(NsException) {
+shared_ptr<string> NsSkelConfiguration::getConfigName() {
 	shared_ptr<string> returned = _configName;
 	return returned;
 }
@@ -106,7 +106,7 @@ namespace nanoservices {
 
 	template<>
 	NsSkelJsonPtr NsSkelConfiguration::getParameter<NsSkelJsonPtr>(std::string paramName,
-		NsSkelJsonPtr defaultVal) throw(nanoservices::NsException) {
+		NsSkelJsonPtr defaultVal) {
 		if (!hasParameter(paramName)) {
 			return defaultVal;
 		}

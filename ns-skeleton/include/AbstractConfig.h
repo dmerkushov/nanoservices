@@ -16,7 +16,7 @@ namespace nanoservices {
 		 * @param uri -- URI to config source
 		 * @param validator -- validator for data used in create and update methods
 		 */
-		static void init(const std::string& uri, std::shared_ptr<ConfigValidator> validator = std::make_shared<ConfigValidator>()) throw(nanoservices::NsException);
+		static void init(const std::string& uri, std::shared_ptr<ConfigValidator> validator = std::make_shared<ConfigValidator>());
 		/**
 		 * Close connection to config source
 		 */

@@ -201,3 +201,5 @@ install(DIRECTORY include/
 install(DIRECTORY ${nanoservices_SOURCE_DIR}/third-party/msgpack-c/include/
         DESTINATION /usr/include
         COMPONENT dev)
+
+set(CPACK_DEBIAN_LIB_PACKAGE_CONTROL_EXTRA postinst)

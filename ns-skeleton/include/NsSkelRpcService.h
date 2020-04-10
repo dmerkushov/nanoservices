@@ -38,7 +38,7 @@ namespace nanoservices {
 		NsSkelRpcService(std::shared_ptr<std::string> serviceName, std::shared_ptr<std::string> host, uint16_t port,
 						 bool httpEnabled, uint16_t httpPort);
 
-		NsSkelRpcService(std::shared_ptr<std::string> serviceName, NsSkelJsonPtr serviceJson) throw(NsException);
+		NsSkelRpcService(std::shared_ptr<std::string> serviceName, NsSkelJsonPtr serviceJson);
 
 		virtual ~NsSkelRpcService();
 

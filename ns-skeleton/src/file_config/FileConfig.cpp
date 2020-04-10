@@ -11,15 +11,15 @@ using namespace nanoservices;
 
 shared_ptr<AbstractConfig> AbstractConfig::_instance = nullptr;
 
-void AbstractConfig::init(const string& uri, shared_ptr<ConfigValidator> validator) throw(NsException) {
+void AbstractConfig::init(const string& uri, shared_ptr<ConfigValidator> validator) {
 	if(_instance) {
 		throw NsException(NSE_POSITION, "Already connected!");
 	}
 	regex pieces_regex("file://(.+)");
 	smatch pieces_match;
- 
+
 	string path = "";
-    
+
 	if (regex_match(uri, pieces_match, pieces_regex)) {
 		// Extract data from 1st parentsizes
 		path = pieces_match[1].str();

@@ -28,7 +28,7 @@
 #include "NsSkelJson.h"
 
 namespace nanoservices {
-	
+
 	class NsSkeleton;
 
 	class NsCmdLineParameters final {
@@ -37,7 +37,7 @@ namespace nanoservices {
 		 * Get the instance of NsCmdLineParameters for command line parameters of the current running nanoservice
 		 * @return
 		 */
-		static std::shared_ptr<NsCmdLineParameters> instance() throw (nanoservices::NsException);
+		static std::shared_ptr<NsCmdLineParameters> instance();
 		/**
 		 * Check specific key in parsed command line parameters 
 		 * @param keyName

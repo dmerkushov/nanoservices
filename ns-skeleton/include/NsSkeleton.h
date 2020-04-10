@@ -45,38 +45,38 @@ namespace nanoservices {
 		 * Initialize NsSkeleton infrastructure for a given service name
 		 * @param serviceName
 		 */
-		static void init(const std::string &serviceName, int argc = 0, char **argv = nullptr) throw(NsException);
+		static void init(const std::string &serviceName, int argc = 0, char **argv = nullptr);
 
 		/**
 		 * Start the previously-initialized nanoservice
 		 */
-		static void startup() throw(NsException);
+		static void startup();
 
 		/**
 		 * Shut down the previously-initialized nanoservice
 		 */
-		static void shutdown() throw(NsException);
+		static void shutdown();
 
 		/**
 		 * Get the current service name
 		 * @return
 		 */
-		static std::shared_ptr<std::string> serviceName() throw(NsException);
+		static std::shared_ptr<std::string> serviceName();
 
 		/**
 		 * Sleep while the current nanoservice is active
 		 */
-		static void sleepWhileActive() throw(NsException);
+		static void sleepWhileActive();
 
 		/**
 		 * Register a replier for a nanoservice method
 		 */
-		static void registerReplier(std::shared_ptr<NsSkelRpcReplierInterface> replier) throw(NsException);
+		static void registerReplier(std::shared_ptr<NsSkelRpcReplierInterface> replier);
 
 		/**
 		 * Unregister the replier previously registered for a nanoservice method
 		 */
-		static void unregisterReplier(std::shared_ptr<std::string> methodName) throw(NsException);
+		static void unregisterReplier(std::shared_ptr<std::string> methodName);
 
 		template<typename Args, typename Result>
 		static std::shared_ptr<Result>
@@ -85,7 +85,7 @@ namespace nanoservices {
 				std::shared_ptr<std::string> methodName,
 				std::shared_ptr<Args> args,
 				bool waitForResponse
-		) throw(NsException) {
+		) {
 
 			return nanoservices::sendRpcRequest<Args, Result>(serviceName, methodName, args, waitForResponse);
 		}
@@ -97,7 +97,7 @@ namespace nanoservices {
 				const std::string &methodName,
 				std::shared_ptr<Args> args,
 				bool waitForResponse
-		) throw(NsException) {
+		) {
 
 			std::shared_ptr<std::string> serviceNamePtr = std::make_shared<std::string>(serviceName);
 			std::shared_ptr<std::string> methodNamePtr = std::make_shared<std::string>(methodName);
@@ -111,7 +111,7 @@ namespace nanoservices {
 				const char *methodName,
 				std::shared_ptr<Args> args,
 				bool waitForResponse
-		) throw(NsException) {
+		) {
 
 			std::shared_ptr<std::string> serviceNamePtr = std::make_shared<std::string>(serviceName);
 			std::shared_ptr<std::string> methodNamePtr = std::make_shared<std::string>(methodName);

@@ -35,8 +35,6 @@
 
 #include "NsException.h"
 
-#define MSGPACK_USE_CPP03
-
 #include <msgpack.hpp>
 
 namespace msgpack2 = msgpack::v2;
@@ -105,7 +103,7 @@ namespace nanoservices {
 		virtual ~NsSerializer() {
 		}
 
-		std::shared_ptr<NsSerialized> serialize(P &toSerialize) throw(NsException) try {
+		std::shared_ptr<NsSerialized> serialize(P &toSerialize) try {
 			NsBinBuffer sbuf(0);
 
 			msgpack2::pack(sbuf, toSerialize);
@@ -125,7 +123,7 @@ namespace nanoservices {
 			throw NsException(NSE_POSITION, ess);
 		}
 
-		std::shared_ptr<NsSerialized> serialize(std::shared_ptr<P> toSerialize) throw(NsException) try {
+		std::shared_ptr<NsSerialized> serialize(std::shared_ptr<P> toSerialize) try {
 			NsBinBuffer sbuf(0);
 
 			msgpack2::pack(sbuf, *toSerialize);
@@ -145,7 +143,7 @@ namespace nanoservices {
 			throw NsException(NSE_POSITION, ess);
 		}
 
-		std::shared_ptr<P> deserialize(NsSerialized &toDeserialize) throw(NsException) try {
+		std::shared_ptr<P> deserialize(NsSerialized &toDeserialize) try {
 			//DEBUG
 			//		std::cout << std::dec << "Deserializing type " << typeid (P).name () << " (size " << toDeserialize.size << "):" << std::endl;
 			//		std::cout << hexdump (toDeserialize.ptr, toDeserialize.size);
@@ -178,7 +176,7 @@ namespace nanoservices {
 			throw NsException(NSE_POSITION, ess);
 		}
 
-		std::shared_ptr<P> deserialize(std::shared_ptr<NsSerialized> toDeserialize) throw(NsException) try {
+		std::shared_ptr<P> deserialize(std::shared_ptr<NsSerialized> toDeserialize) try {
 			//DEBUG
 			//		std::cout << std::dec << "Deserializing type " << typeid (P).name () << " (size " << toDeserialize->size << "):" << std::endl;
 			//		std::cout << hexdump (toDeserialize->ptr, toDeserialize->size);
