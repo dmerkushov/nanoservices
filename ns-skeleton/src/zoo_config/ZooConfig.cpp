@@ -111,7 +111,7 @@ void ZooConfig::create(const std::string& path, nanoservices::NsSkelJsonPtr data
 void ZooConfig::checkAndCreatePrefixPath() {
 	string path = "";
 	for(auto p: _prefixpath) {
-		path += delimeter + p;
+		path += delimiter + p;
 		int res = zoo_exists(_zooconnection, path.c_str(), 0, 0);
 		if(res == ZNONODE) {
 			res = zoo_create(_zooconnection, path.c_str(), 0, 0, &ZOO_OPEN_ACL_UNSAFE, 0, 0, 0);
@@ -125,7 +125,7 @@ void ZooConfig::createDict(const std::string& path, const std::string& parent_pa
 		auto obj = fromNsSkelJsonPtr<NsSkelJsonObject>(data);
 		createSimpleNode(path);
 		for(auto it: obj) {
-			createDict(path + delimeter + it.first, path, it.first, it.second);
+			createDict(path + delimiter + it.first, path, it.first, it.second);
 		}
 		break;
 	}
@@ -146,7 +146,7 @@ void ZooConfig::createDict(const std::string& path, const std::string& parent_pa
 		break;
 	}
 	case JSON_ARRAY:
-		throw NsException(NSE_POSITION, "Json type " + verboseNsSkelJsonType(data->type()) + " not supported!";
+		throw NsException(NSE_POSITION, "Json type " + verboseNsSkelJsonType(data->type()) + " not supported!");
 	default:
 		break;
 	}
@@ -228,7 +228,7 @@ NsSkelJsonPtr ZooConfig::readDict(const string& path, bool desc) {
 		}
 		for(auto child: children) {
 			if(child != ConfigValidator::descFieldName || desc) {
-				map[child] = readDict(path+delimeter+child, desc);
+				map[child] = readDict(path+delimiter+child, desc);
 			}
 		}
 		result = NsSkelJsonPtr (new NsSkelJsonObject(map));
@@ -251,7 +251,7 @@ void ZooConfig::updateDict(const std::string& path, nanoservices::NsSkelJsonPtr 
 		auto obj = fromNsSkelJsonPtr<NsSkelJsonObject>(data);
 		for(auto it: obj) {
 			if(it.first != ConfigValidator::dataFieldName) {
-				updateDict(path + delimeter + it.first, it.second);
+				updateDict(path + delimiter + it.first, it.second);
 			} else {
 				auto str = it.second->serialize();
 				setNodeData(path, typedByte[it.second->type()] + str);
@@ -268,7 +268,7 @@ void ZooConfig::updateDict(const std::string& path, nanoservices::NsSkelJsonPtr 
 		break;
 	}
 	case JSON_ARRAY:
-		throw NsException(NSE_POSITION, "Json type " + verboseNsSkelJsonType(data->type()) + " not supported!";
+		throw NsException(NSE_POSITION, "Json type " + verboseNsSkelJsonType(data->type()) + " not supported!");
 	default:
 		break;
 	}
@@ -288,7 +288,7 @@ void ZooConfig::del(const std::string& path) {
 void ZooConfig::delAll(const std::string& path) {
 	auto children = getChildren(path);
 	for(auto child: children) {
-		delAll(path + delimeter + child);
+		delAll(path + delimiter + child);
 	}
 	int res = zoo_delete(_zooconnection, path.c_str(), -1);
 	if(res != ZOK) {
@@ -297,7 +297,7 @@ void ZooConfig::delAll(const std::string& path) {
 }
 
 ZooConfig::ZooConfig(std::shared_ptr<ConfigValidator> validator):_zooconnection(0), _validator(validator) {
-	_prefixpath = string_split(_prefix.substr(1), delimeter);
+	_prefixpath = string_split(_prefix.substr(1), delimiter);
 }
 
 ZooConfig::~ZooConfig() {

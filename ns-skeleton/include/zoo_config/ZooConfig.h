@@ -43,7 +43,7 @@ namespace nanoservices {
 		
 		zhandle_t* _zooconnection;
 		std::shared_ptr<ConfigValidator> _validator;
-		static const char delimeter = '/';
+		static const char delimiter = '/';
 
 		friend class AbstractConfig;
 	};
