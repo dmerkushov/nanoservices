@@ -33,7 +33,9 @@ After a successful build and all the tests passing the resulting shared object w
 Header files to include to use the library will be in `nanoservices/ns-skeleton/include/`
 
 A successful build will also generate some tools in `nanoservices/build/misc/` folder. 
-More info about [here](/misc/README.md)
+By now, these are tools for configuring nanoservices (ns-configurator) and shutdowning a started nanoservice remotely (ns-shutdown). [More info](/misc/README.md)
+
+It is highly recommended to use the supplied tools to configure nanoservices, as different configuration source strategies may be applied by the nanoservice hosting teams.
 
 Build debian packages
 ---------------------
@@ -44,4 +46,3 @@ To build debian packages from built sources
 cd build/
 cpack
 ```
-
