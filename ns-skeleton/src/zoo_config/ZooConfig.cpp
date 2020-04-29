@@ -59,7 +59,7 @@ void ZooConfig::init(const string& host, int port) {
 	};
 	string url = host;
 	url += ":" + to_string(port);
-	// TODO: Use logger ??
+	// TODO: Use file path from ENV 
 	auto log_fp_ = fopen("/dev/null", "w");
 	zoo_set_log_stream(log_fp_);
 	zoo_set_debug_level(ZOO_LOG_LEVEL_DEBUG);
@@ -145,6 +145,8 @@ void ZooConfig::createDict(const std::string& path, const std::string& parent_pa
 		createSimpleNode(path);
 		break;
 	}
+	case JSON_ARRAY:
+		throw NsException(NSE_POSITION, "Json type " + verboseNsSkelJsonType(data->type()) + " not supported!";
 	default:
 		break;
 	}
@@ -265,6 +267,8 @@ void ZooConfig::updateDict(const std::string& path, nanoservices::NsSkelJsonPtr 
 		setNodeData(path, typedByte[data->type()] + str);
 		break;
 	}
+	case JSON_ARRAY:
+		throw NsException(NSE_POSITION, "Json type " + verboseNsSkelJsonType(data->type()) + " not supported!";
 	default:
 		break;
 	}
