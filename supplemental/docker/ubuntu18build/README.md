@@ -38,7 +38,7 @@ docker exec -it $CONTAINER_ID /bin/sh -c "[ -e /bin/bash ] && /bin/bash || /bin/
 
 ## Keep in mind
 
-This Dockerfile builds nanoservices with .deb packeges and zookeeper configuration libraries.
+This Dockerfile builds nanoservices with .deb packages and zookeeper configuration libraries.
 
 ```bash
 build
