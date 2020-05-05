@@ -122,7 +122,9 @@ void NsCmdLineParameters::parse(std::map<char, NsCmdLineParameters::opt>& opts) 
 	int optind = _argc;
 	auto options = getLongOptions(opts);
 	struct argp argp = { options, [](int key, char *arg, struct argp_state *state) -> error_t {
-		auto [that, opts] = *((pair<NsCmdLineParameters*, map<char, NsCmdLineParameters::opt>*>*)state->input);
+		auto argpair = *((pair<NsCmdLineParameters*, map<char, NsCmdLineParameters::opt>*>*)state->input);
+		auto that = argpair.first;
+		auto opts = argpair.second;
 		if(key == ARGP_KEY_ARG) {
 			that->_unparsed.push_back(arg);
 		} else if(opts->count(key) != 0) {
