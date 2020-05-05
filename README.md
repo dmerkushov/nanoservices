@@ -32,7 +32,9 @@ If you want to build with gcc 6+ do the following
 
 ```bash
 sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 60 --slave /usr/bin/g++ g++ /usr/bin/g++-6
-```
+
+# to pass test with zookeeper run
+ sudo /usr/share/zookeeper/bin/zkServer.sh start
 
 How to build
 ------------
