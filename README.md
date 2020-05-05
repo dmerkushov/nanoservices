@@ -35,7 +35,6 @@ sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 60 --slave /u
 
 # to pass test with zookeeper run
  sudo /usr/share/zookeeper/bin/zkServer.sh start
-
 How to build
 ------------
 
