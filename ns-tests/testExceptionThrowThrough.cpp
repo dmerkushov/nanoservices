@@ -53,7 +53,7 @@ void testExceptionThrowThrough() {
 
 	cout << "Replier registered" << endl;
 
-	NsSkelJsonArray knownServices = NsSkelConfiguration::instance()->getParameter<NsSkelJsonArray>("known-services");
+	NsSkelJsonObject knownServices = fromNsSkelJsonPtr<NsSkelJsonObject>(NsSkelConfiguration::instance()->getServices());
 
 	cout << "Known services: " << knownServices.serialize() << endl;
 

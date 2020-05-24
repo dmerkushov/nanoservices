@@ -84,13 +84,15 @@ namespace nanoservices {
 
 		virtual ~NsSkelRpcServer();
 
-		void startup() throw(NsException);
+		virtual void startup();
 
-		void shutdown();
+		virtual void shutdown();
 
 		bool active();
 
 		void sleepWhileActive();
+
+		std::shared_ptr<std::string> host();
 
 		uint16_t port();
 
@@ -99,15 +101,17 @@ namespace nanoservices {
 
 		virtual void processIncomingConnection(int dataSocketFd);
 
+		std::thread _serverThread;
+		std::atomic<bool> _serverActive;
+
 	private:
 		NsSkelRpcServer(const NsSkelRpcServer &orig) = delete;
 
 		void operator=(NsSkelRpcServer &orig) = delete;
 
+		std::shared_ptr<std::string> _host;
 		uint16_t _port;
 		int _serverSocketFd;
-		std::thread _serverThread;
-		std::atomic<bool> _serverActive;
 		std::atomic<bool> _serverStarted;
 		std::atomic<bool> _shutdownReceived;
 		std::map<int, std::shared_ptr<std::thread> > _threads;
@@ -167,7 +171,7 @@ namespace nanoservices {
 
 	static std::shared_ptr<NsRpcResponse>
 	sendPackRpcRequest(std::shared_ptr<std::string> serviceName, const char *host, uint16_t port,
-					   std::shared_ptr<NsRpcRequest> request) throw(NsException) {
+					   std::shared_ptr<NsRpcRequest> request) {
 
 		char portCharPtr[50];
 		sprintf(portCharPtr, "%d", port);
@@ -321,7 +325,7 @@ namespace nanoservices {
 	template<typename Args, typename Result>
 	static std::shared_ptr<Result>
 	sendRpcRequest(std::shared_ptr<std::string> serviceName, std::shared_ptr<std::string> methodName,
-				   std::shared_ptr<Args> args, bool waitForResponse) throw(NsException) {
+				   std::shared_ptr<Args> args, bool waitForResponse) {
 
 		std::shared_ptr<NsSkelRpcService> service;
 		std::shared_ptr<std::string> serviceNamePtr = serviceName;

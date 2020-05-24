@@ -33,7 +33,7 @@
 #include "NsException.h"
 
 extern "C" {
-void nsSkelConfig(const std::string &serviceName, const std::string &configName) throw(nanoservices::NsException);
+void nsSkelConfig(const std::string &serviceName, const std::string &configName);
 }
 
 namespace nanoservices {
@@ -45,23 +45,23 @@ namespace nanoservices {
 		 * @param serviceName
 		 */
 		NsSkelConfiguration(const std::string &serviceName,
-							const std::string &configName) throw(nanoservices::NsException);
+							const std::string &configName);
 
 		/**
 		 * Get the instance of NsSkelConfiguration for the current running nanoservice
 		 * @return
 		 */
-		static std::shared_ptr<NsSkelConfiguration> instance() throw(nanoservices::NsException);
+		static std::shared_ptr<NsSkelConfiguration> instance();
 
 		/**
 		 * Get the current nanoservice's name
 		 */
-		std::shared_ptr<std::string> getServiceName() throw(NsException);
+		std::shared_ptr<std::string> getServiceName();
 
 		/**
 		 * Get the current nanoservice's config name
 		 */
-		std::shared_ptr<std::string> getConfigName() throw(NsException);
+		std::shared_ptr<std::string> getConfigName();
 
 		/**
 		 * Do we have the given parameter in the configuration?
@@ -69,6 +69,11 @@ namespace nanoservices {
 		 * @return
 		 */
 		bool hasParameter(std::string paramName);
+
+		/**
+		 * Get map with services configuration
+		 */
+		NsSkelJsonObjectPtr getServices();
 
 		/**
 		 * Template method: set a default value for a configuration parameter, so we can later use getParameter() calls without explicitly setting the default value every time.
@@ -86,7 +91,7 @@ namespace nanoservices {
 		 * @param defaultVal
 		 */
 		template<typename T1>
-		void setParameterDefault(std::string paramName, T1 defaultVal) throw(nanoservices::NsException) {
+		void setParameterDefault(std::string paramName, T1 defaultVal) {
 			if (!hasParameter(paramName)) {
 				NsSkelJsonPtr v;
 
@@ -135,7 +140,7 @@ namespace nanoservices {
 		 * @see defaultArg
 		 */
 		template<typename T2>
-		T2 getParameter(const std::string paramName, T2 defaultVal = defaultArg<T2>::get()) throw(NsException) {
+		T2 getParameter(const std::string paramName, T2 defaultVal = defaultArg<T2>::get()) {
 			try {
 				if (!hasParameter(paramName)) {
 					return defaultVal;
@@ -164,6 +169,7 @@ namespace nanoservices {
 		std::shared_ptr<std::string> _serviceName;
 		std::shared_ptr<std::string> _configName;
 		NsSkelJsonObjectPtr _configuration;
+		NsSkelJsonObjectPtr _services;
 	};
 
 	template<>
@@ -210,27 +216,27 @@ namespace nanoservices {
 	};
 
 	template void
-	NsSkelConfiguration::setParameterDefault<int64_t>(std::string, int64_t) throw(nanoservices::NsException);
+	NsSkelConfiguration::setParameterDefault<int64_t>(std::string, int64_t);
 
 	template void
-	NsSkelConfiguration::setParameterDefault<double>(std::string, double) throw(nanoservices::NsException);
+	NsSkelConfiguration::setParameterDefault<double>(std::string, double);
 
 	template void
-	NsSkelConfiguration::setParameterDefault<std::string>(std::string, std::string) throw(nanoservices::NsException);
+	NsSkelConfiguration::setParameterDefault<std::string>(std::string, std::string);
 
-	template void NsSkelConfiguration::setParameterDefault<bool>(std::string, bool) throw(nanoservices::NsException);
+	template void NsSkelConfiguration::setParameterDefault<bool>(std::string, bool);
 
 	template int64_t NsSkelConfiguration::getParameter<int64_t>(std::string paramName,
-																int64_t defaultVal) throw(nanoservices::NsException);
+																int64_t defaultVal);
 
 	template double NsSkelConfiguration::getParameter<double>(std::string paramName,
-															  double defaultVal) throw(nanoservices::NsException);
+															  double defaultVal);
 
 	template std::string NsSkelConfiguration::getParameter<std::string>(std::string paramName,
-																		std::string defaultVal) throw(nanoservices::NsException);
+																		std::string defaultVal);
 
 	template bool
-	NsSkelConfiguration::getParameter<bool>(std::string paramName, bool defaultVal) throw(nanoservices::NsException);
+	NsSkelConfiguration::getParameter<bool>(std::string paramName, bool defaultVal);
 }
 
 #endif /* NSSKELCONFIGURATION_H */

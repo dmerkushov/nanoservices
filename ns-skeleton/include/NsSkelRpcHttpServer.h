@@ -25,6 +25,7 @@
 #define NSSKELRPCHTTPSERVER_H
 
 #include "NsSkelRpcServer.h"
+#include <httplib.h>
 
 namespace nanoservices {
 
@@ -34,11 +35,14 @@ namespace nanoservices {
 
 		virtual ~NsSkelRpcHttpServer();
 
-	protected:
-		virtual void processIncomingConnection(int dataSocketFd);
+		virtual void startup();
+
+		virtual void shutdown();
 
 	private:
 		NsSkelRpcHttpServer(const NsSkelRpcHttpServer &orig) = delete;
+
+		std::shared_ptr<httplib::Server> _serverptr;
 	};
 }
 

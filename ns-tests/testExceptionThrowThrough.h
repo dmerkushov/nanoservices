@@ -90,11 +90,11 @@ public:
 	virtual ~MyReplier() {
 	}
 
-	virtual std::shared_ptr <std::string> methodName() throw(nanoservices::NsException) {
+	virtual std::shared_ptr <std::string> methodName() noexcept(true) {
 		return _methodName;
 	}
 
-	virtual std::shared_ptr <MyResult> processRequest(std::shared_ptr <MyArgs> args) throw(nanoservices::NsException) {
+	virtual std::shared_ptr <MyResult> processRequest(std::shared_ptr <MyArgs> args) {
 		throw nanoservices::NsException(NSE_POSITION, "Exception from MyReplier:processRequest");
 
 		std::cout << "Replier: params: i=" << args->i << ", j=" << args->j << std::endl;

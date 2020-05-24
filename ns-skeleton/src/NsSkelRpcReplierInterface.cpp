@@ -31,6 +31,6 @@ NsSkelRpcReplierInterface::NsSkelRpcReplierInterface() {
 NsSkelRpcReplierInterface::~NsSkelRpcReplierInterface() {
 }
 
-bool NsSkelRpcReplierInterface::isThreadsafe() throw(NsException) {
+bool NsSkelRpcReplierInterface::isThreadsafe() noexcept(true) {
 	return false;
 }

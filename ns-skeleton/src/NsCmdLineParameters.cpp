@@ -22,163 +22,143 @@
  * Created on Dec 9, 2019, 1:03 PM
  */
 
-#include <unistd.h>
-#include <regex>
-#include <iostream>
-
 #include "NsCmdLineParameters.h"
+#include "NsUtils.h"
 
 using namespace std;
 using namespace nanoservices;
 
-std::shared_ptr <NsCmdLineParameters> NsCmdLineParameters::_instance;
+std::shared_ptr<NsCmdLineParameters> NsCmdLineParameters::_instance;
 
-NsCmdLineParameters::NsCmdLineParameters(int argc, char **argv) : _argc(argc), _argv(argv) {
-}
+namespace nanoservices {
+	std::map<char, struct argp_option> getOptionDefinitions(NsSkelJsonPtr paramsKeys) {
+		std::map<char, struct argp_option> argp_opt;
 
-/**
- * Non standart split by delimeter for std::string
- * @param str -- string for splitting
- * @param ch -- delimeter character
- */
-std::vector <std::string> string_split(std::string str, char ch) {
-	stringstream ss(str);
-	string item;
-	std::vector <std::string> result;
+		if(paramsKeys) {
+			auto params = castNsSkelJsonPtr<NsSkelJsonObjectPtr>(paramsKeys);
+			for (auto it = params->begin(); it != params->end(); ++it) {
+				if (it->first == string("name")) {
+					throw NsException(NSE_POSITION, "Parameter option 'name' is reserved!");
+				}
+				if (it->first == string("port")) {
+					throw NsException(NSE_POSITION, "Parameter option 'port' is reserved!");
+				}
+				auto param = castNsSkelJsonPtr<NsSkelJsonObjectPtr>(it->second);
+				if (param->count("key") == 0) {
+					throw NsException(NSE_POSITION, "Options for parameter \""+it->first+"\" not contains 'key'!");
+				}
+				if (fromNsSkelJsonPtr<string>(param->at("key")) == string("n")) {
+					throw NsException(NSE_POSITION, "Parameter option 'key' = 'n' is reserved!");
+				}
+				if (fromNsSkelJsonPtr<string>(param->at("key")) == string("p")) {
+					throw NsException(NSE_POSITION, "Parameter option 'key' = 'p' is reserved!");
+				}
+				if (param->count("isRequired") == 0) {
+					throw NsException(NSE_POSITION, "Options for parameter \""+it->first+"\" not contains 'isRequired'!");
+				}
+				if (param->count("desc") == 0) {
+					throw NsException(NSE_POSITION, "Options for parameter \""+it->first+"\" not contains 'desc'!");
+				}
+				bool argsReq = fromNsSkelJsonPtr<bool>(param->at("isRequired"));
+				if (argsReq && param->count("argName") == 0) {
+					throw NsException(NSE_POSITION, "Options for parameter \""+it->first+"\" not contains 'argName'!");
+				}
 
-	while (getline(ss, item, ch)) {
-		result.push_back(move(item));
-	}
+				string key = fromNsSkelJsonPtr<string>(param->at("key"));
 
-	return result;
-}
+				if (key.size() > 1) {
+					throw NsException(NSE_POSITION, "Parameter option 'key' have size more 1 character!!");
+				}
 
-std::map<char, NsCmdLineParameters::opt> NsCmdLineParameters::getOptionDefinitions() {
-	std::map<char, opt> long_opt;
+				string longKey = it->first;
+				string argName;
+				string desc = fromNsSkelJsonPtr<string>(param->at("desc"));
+				if(argsReq) {
+					argName = fromNsSkelJsonPtr<string>(param->at("argName"));
+				}
 
-	if (NsSkelConfiguration::instance()->hasParameter("param-keys")) {
-		auto params = castNsSkelJsonPtr<NsSkelJsonArrayPtr>(
-				NsSkelConfiguration::instance()->getParameter<NsSkelJsonPtr>("param-keys"));
-		for (auto it = params->begin(); it != params->end(); ++it) {
-			auto param = castNsSkelJsonPtr<NsSkelJsonObjectPtr>(*it);
-			if (param->count("key") == 0) {
-				throw NsException(NSE_POSITION, "Parameter options not contains 'key'!");
+				char shortKey = key[0];
+
+				argp_opt[shortKey] = {new_c_str(longKey), shortKey, argsReq ? new_c_str(argName) : 0, 0, new_c_str(desc), 0};
 			}
-			if (fromNsSkelJsonPtr<string>(param->at("key")) == string("n")) {
-				throw NsException(NSE_POSITION, "Parameter option 'key' = 'n' is reserved!");
-			}
-			if (fromNsSkelJsonPtr<string>(param->at("key")) == string("p")) {
-				throw NsException(NSE_POSITION, "Parameter option 'key' = 'p' is reserved!");
-			}
-			if (param->count("long-key") == 0) {
-				throw NsException(NSE_POSITION, "Parameter options not contains 'long-key'!");
-			}
-			if (fromNsSkelJsonPtr<string>(param->at("long-key")) == string("name")) {
-				throw NsException(NSE_POSITION, "Parameter option 'long-key' = 'name' is reserved!");
-			}
-			if (fromNsSkelJsonPtr<string>(param->at("long-key")) == string("port")) {
-				throw NsException(NSE_POSITION, "Parameter option 'long-key' = 'port' is reserved!");
-			}
-			if (param->count("isRequired") == 0) {
-				throw NsException(NSE_POSITION, "Parameter options not contains 'isRequired'!");
-			}
-
-			string key = fromNsSkelJsonPtr<string>(param->at("key"));
-
-			if (key.size() > 1) {
-				throw NsException(NSE_POSITION, "Parameter option 'key' have size more 1 character!!");
-			}
-
-			string longKey_s = fromNsSkelJsonPtr<string>(param->at("long-key"));
-			bool argsReq = fromNsSkelJsonPtr<bool>(param->at("isRequired"));
-			char shortKey = key[0];
-			char *longKey = new char[longKey_s.size() + 1];
-			strcpy(longKey, longKey_s.c_str());
-
-			long_opt[shortKey] = {longKey, argsReq ? required_argument : no_argument, 0, shortKey};
 		}
-	}
 
-	// Option for change monitoring service name
-	long_opt['n'] = {"name", required_argument, 0, 'n'};
-	// Option for change service port
-	long_opt['p'] = {"port", required_argument, 0, 'p'};
+		// Option for change monitoring service name
+		argp_opt['n'] = {"name", 'n', "SERVICE", 0, "Change name to SERVICE", 0};
+		// Option for change service port
+		argp_opt['p'] = {"port", 'p', "PORT", 0, "Change binding port to PORT", 0};
+
+		return argp_opt;
+	}
+};
+
+void NsCmdLineParameters::init(std::map<char, NsCmdLineParameters::opt>& param_defs, int argc, char** argv) {
+	// if no argument provided, no instance reinitialised
+	if(argc || !_instance) {
+		_instance = std::shared_ptr<NsCmdLineParameters>(new NsCmdLineParameters(param_defs, argc, argv));
+	}
+}
+
+NsCmdLineParameters::NsCmdLineParameters(std::map<char, NsCmdLineParameters::opt>& param_defs, int argc, char** argv):_argc(argc), _argv(argv) {
 	// Sequence of option struct must be zero termninated
-	long_opt['\0'] = {0, 0, 0, 0};
-
-	return long_opt;
-}
-
-char *NsCmdLineParameters::getShortOptions(std::map<char, NsCmdLineParameters::opt> &map) {
-	std::vector<char> short_v;
-	for (auto it = map.rbegin(); it != map.rend(); ++it) {
-		short_v.push_back(it->first);
-		switch (it->second.has_arg) {
-			case required_argument:
-				short_v.push_back(':');
-				break;
-			case no_argument:
-				break;
-			case optional_argument:
-				short_v.push_back(':');
-				short_v.push_back(':');
-				break;
-		}
+	param_defs['\0'] = {0};
+	// if no argument provided, no parse doing
+	if(argc) {
+		parse(param_defs);
 	}
-
-	char *res = new char[short_v.size()];
-	copy(short_v.begin(), short_v.end(), res);
-	return res;
 }
 
-NsCmdLineParameters::opt *NsCmdLineParameters::getLongOptions(std::map<char, NsCmdLineParameters::opt> &map) {
-	opt *res = new opt[map.size()];
+NsCmdLineParameters::opt* NsCmdLineParameters::getLongOptions(std::map<char, NsCmdLineParameters::opt>& map) {
+	opt* res = new opt[map.size()];
 	int i = 0;
-	for (auto it = map.rbegin(); it != map.rend(); ++it) {
+	for(auto it = map.rbegin(); it != map.rend(); ++it) {
 		res[i++] = it->second;
 	}
 
 	return res;
 }
 
-void NsCmdLineParameters::parse() {
-	int opt;
-	int option_index = 0;
-
-	auto optionsDef = getOptionDefinitions();
-	char *optionString = getShortOptions(optionsDef);
-	auto options = getLongOptions(optionsDef);
-
-	opterr = 0;
-
-	while ((opt = getopt_long(_argc, _argv, optionString, options, &option_index)) != -1) {
-		if (!(opt == '?' || opt == ':')) {
-			_params[optionsDef[opt].name] = string_split(optarg, ' ');
-		} else {
-			_unparsed.push_back(_argv[optind - 1]);
+void NsCmdLineParameters::parse(std::map<char, NsCmdLineParameters::opt>& opts) {
+	int optind = _argc;
+	auto options = getLongOptions(opts);
+	struct argp argp = { options, [](int key, char *arg, struct argp_state *state) -> error_t {
+		auto argpair = *((pair<NsCmdLineParameters*, map<char, NsCmdLineParameters::opt>*>*)state->input);
+		auto that = argpair.first;
+		auto opts = argpair.second;
+		if(key == ARGP_KEY_ARG) {
+			that->_unparsed.push_back(arg);
+		} else if(opts->count(key) != 0) {
+			that->_params.insert({(*opts)[key].name, string_split((arg ? arg : ""), ' ')});
 		}
-	}
-
-	for (int i = optind; i < _argc; i++) {
-		_unparsed.push_back(_argv[i]);
-	}
+		return 0;
+	}, 0, "\013Powered by nanoservices library v" VERSION };
+	auto data = make_pair(this, &opts);
+	argp_parse (&argp, _argc, _argv, 0, &optind, &data);
 }
 
-std::shared_ptr <NsCmdLineParameters> NsCmdLineParameters::instance() throw(NsException) {
-	if (!_instance) {
-		throw NsException(NSE_POSITION, "Call of NsCmdLineParameters::instance() before calling NsSkeleton::init()");
+std::shared_ptr<NsCmdLineParameters> NsCmdLineParameters::instance () {
+	if(!_instance) {
+		throw NsException (NSE_POSITION, "Call of NsCmdLineParameters::instance() before calling NsSkeleton::init()");
 	}
 	return _instance;
 }
 
-bool NsCmdLineParameters::isParam(std::string keyName) {
+bool NsCmdLineParameters::isParam(std::string keyName){
 	return _params.count(keyName) > 0;
 }
 
-std::vector <std::string> NsCmdLineParameters::paramValue(std::string keyName) {
+std::string NsCmdLineParameters::paramValue(std::string keyName) {
+	auto paramsv = paramValues(keyName);
+	if(paramsv.size() == 0) {
+		return "";
+	} 
+	return paramsv[0];
+}
+
+std::vector <std::string> NsCmdLineParameters::paramValues(std::string keyName) {
 	return _params.at(keyName);
 }
 
-std::vector <std::string> NsCmdLineParameters::unparsedParameters() {
+std::vector<std::string> NsCmdLineParameters::unparsedParameters() {
 	return _unparsed;
 }

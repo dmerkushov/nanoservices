@@ -44,29 +44,29 @@ namespace nanoservices {
 
 		virtual ~NsSkelRpcRegistry();
 
-		std::shared_ptr<NsSkelRpcReplierInterface> getReplier(std::shared_ptr<std::string> method) throw(NsException);
+		std::shared_ptr<NsSkelRpcReplierInterface> getReplier(std::shared_ptr<std::string> method);
 
-		void registerReplier(std::shared_ptr<NsSkelRpcReplierInterface> replier) throw(NsException);
+		void registerReplier(std::shared_ptr<NsSkelRpcReplierInterface> replier);
 
-		void unregisterReplier(std::shared_ptr<std::string> methodName) throw(NsException);
+		void unregisterReplier(std::shared_ptr<std::string> methodName);
 
-		std::shared_ptr<std::vector<std::string> > methods() throw(NsException);
+		std::shared_ptr<std::vector<std::string> > methods();
 
-		std::shared_ptr<NsSkelRpcService> getService(std::shared_ptr<std::string> serviceName) throw(NsException);
+		std::shared_ptr<NsSkelRpcService> getService(std::shared_ptr<std::string> serviceName);
 
-		std::shared_ptr<NsSkelRpcService> getLocalService() throw(NsException);
+		std::shared_ptr<NsSkelRpcService> getLocalService();
 
-		void registerServer(std::shared_ptr<NsSkelRpcServer> server) throw(NsException);
+		void registerServer(std::shared_ptr<NsSkelRpcServer> server);
 
-		void unregisterServer(std::shared_ptr<NsSkelRpcServer> server) throw(NsException);
+		void unregisterServer(std::shared_ptr<NsSkelRpcServer> server);
 
-		void startupServers() throw(NsException);
+		void startupServers();
 
-		void shutdownServers() throw(NsException);
+		void shutdownServers();
 
-		std::shared_ptr<std::vector<std::shared_ptr<NsSkelRpcServer> > > servers() throw(NsException);
+		std::shared_ptr<std::vector<std::shared_ptr<NsSkelRpcServer> > > servers();
 
-		void initialize() throw(NsException);
+		void initialize();
 
 	private:
 		NsSkelRpcRegistry();
@@ -75,7 +75,7 @@ namespace nanoservices {
 
 		void operator=(const NsSkelRpcRegistry &orig) = delete;
 
-		void prepareServicesMap() throw(NsException);
+		void prepareServicesMap();
 
 		std::map<std::string, std::shared_ptr<NsSkelRpcReplierInterface> > _repliers;
 
