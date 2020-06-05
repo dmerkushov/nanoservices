@@ -47,6 +47,10 @@ namespace nanoservices {
 
 		virtual std::shared_ptr<NsSerialized> processSerializedRequest(NsSerialized &args) = 0;
 
+		virtual NsTypeInfoPtr getArgsType() = 0;
+
+		virtual NsTypeInfoPtr getReturnType() = 0;
+
 	private:
 		NsSkelRpcReplierInterface(const NsSkelRpcReplierInterface &orig) = delete;
 

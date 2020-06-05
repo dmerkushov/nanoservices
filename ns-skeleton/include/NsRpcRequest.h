@@ -32,7 +32,7 @@ namespace nanoservices {
 
 	class NsRpcRequest {
 	public:
-		NSSERIALIZER_PREPARE (_method, _argsSerialized, _waitForResponse);
+		NSSERIALIZER_PREPARE_SYS (_method, _argsSerialized, _waitForResponse);
 
 		NsRpcRequest();
 

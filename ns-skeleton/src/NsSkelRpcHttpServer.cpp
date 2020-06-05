@@ -73,6 +73,18 @@ NsSkelRpcHttpServer::NsSkelRpcHttpServer() : NsSkelRpcServer() {
 			res.set_header("Access-Control-Allow-Origin", "*");
 		}
 	});
+	_serverptr->Get("/methods", [&](const Request& req, Response& res) {
+		auto methods_list = NsSkelRpcRegistry::instance()->methods();
+		string content;
+		for(auto method : *methods_list) {
+			auto replier = NsSkelRpcRegistry::instance()->getReplier(make_shared<string>(method));
+			content += replier->getReturnType()->getName() + " " + method + "(" + replier->getArgsType()->getName() +")\n";
+			content += "//Received from " + *(NsSkelRpcRegistry::instance()->getLocalService()->serviceName()) + "\n";
+			content += replier->getArgsType()->getDefinition() + "\n";
+			content += replier->getReturnType()->getDefinition() + "\n";
+		}
+		res.set_content(content, "text/plain");
+	});
 }
 
 NsSkelRpcHttpServer::~NsSkelRpcHttpServer() {

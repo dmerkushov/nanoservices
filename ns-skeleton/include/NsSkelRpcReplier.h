@@ -74,6 +74,10 @@ namespace nanoservices {
 
 		virtual std::shared_ptr<Result> processRequest(std::shared_ptr<Args> args) = 0;
 
+		NsTypeInfoPtr getArgsType() {return _types.first; };
+
+		NsTypeInfoPtr getReturnType() {return _types.second; };
+
 	private:
 		NsSkelRpcReplier(const NsSkelRpcReplier &orig) = delete;
 
@@ -81,6 +85,7 @@ namespace nanoservices {
 
 		NsSerializer<Args> _argsSerializer;
 		NsSerializer<Result> _resultSerializer;
+		std::pair<NsTypeInfoPtr, NsTypeInfoPtr> _types = std::make_pair<NsTypeInfoPtr, NsTypeInfoPtr>(getFullTypeName<Args>(), getFullTypeName<Result>());; 
 	};
 }
 
