@@ -79,7 +79,7 @@ NsSkelRpcHttpServer::NsSkelRpcHttpServer() : NsSkelRpcServer() {
 		for(auto method : *methods_list) {
 			auto replier = NsSkelRpcRegistry::instance()->getReplier(make_shared<string>(method));
 			content += replier->getReturnType()->getName() + " " + method + "(" + replier->getArgsType()->getName() +")\n";
-			content += "//Received from " + *(NsSkelRpcRegistry::instance()->getLocalService()->serviceName()) + "\n";
+			content += "// Received from " + *(NsSkelRpcRegistry::instance()->getLocalService()->serviceName()) + "\n";
 			content += replier->getArgsType()->getDefinition() + "\n";
 			content += replier->getReturnType()->getDefinition() + "\n";
 		}
