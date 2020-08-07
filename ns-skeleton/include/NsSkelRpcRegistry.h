@@ -33,6 +33,7 @@
 #include "NsException.h"
 #include "NsSkelRpcService.h"
 #include "NsSkelRpcReplierInterface.h"
+#include "NsSkelLoopWorkerInterface.h"
 
 namespace nanoservices {
 
@@ -49,6 +50,12 @@ namespace nanoservices {
 		void registerReplier(std::shared_ptr<NsSkelRpcReplierInterface> replier);
 
 		void unregisterReplier(std::shared_ptr<std::string> methodName);
+
+		void enableLoopWorker(std::shared_ptr<NsSkelLoopWorkerInterface> worker);
+
+		std::shared_ptr<NsSkelLoopWorkerInterface> getLoopWorker();
+
+		void disableLoopWorker();
 
 		std::shared_ptr<std::vector<std::string> > methods();
 
@@ -83,6 +90,8 @@ namespace nanoservices {
 		bool _servicesMapReady = false;
 
 		std::vector<std::shared_ptr<NsSkelRpcServer> > _servers;
+
+		std::shared_ptr<NsSkelLoopWorkerInterface> _loopWorker = nullptr;
 	};
 }
 

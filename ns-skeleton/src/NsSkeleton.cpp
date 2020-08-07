@@ -24,6 +24,7 @@
 #include "NsSkeleton.h"
 
 #include <memory>
+#include <thread>
 #include <string>
 #include <sstream>
 
@@ -168,10 +169,28 @@ std::shared_ptr<std::string> NsSkeleton::serviceName() try {
 	throw NsException(NSE_POSITION, "NsSkeleton::serviceName(): Unexpected failure");
 }
 
+#include <chrono>
+
+#if __cplusplus < 201402L
+
+constexpr std::chrono::milliseconds operator ""ms(unsigned long long ms)
+{
+    return std::chrono::milliseconds(ms);
+}
+
+#endif
+
 void NsSkeleton::sleepWhileActive() try {
 	shared_ptr<vector<shared_ptr<NsSkelRpcServer> > > servers = NsSkelRpcRegistry::instance()->servers();
-	for (auto it = servers->begin(); it != servers->end(); it++) {
-		it->get()->sleepWhileActive();
+	auto loopWorker = NsSkelRpcRegistry::instance()->getLoopWorker();	
+	bool active = true;
+	while(active) {		
+		if(loopWorker) (*loopWorker)();
+		active = false;
+		for (auto it = servers->begin(); it != servers->end(); it++) {
+			active = active || it->get()->active();
+		}
+		this_thread::sleep_for(1ms);
 	}
 } catch (NsException &ex) {
 	stringstream ess;
@@ -183,4 +202,32 @@ void NsSkeleton::sleepWhileActive() try {
 	throw NsException(NSE_POSITION, ess);
 } catch (...) {
 	throw NsException(NSE_POSITION, "NsSkeleton::sleepWhileActive(): Unexpected failure");
+}
+
+void NsSkeleton::registerLoopWorker(std::shared_ptr<NsSkelLoopWorkerInterface> worker) try {
+	NsSkelRpcRegistry::instance()->enableLoopWorker(worker);
+} catch (NsException &ex) {
+	stringstream ess;
+	ess << "NsSkeleton::registerLoopWorker(): NsException: " << ex.what();
+	throw NsException(NSE_POSITION, ess);
+} catch (std::exception &ex) {
+	stringstream ess;
+	ess << "NsSkeleton::registerLoopWorker(): std::exception: " << ex.what();
+	throw NsException(NSE_POSITION, ess);
+} catch (...) {
+	throw NsException(NSE_POSITION, "NsSkeleton::registerLoopWorker(): Unexpected failure");
+}
+
+void NsSkeleton::unregisterLoopWorker() try {
+	NsSkelRpcRegistry::instance()->disableLoopWorker();
+} catch (NsException &ex) {
+	stringstream ess;
+	ess << "NsSkeleton::unregisterLoopWorker(): NsException: " << ex.what();
+	throw NsException(NSE_POSITION, ess);
+} catch (std::exception &ex) {
+	stringstream ess;
+	ess << "NsSkeleton::unregisterLoopWorker(): std::exception: " << ex.what();
+	throw NsException(NSE_POSITION, ess);
+} catch (...) {
+	throw NsException(NSE_POSITION, "NsSkeleton::unregisterLoopWorker(): Unexpected failure");
 }

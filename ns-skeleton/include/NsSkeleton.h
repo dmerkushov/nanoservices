@@ -78,6 +78,16 @@ namespace nanoservices {
 		 */
 		static void unregisterReplier(std::shared_ptr<std::string> methodName);
 
+		/**
+		 * Register a worker for a nanoservice inner loop
+		 */
+		static void registerLoopWorker(std::shared_ptr<NsSkelLoopWorkerInterface> worker);
+
+		/**
+		 * Unregister the worker previously registered for a nanoservice inner loop
+		 */
+		static void unregisterLoopWorker();
+
 		template<typename Args, typename Result>
 		static std::shared_ptr<Result>
 		call(

@@ -353,26 +353,73 @@ shared_ptr<vector<shared_ptr<NsSkelRpcServer> > > NsSkelRpcRegistry::servers() {
 	} catch (NsException &e) {
 		_serversVectorMutex.unlock();
 		stringstream ess;
-		ess << "NsException in NsSkelRpcRegistry::shutdown()";
+		ess << "NsException in NsSkelRpcRegistry::servers()";
 		if ((*it) != nullptr) {
-			ess << " (when shutting down server on port " << it->get()->port() << ")";
+			ess << " (when get server on port " << it->get()->port() << ")";
 		}
 		ess << ": " << e.what();
 		throw (NsException(NSE_POSITION, ess));
 	} catch (std::exception &e) {
 		_serversVectorMutex.unlock();
 		stringstream ess;
-		ess << "std::exception in NsSkelRpcRegistry::shutdown()";
+		ess << "std::exception in NsSkelRpcRegistry::servers()";
 		if ((*it) != nullptr) {
-			ess << " (when shutting down server on port " << it->get()->port() << ")";
+			ess << " (when get server on port " << it->get()->port() << ")";
 		}
 		ess << ": " << e.what();
 		throw (NsException(NSE_POSITION, ess));
 	} catch (...) {
 		_serversVectorMutex.unlock();
-		throw (NsException(NSE_POSITION, "Unexpected in NsSkelRpcRegistry::shutdown()"));
+		throw (NsException(NSE_POSITION, "Unexpected in NsSkelRpcRegistry::servers()"));
 	}
 	_serversVectorMutex.unlock();
 
 	return toRet;
+}
+
+void NsSkelRpcRegistry::enableLoopWorker(std::shared_ptr<NsSkelLoopWorkerInterface> worker) {
+	bool active = false;
+	_serversVectorMutex.lock();
+	vector<shared_ptr<NsSkelRpcServer> >::iterator it;
+	try {
+		for (it = _servers.begin(); it != _servers.end() && !active; it++) {
+			active = it->get()->active();
+		}
+	} catch (NsException &e) {
+		_serversVectorMutex.unlock();
+		stringstream ess;
+		ess << "NsException in NsSkelRpcRegistry::enableLoopWorker()";
+		if ((*it) != nullptr) {
+			ess << " (when check activity of server on port " << it->get()->port() << ")";
+		}
+		ess << ": " << e.what();
+		throw (NsException(NSE_POSITION, ess));
+	} catch (std::exception &e) {
+		_serversVectorMutex.unlock();
+		stringstream ess;
+		ess << "std::exception in NsSkelRpcRegistry::enableLoopWorker()";
+		if ((*it) != nullptr) {
+			ess << " (when check activity of server on port " << it->get()->port() << ")";
+		}
+		ess << ": " << e.what();
+		throw (NsException(NSE_POSITION, ess));
+	} catch (...) {
+		_serversVectorMutex.unlock();
+		throw (NsException(NSE_POSITION, "Unexpected in NsSkelRpcRegistry::enableLoopWorker()"));
+	}
+	_serversVectorMutex.unlock();
+	if(active) {
+		stringstream ess;
+		ess << "Loop worker must be registered before startup!";
+		throw (NsException(NSE_POSITION, ess));
+	}
+	_loopWorker = worker;
+}
+
+std::shared_ptr<NsSkelLoopWorkerInterface> NsSkelRpcRegistry::getLoopWorker() {
+	return _loopWorker;
+}
+
+void NsSkelRpcRegistry::disableLoopWorker() {
+	if(_loopWorker) _loopWorker->disable();
 }
