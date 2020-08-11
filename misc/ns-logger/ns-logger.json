@@ -1,0 +1,5 @@
+{
+    "__description__": "Service for logging nanoservices",
+    "host": {"__data__":"localhost", "__description__": "Host for service"},
+    "port":{"__data__": 4000, "__description__": "Port for incoming RPC"}
+}

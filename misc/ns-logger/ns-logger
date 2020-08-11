@@ -1,0 +1,29 @@
+#!/bin/bash -e
+
+# Import the LSB init functions
+. /lib/lsb/init-functions
+
+case "$1" in
+ start)
+   CURDATE=`date +%Y-%m-%d_%H-%M-%S`
+   su root -c 'ns-logger' 2> /var/log/ns-logger.$CURDATE 1> /dev/null &
+   ;;
+
+ stop)
+   su root -c 'ns-shutdown -n ns-logger'
+   ;;
+
+ restart)
+   $0 stop
+   $0 start
+   ;;
+
+  status)
+    status_of_proc /usr/bin/ns-logger ns-logger && exit 0 || exit $?
+  ;;
+
+esac
+
+exit 0
+
+
