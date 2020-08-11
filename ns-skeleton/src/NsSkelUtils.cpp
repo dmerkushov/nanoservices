@@ -27,7 +27,7 @@
 #include <string>
 #include <sstream>
 
-#include <ctime>
+#include <chrono>
 
 #include <ctype.h>
 
@@ -67,13 +67,26 @@ void NsSkelUtils::log(LogLevel level, ostream &record) {
 static shared_ptr<string> loggingServiceName = make_shared<string>("ns-logger");
 static shared_ptr<string> loggingLogMethodName = make_shared<string>("log");
 
+string getTimestamp() {
+  // get a precise timestamp as a string
+  const auto now = std::chrono::system_clock::now();
+  const auto nowAsTimeT = std::chrono::system_clock::to_time_t(now);
+  const auto nowMs = std::chrono::duration_cast<std::chrono::microseconds>(
+      now.time_since_epoch()) % 1000000;
+  std::stringstream nowSs;
+  nowSs
+      << std::put_time(std::localtime(&nowAsTimeT), "%a %b %d %Y %T")
+      << '.' << std::setfill('0') << std::setw(6) << nowMs.count();
+  return nowSs.str();
+}
+
 void NsSkelUtils::log(LogLevel level, string &record) {
 	shared_ptr<LogArgs> args = make_shared<LogArgs>();
 
 	args->logLevel = level;
 	args->sourceService = *(NsSkelRpcRegistry::instance()->getLocalService()->serviceName());
 	args->text = record;
-	args->time = time(nullptr);
+	args->time = getTimestamp();
 
 	try {
 		sendRpcRequest<LogArgs, NsVoidResult>(loggingServiceName, loggingLogMethodName, args, false);

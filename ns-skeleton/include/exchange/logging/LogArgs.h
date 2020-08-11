@@ -36,7 +36,7 @@ public:
 	/**
 	 * Time that this has happened
 	 */
-	int64_t time;
+	std::string time;
 
 	NSSERIALIZER_PREPARE (logLevel, sourceService, text, time);
 };
