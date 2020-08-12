@@ -199,7 +199,7 @@ void NsSkelRpcServer::shutdown() {
 }
 
 bool NsSkelRpcServer::active() {
-	bool active = _serverActive;
+	bool active = _serverActive.load();
 
 	return active;
 }
