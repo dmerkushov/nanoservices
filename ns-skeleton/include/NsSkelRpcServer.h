@@ -120,30 +120,32 @@ namespace nanoservices {
 	};
 
 	inline std::shared_ptr<NsBinBuffer> readBin(int dataSocketFd, uint32_t len) {
-		std::shared_ptr<NsBinBuffer> buf = std::make_shared<NsBinBuffer>(len);
 		std::shared_ptr<NsBinBuffer> empty;
 
+		char* buf = new char[len];
 		char currByte;
 		ssize_t rcount = 0;
 		ssize_t totalcount = 0;
 		while (totalcount < len) {
-			rcount = read(dataSocketFd, &currByte, 1);
+			rcount = read(dataSocketFd, buf + totalcount , len - totalcount);
 			if (rcount == 0) {
 				cout_lock.lock();
 				std::cerr << "readBin: Socket closed prematurely: fd=" << dataSocketFd << std::endl;
 				cout_lock.unlock();
 				return empty;
 			}
-			buf->write(&currByte, 1);
-			totalcount++;
+			totalcount += rcount;
 		}
+
+		std::shared_ptr<NsBinBuffer> res = std::make_shared<NsBinBuffer>(NsBinaryData(buf, len));
+		delete buf;
 
 		//	cout_lock.lock ();
 		//	std::cout << "Read from socket " << dataSocketFd << ":" << std::endl;
 		//	std::cout << hexdump (buf->data (), len);
 		//	cout_lock.unlock ();
 
-		return buf;
+		return res;
 	}
 
 	inline void writeBin(int dataSocketFd, const void *data, size_t len) {
