@@ -125,12 +125,12 @@ void NsSkelRpcServer::serverThreadWork() {
 	}
 
 	freeaddrinfo(res);
-
+#ifndef RELEASE
 	//TODO Refactor to using logging engine
 	cout_lock.lock();
 	cout << "Listening on port " << portname << endl;
 	cout_lock.unlock();
-
+#endif
 	atomic<bool> serverActive(_serverActive.load() && !_shutdownReceived.load());
 
 	//	_serverStateMutex.lock ();
@@ -157,10 +157,12 @@ void NsSkelRpcServer::serverThreadWork() {
 			break;
 		}
 		if (dataSocketFd < 0) {
+#ifndef RELEASE
 			cout_lock.lock();
 			cerr << "accept() for the listening socket returned " << dataSocketFd << " (<0), errno=" << errno << "("
 				 << (errno == EINTR ? "EINTR" : "not EINTR") << ")" << endl;
 			cout_lock.lock();
+#endif
 			continue;
 		}
 
@@ -173,9 +175,11 @@ void NsSkelRpcServer::serverThreadWork() {
 		//		cout_lock.unlock ();
 	}
 
+#ifndef RELEASE
 	cout_lock.lock();
 	cout << "Shutting down the RPC server" << endl;
 	cout_lock.unlock();
+#endif
 
 	close(_serverSocketFd);
 
@@ -230,35 +234,39 @@ void NsSkelRpcServer::processIncomingConnection(int dataSocketFd) {
 
 	if (getpeername(dataSocketFd, (sockaddr *) &sa,
 					&sl)) { // Need to call getpeername(), since accept() fails to supply valid data
+#ifndef RELEASE
 		cout_lock.lock();
 		cerr << "processIncomingConnection(): getpeername() failed" << endl;
 		cout_lock.unlock();
-
+#endif
 		NsMonitoring::monitorSendRpcResponseError("processIncomingConnection(): getpeername() failed");
 	}
 
 	if (getpeername(dataSocketFd, (sockaddr *) &sa,
 					&sl)) { // Need to call getpeername() twice, because it sometimes fails to supply valid data on the first call
+#ifndef RELEASE
 		cout_lock.lock();
 		cerr << "processIncomingConnection(): getpeername()-2 failed" << endl;
 		cout_lock.unlock();
-
+#endif
 		NsMonitoring::monitorSendRpcResponseError("processIncomingConnection(): getpeername()-2 failed");
 	}
 
 	char addrbuf[INET6_ADDRSTRLEN];
 	if (getnameinfo((sockaddr *) &sa, sl, addrbuf, sizeof(addrbuf), 0, 0, NI_NUMERICHOST)) {
+#ifndef RELEASE
 		cout_lock.lock();
 		cerr << "processIncomingConnection(): getnameinfo() failed" << endl;
 		cout_lock.unlock();
-
+#endif
 		NsMonitoring::monitorSendRpcResponseError("processIncomingConnection(): getnameinfo() failed");
 	}
 
+#ifndef RELEASE
 	cout_lock.lock();
 	cout << "processIncomingConnection(): Server socket " << dataSocketFd << ", client address " << addrbuf << endl;
 	cout_lock.unlock();
-
+#endif
 	//	cout_lock.lock ();
 	//	cout << "Server: reading msglen" << endl;
 	//	cout_lock.unlock ();
@@ -268,11 +276,12 @@ void NsSkelRpcServer::processIncomingConnection(int dataSocketFd) {
 	msglenrcount = read(dataSocketFd, &msglen, sizeof(msglen));
 
 	if (msglenrcount < ((ssize_t) sizeof(msglen))) {
+#ifndef RELEASE
 		cout_lock.lock();
 		cerr << "processIncomingConnection(): Cannot read incoming message length (" << sizeof(msglen) << " bytes)"
 			 << endl;
 		cout_lock.unlock();
-
+#endif
 		NsMonitoring::monitorSendRpcResponseError("processIncomingConnection(): Cannot read incoming message length");
 
 		return;
@@ -314,8 +323,10 @@ void NsSkelRpcServer::processIncomingConnection(int dataSocketFd) {
 	}
 
 	if (close(dataSocketFd)) {
+#ifndef RELEASE
 		cout_lock.lock();
 		cerr << "processIncomingConnection(): close() failed on socket " << dataSocketFd << endl;
 		cout_lock.unlock();
+#endif
 	}
 }

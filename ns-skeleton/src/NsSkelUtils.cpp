@@ -37,6 +37,8 @@
 #include "exchange/NsVoidResult.h"
 #include "exchange/logging/LogArgs.h"
 
+#include <cstdlib>
+
 using namespace std;
 using namespace nanoservices;
 
@@ -81,15 +83,19 @@ string getTimestamp() {
 }
 
 void NsSkelUtils::log(LogLevel level, string &record) {
+	static bool inLog = false;
 	shared_ptr<LogArgs> args = make_shared<LogArgs>();
-
+	if(getenv("NS_NO_LOG") != nullptr) return;
+	if(inLog) return;
 	args->logLevel = level;
 	args->sourceService = *(NsSkelRpcRegistry::instance()->getLocalService()->serviceName());
 	args->text = record;
 	args->time = getTimestamp();
 
 	try {
+		inLog = true;
 		sendRpcRequest<LogArgs, NsVoidResult>(loggingServiceName, loggingLogMethodName, args, false);
+		inLog = false;
 	} catch (NsException &ex) {
 		cerr << "==============================" << endl
 			 << "WARNING: Could not write a log record to the logging service:" << endl

@@ -53,22 +53,23 @@ NsSkelRpcHttpServer::NsSkelRpcHttpServer() : NsSkelRpcServer() {
 		shared_ptr<NsSerialized> rpcResultSerialized;
 
 		rpcResultSerialized = processRpcRequest(rpcRequestSerialized, waitForResponse);
-
+#ifndef RELEASE
 		// DEBUG
 		cout_lock.lock();
 		cout << "processIncomingConnection(): serialized result: " << endl
 			 << hexdump(rpcResultSerialized->ptr, rpcResultSerialized->size) << endl;
 		cout << "processIncomingConnection(): Wait for response: " << waitForResponse << endl;
 		cout_lock.unlock();
-
+#endif
 		if (waitForResponse) {
 			shared_ptr<string> resultBase64 = NsSkelUtils::toBase64(rpcResultSerialized);
 
+#ifndef RELEASE
 			// DEBUG
 			cout_lock.lock();
 			cout << "processIncomingConnection(): base64 result: " << *resultBase64 << endl;
 			cout_lock.unlock();
-
+#endif
 			res.set_content(*resultBase64, "application/base64");
 			res.set_header("Access-Control-Allow-Origin", "*");
 		}
