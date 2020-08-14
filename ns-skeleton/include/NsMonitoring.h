@@ -167,7 +167,7 @@ namespace nanoservices {
 		}
 
 		virtual void writeTo(std::ostream *os) {
-			uint16_t netv = ::htons(_v);
+			uint16_t netv = htons(_v);
 			os->write((char *) &netv, sizeof(netv));
 		}
 	};
@@ -183,7 +183,7 @@ namespace nanoservices {
 		}
 
 		virtual void writeTo(std::ostream *os) {
-			int16_t netv = ::htons(_v);
+			int16_t netv = htons(_v);
 			os->write((char *) &netv, sizeof(netv));
 		}
 	};
@@ -199,7 +199,7 @@ namespace nanoservices {
 		}
 
 		virtual void writeTo(std::ostream *os) {
-			uint32_t netv = ::htonl(_v);
+			uint32_t netv = htonl(_v);
 			os->write((char *) &netv, sizeof(netv));
 		}
 	};
@@ -215,7 +215,7 @@ namespace nanoservices {
 		}
 
 		virtual void writeTo(std::ostream *os) {
-			int32_t netv = ::htonl(_v);
+			int32_t netv = htonl(_v);
 			os->write((char *) &netv, sizeof(netv));
 		}
 	};
@@ -292,7 +292,7 @@ namespace nanoservices {
 		}
 
 		virtual void writeTo(std::ostream *os) {
-			uint32_t netv = ::htonl(_v);
+			uint32_t netv = htonl(_v);
 			os->write((char *) &netv, sizeof(netv));
 		}
 	};
@@ -313,7 +313,7 @@ namespace nanoservices {
 			}
 
 			uint16_t len16 = (uint16_t) len;
-			uint16_t netlen16 = ::htons(len16);
+			uint16_t netlen16 = htons(len16);
 
 			os->write((char *) &netlen16, sizeof(netlen16));
 			for (NsMonitoringArray::iterator it = _s.begin(); it != _s.end(); it++) {
