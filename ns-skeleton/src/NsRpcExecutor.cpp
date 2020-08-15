@@ -33,6 +33,10 @@
 #include "NsRpcResponseError.h"
 #include "exchange/NsVoidResult.h"
 
+#ifndef RELEASE
+#include "NsSkelUtils.h"
+#endif
+
 using namespace std;
 using namespace nanoservices;
 
@@ -108,15 +112,22 @@ std::shared_ptr<NsSerialized> nanoservices::processRpcRequest(std::shared_ptr<Ns
 	shared_ptr<NsRpcRequest> request;
 
 	try {
+#ifndef RELEASE
+		NsSkelUtils::log(LogLevel::Trace, stringstream() << "Start deserialize");
+#endif
 		request = _requestSerializer.deserialize(rpcRequestSerialized);
+#ifndef RELEASE
+		NsSkelUtils::log(LogLevel::Trace, stringstream() << "Stop deserialize");
+#endif
 	} catch (NsException &ex) {
 		shared_ptr<NsRpcResponseError> err = make_shared<NsRpcResponseError>(-32001,
 																			 "processRpcRequest(): NsException when deserializing request: ",
 																			 ex);
-
+#ifndef RELEASE
 		cout_lock.lock();
 		cerr << "processRpcRequest(): NsException when deserializing request: " << ex.what() << endl;
 		cout_lock.unlock();
+#endif
 
 		return prepareSerializedResponse<NsRpcResponseError>(err, false);
 	} catch (std::exception &ex) {
@@ -124,18 +135,22 @@ std::shared_ptr<NsSerialized> nanoservices::processRpcRequest(std::shared_ptr<Ns
 																			 "processRpcRequest(): std::exception when deserializing request: ",
 																			 ex);
 
+#ifndef RELEASE
 		cout_lock.lock();
 		cerr << "processRpcRequest(): std::exception when deserializing request: " << ex.what() << endl;
 		cout_lock.unlock();
+#endif
 
 		return prepareSerializedResponse<NsRpcResponseError>(err, false);
 	} catch (...) {
 		shared_ptr<NsRpcResponseError> err = make_shared<NsRpcResponseError>(-32002,
 																			 "processRpcRequest(): unexpected failure when deserializing request");
 
+#ifndef RELEASE
 		cout_lock.lock();
 		cerr << "processRpcRequest(): unexpected failure when deserializing request" << endl;
 		cout_lock.unlock();
+#endif
 
 		return prepareSerializedResponse<NsRpcResponseError>(err, false);
 	}
@@ -146,10 +161,12 @@ std::shared_ptr<NsSerialized> nanoservices::processRpcRequest(std::shared_ptr<Ns
 
 	NsMonitoring::monitorReceiveRpcRequest(0x807060504030201, methodName); // TODO Generate IDs
 
+#ifndef RELEASE
 	// DEBUG
 	cout_lock.lock();
 	cout << "Server: Incoming request is for method: " << *methodName << endl;
 	cout_lock.unlock();
+#endif
 
 	if (*methodName == "shutdown") {
 		//TODO security with shutting down the server: check the issuer of the shutdown message
@@ -161,18 +178,22 @@ std::shared_ptr<NsSerialized> nanoservices::processRpcRequest(std::shared_ptr<Ns
 		return prepareSerializedResponse<NsVoidResult>(voidResult, true);
 	}
 
+#ifndef RELEASE
 	// DEBUG
 	cout_lock.lock();
 	cout << "Server: Looking for a replier..." << endl;
 	cout_lock.unlock();
+#endif
 
 	shared_ptr<NsSkelRpcReplierInterface> replier;
 	try {
 		replier = NsSkelRpcRegistry::instance()->getReplier(methodName);
 	} catch (NsException &ex) {
+#ifndef RELEASE
 		cout_lock.lock();
 		cerr << "getReplier() failed for method " << methodName;
 		cout_lock.unlock();
+#endif
 
 		stringstream ess;
 		ess << "processRpcRequest(): getReplier() failed for method " << methodName << ": NsException: " << ex.what();
@@ -212,7 +233,13 @@ std::shared_ptr<NsSerialized> nanoservices::processRpcRequest(std::shared_ptr<Ns
 
 	bool responsePayloadPrepared = true;
 	try {
+#ifndef RELEASE
+		NsSkelUtils::log(LogLevel::Trace, stringstream() << "Start process");
+#endif
 		resultSerialized = replier->processSerializedRequest(request->argsSerialized());
+#ifndef RELEASE
+		NsSkelUtils::log(LogLevel::Trace, stringstream() << "Stop process");
+#endif
 
 		// DEBUG
 		//		cout_lock.lock ();
@@ -230,26 +257,32 @@ std::shared_ptr<NsSerialized> nanoservices::processRpcRequest(std::shared_ptr<Ns
 		auto causePair = std::pair<string, string>("cause", ex.shortDescription());
 		err->optionalErrorParams().insert(causePair);
 
+#ifndef RELEASE
 		cout_lock.lock();
 		cerr << "Replier error: " << err->errorCode() << ": " << err->errorDescription() << endl;
 		cout_lock.unlock();
+#endif
 
 		try {
 			errorSerialized = _errorSerializer.serialize(err);
 		} catch (NsException &ex1) {
+#ifndef RELEASE
 			cout_lock.lock();
 			cerr << "Could not serialize err object (replier NsException error): " << err->errorCode() << ": "
 				 << err->errorDescription() << endl;
 			cerr << "Serializer error: " << ex1.what() << endl;
 			cout_lock.unlock();
+#endif
 
 			responsePayloadPrepared = false;
 		} catch (...) {
+#ifndef RELEASE
 			cout_lock.lock();
 			cerr << "Could not serialize err object (replier NsException error): " << err->errorCode() << ": "
 				 << err->errorDescription() << endl;
 			cerr << "Serializer unexpected error" << endl;
 			cout_lock.unlock();
+#endif
 
 			responsePayloadPrepared = false;
 		}
@@ -266,26 +299,32 @@ std::shared_ptr<NsSerialized> nanoservices::processRpcRequest(std::shared_ptr<Ns
 		try {
 			errorSerialized = _errorSerializer.serialize(err);
 		} catch (NsException &ex1) {
+#ifndef RELEASE
 			cout_lock.lock();
 			cerr << "Could not serialize err object (replier std::exception error): " << err->errorCode() << ": "
 				 << err->errorDescription() << endl;
 			cerr << "Serializer error: " << ex1.what() << endl;
 			cout_lock.unlock();
+#endif
 
 			responsePayloadPrepared = false;
 		} catch (...) {
+#ifndef RELEASE
 			cout_lock.lock();
 			cerr << "Could not serialize err object (replier std::exception error): " << err->errorCode() << ": "
 				 << err->errorDescription() << endl;
 			cerr << "Serializer unexpected error" << endl;
 			cout_lock.unlock();
+#endif
 
 			responsePayloadPrepared = false;
 		}
 
+#ifndef RELEASE
 		cout_lock.lock();
 		cerr << "Replier error: " << err->errorCode() << ": " << err->errorDescription() << endl;
 		cout_lock.unlock();
+#endif
 
 		response->setSuccess(false);
 	} catch (...) {
@@ -299,27 +338,32 @@ std::shared_ptr<NsSerialized> nanoservices::processRpcRequest(std::shared_ptr<Ns
 		try {
 			errorSerialized = _errorSerializer.serialize(err);
 		} catch (NsException &ex1) {
+#ifndef RELEASE
 			cout_lock.lock();
 			cerr << "Could not serialize err object (replier unexpected exception error): " << err->errorCode() << ": "
 				 << err->errorDescription() << endl;
 			cerr << "Serializer error: " << ex1.what() << endl;
 			cout_lock.unlock();
+#endif
 
 			responsePayloadPrepared = false;
 		} catch (...) {
+#ifndef RELEASE
 			cout_lock.lock();
 			cerr << "Could not serialize err object (replier unexpected exception error): " << err->errorCode() << ": "
 				 << err->errorDescription() << endl;
 			cerr << "Serializer unexpected error" << endl;
 			cout_lock.unlock();
+#endif
 
 			responsePayloadPrepared = false;
 		}
 
+#ifndef RELEASE
 		cout_lock.lock();
 		cerr << "Replier error: " << err->errorCode() << ": " << err->errorDescription() << endl;
 		cout_lock.unlock();
-
+#endif
 		response->setSuccess(false);
 	}
 

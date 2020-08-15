@@ -26,7 +26,25 @@ set(Sources
 		src/NsSkelRpcReplierInterface.cpp
 		src/NsSkelRpcServer.cpp
 		src/NsSkelRpcService.cpp
-		src/NsSkelUtils.cpp)
+		src/NsSkelUtils.cpp
+		src/NsUtils.cpp
+		src/ConfigValidator.cpp
+		src/CVInvalidType.cpp
+		src/CVNoNodeData.cpp
+		src/CVTooManyChildren.cpp
+		src/CVTooLongData.cpp
+		src/NsCmdLineParameters.cpp
+		src/NsSkelLoopWorkerInterface.cpp)
+
+if(FILE)
+	set(Sources ${Sources}
+		src/file_config/FileConfig.cpp)
+elseif(ZOO)
+	set(Sources ${Sources}
+		src/zoo_config/ZooConfig.cpp)
+else()
+	message(FATAL_ERROR "Only one of FILE or ZOO must be set.")
+endif(FILE)
 
 message("Sources: ${Sources}")
 
@@ -61,14 +79,59 @@ set(Headers
 		include/NsSkelRpcServer.h
 		include/NsSkelRpcService.h
 		include/NsSkelStartException.h
-		include/NsSkelUtils.h)
+		include/NsSkelUtils.h
+		include/NsUtils.h
+		include/ConfigValidator.h
+		include/CVInvalidType.h
+		include/CVNoNodeData.h
+		include/CVTooManyChildren.h
+		include/CVTooLongData.h
+		include/NsCmdLineParameters.h
+		include/NsSkelLoopWorkerInterface.h)
+
+if(FILE)
+	set(Headers ${Headers}
+		include/file_config/FileConfig.h)
+elseif(ZOO)
+	set(Headers ${Headers}
+		include/zoo_config/ZooConfig.h)
+else()
+	message(FATAL_ERROR "Only one of FILE or ZOO must be set.")
+endif(FILE)
 
 include_directories(include)
+# Header-only HTTP/HTTPS server
+include_directories(${nanoservices_SOURCE_DIR}/third-party/cpp-httplib)
+# Header-only MSGPACK realisation
+include_directories(${nanoservices_SOURCE_DIR}/third-party/msgpack-c/include)
+
+if(FILE)
+	include_directories(include/file_config)
+elseif(ZOO)
+	include_directories(include/zoo_config)
+	include_directories(/usr/include/zookeeper)
+	set(CONFIG_LIBS zookeeper_mt)
+else()
+	message(FATAL_ERROR "Only one of FILE or ZOO must be set.")
+endif(FILE)
+
+if(FILE)
+	add_definitions(-DURI="file:///etc/nanoservices/global.conf.json")
+	add_definitions(-DHEAD="/")	
+elseif(ZOO)
+	# Connection string to zookeeper instance
+	add_definitions(-DURI="zoo://127.0.0.1:2181")
+	add_definitions(-DHEAD="")
+	# Prefix for root config node in zookeeper
+	add_definitions(-DPREFIX="/ru/cniiag/webmaps")
+else()
+	message(FATAL_ERROR "Only one of FILE or ZOO must be set.")
+endif(FILE)
 
 add_library(ns-skeleton SHARED ${Sources} ${Headers})
 
 find_package(Threads)
-target_link_libraries(ns-skeleton ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(ns-skeleton ${CMAKE_THREAD_LIBS_INIT} ${CONFIG_LIBS})
 
 # Documentation generation: make docs
 find_package(Doxygen)
@@ -100,3 +163,45 @@ if (DOXYGEN_FOUND)
 			WORKING_DIRECTORY ${DOXYGEN_OUTPUT_DIR})
 
 endif (DOXYGEN_FOUND)
+
+find_package(CxxTest)
+if(CXXTEST_FOUND)
+	include_directories(${CXXTEST_INCLUDE_DIR})
+	enable_testing()
+	set(Tests
+		${CMAKE_CURRENT_SOURCE_DIR}/test/AbstractConfigTest.h)
+	CXXTEST_ADD_TEST(config-tests config.cc ${Tests})
+	if(FILE)
+		include_directories(test/file_config)
+	elseif(ZOO)
+		include_directories(test/zoo_config)
+	else()
+		message(FATAL_ERROR "Only one of FILE or ZOO must be set.")
+	endif(FILE)
+	target_link_libraries(config-tests ns-skeleton)
+	add_custom_command(TARGET config-tests
+                        POST_BUILD
+                        COMMAND ${CMAKE_CURRENT_BINARY_DIR}/config-tests -v)
+endif(CXXTEST_FOUND)
+
+install(TARGETS ns-skeleton
+        LIBRARY DESTINATION lib/nanoservices
+        COMPONENT lib)
+
+install(FILES ns-skeleton.conf
+        DESTINATION /etc/ld.so.conf.d/
+        COMPONENT lib)
+
+install(FILES FindNanoservices.cmake
+        DESTINATION /usr/share/cmake-3.10/Modules/
+        COMPONENT dev)
+
+install(DIRECTORY include/
+        DESTINATION /usr/include/nanoservices
+        COMPONENT dev)
+
+install(DIRECTORY ${nanoservices_SOURCE_DIR}/third-party/msgpack-c/include/
+        DESTINATION /usr/include
+        COMPONENT dev)
+
+set(CPACK_DEBIAN_LIB_PACKAGE_CONTROL_EXTRA postinst)

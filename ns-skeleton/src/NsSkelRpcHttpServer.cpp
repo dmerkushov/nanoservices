@@ -31,128 +31,74 @@
 #include "NsSkelUtils.h"
 #include "NsSerializer.h"
 #include "NsRpcExecutor.h"
-#include "sockets/socketstream.h"
 
 using namespace std;
 using namespace nanoservices;
-using namespace galik::net;
+using namespace httplib;
 
 extern mutex cout_lock;
 
 NsSkelRpcHttpServer::NsSkelRpcHttpServer() : NsSkelRpcServer() {
 	setPort(NsSkelRpcRegistry::instance()->getLocalService()->httpPort());
+	_serverptr = make_shared<Server>();
+
+	/*
+	 * Set method on path /[same base64] 
+	 *   in base64 encoded same method call, that can be received from TCP
+	 */
+	_serverptr->Get(R"(/((?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$))", [&](const Request& req, Response& res) {
+		shared_ptr<string> requestBase64 = make_shared<string>(req.matches[1]);
+		shared_ptr<NsSerialized> rpcRequestSerialized = NsSkelUtils::fromBase64(requestBase64);
+		bool waitForResponse = true;
+		shared_ptr<NsSerialized> rpcResultSerialized;
+
+		rpcResultSerialized = processRpcRequest(rpcRequestSerialized, waitForResponse);
+#ifndef RELEASE
+		// DEBUG
+		cout_lock.lock();
+		cout << "processIncomingConnection(): serialized result: " << endl
+			 << hexdump(rpcResultSerialized->ptr, rpcResultSerialized->size) << endl;
+		cout << "processIncomingConnection(): Wait for response: " << waitForResponse << endl;
+		cout_lock.unlock();
+#endif
+		if (waitForResponse) {
+			shared_ptr<string> resultBase64 = NsSkelUtils::toBase64(rpcResultSerialized);
+
+#ifndef RELEASE
+			// DEBUG
+			cout_lock.lock();
+			cout << "processIncomingConnection(): base64 result: " << *resultBase64 << endl;
+			cout_lock.unlock();
+#endif
+			res.set_content(*resultBase64, "application/base64");
+			res.set_header("Access-Control-Allow-Origin", "*");
+		}
+	});
+	_serverptr->Get("/methods", [&](const Request& req, Response& res) {
+		auto methods_list = NsSkelRpcRegistry::instance()->methods();
+		string content;
+		for(auto method : *methods_list) {
+			auto replier = NsSkelRpcRegistry::instance()->getReplier(make_shared<string>(method));
+			content += replier->getReturnType()->getName() + " " + method + "(" + replier->getArgsType()->getName() +")\n";
+			content += "// Received from " + *(NsSkelRpcRegistry::instance()->getLocalService()->serviceName()) + "\n";
+			content += replier->getArgsType()->getDefinition() + "\n";
+			content += replier->getReturnType()->getDefinition() + "\n";
+		}
+		res.set_content(content, "text/plain");
+	});
 }
 
 NsSkelRpcHttpServer::~NsSkelRpcHttpServer() {
 }
 
-void NsSkelRpcHttpServer::processIncomingConnection(int dataSocketFd) try {
+void NsSkelRpcHttpServer::startup() {
+	_serverThread = std::thread([&]() {this->_serverptr->listen(this->host()->c_str(), this->port());});
+	_serverThread.detach();
+}
 
-	socketstream sockstream(dataSocketFd);
-
-	string method;
-	sockstream >> method;
-
-	if (method != "GET") {
-		cout_lock.lock();
-		cerr << "NsSkelRpcHttpServer: Unsupported HTTP method: " << method << endl;
-		cerr << "Currently, only GET is supported" << endl;
-		cout_lock.unlock();
-
-		sockstream.close();
-
-		return;
+void NsSkelRpcHttpServer::shutdown() {
+	if(_serverActive) {
+		_serverptr->stop();
 	}
-
-	string receivedRequest;
-	sockstream >> receivedRequest;
-
-	if (receivedRequest[0] != '/') {
-		cout_lock.lock();
-		cerr << "NsSkelRpcHttpServer: Unsupported request string: \"" << receivedRequest << '"' << endl;
-		cerr << "Request string must start with a slash (/)" << endl;
-		cout_lock.unlock();
-
-		sockstream.close();
-
-		return;
-	}
-
-	string httpVersion;
-	sockstream >> httpVersion;
-
-	if (httpVersion.substr(0, 6) != "HTTP/1") {
-		cout_lock.lock();
-		cerr << "NsSkelRpcHttpServer: Unsupported HTTP version: " << httpVersion << endl;
-		cerr << "Currently, only HTTP/1.0 and HTTP/1.1 are supported" << endl;
-		cout_lock.unlock();
-
-		sockstream.close();
-
-		return;
-	}
-
-	shared_ptr<string> requestBase64 = make_shared<string>(receivedRequest.substr(1));
-
-	shared_ptr<NsSerialized> rpcRequestSerialized = NsSkelUtils::fromBase64(requestBase64);
-	bool waitForResponse = true;
-	shared_ptr<NsSerialized> rpcResultSerialized;
-
-	rpcResultSerialized = processRpcRequest(rpcRequestSerialized, waitForResponse);
-
-	// DEBUG
-	cout_lock.lock();
-	cout << "processIncomingConnection(): serialized result: " << endl
-		 << hexdump(rpcResultSerialized->ptr, rpcResultSerialized->size) << endl;
-	cout << "processIncomingConnection(): Wait for response: " << waitForResponse << endl;
-	cout_lock.unlock();
-
-	if (waitForResponse) {
-		shared_ptr<string> resultBase64 = NsSkelUtils::toBase64(rpcResultSerialized);
-
-		// DEBUG
-		cout_lock.lock();
-		cout << "processIncomingConnection(): base64 result: " << *resultBase64 << endl;
-		cout_lock.unlock();
-
-		sockstream << "HTTP/1.1 200 OK\n";
-		sockstream << "Content-Type: application/base64\n";
-		sockstream << "Access-Control-Allow-Origin: *\n";
-		sockstream << "Content-Length: " << resultBase64->size() << "\n\n";
-		sockstream << *resultBase64;
-
-		// To send raw binary data in response:
-		//		sockstream << "Content-Type: application/octet-stream\n";
-		//		sockstream << "Content-Length: " << rpcResultSerialized->size << "\n\n";
-		//		for (uint32_t i = 0; i < rpcResultSerialized->size; i++) {
-		//			sockstream << rpcResultSerialized->ptr[i];
-		//		}
-
-		sockstream.flush();
-	}
-
-	// DEBUG
-	cout_lock.lock();
-	cout << "processIncomingConnection(): closing socket" << endl;
-	cout_lock.unlock();
-
-	sockstream.close();
-} catch (NsException &ex) {
-
-	cout_lock.lock();
-	cerr << "processIncomingConnection(): NsException: " << ex.what() << endl;
-	cout_lock.unlock();
-	::close(dataSocketFd);
-} catch (std::exception &ex) {
-
-	cout_lock.lock();
-	cerr << "processIncomingConnection(): std::exception: " << ex.what() << endl;
-	cout_lock.unlock();
-	::close(dataSocketFd);
-} catch (...) {
-
-	cout_lock.lock();
-	cerr << "processIncomingConnection(): Unexpected failure" << endl;
-	cout_lock.unlock();
-	::close(dataSocketFd);
+	_serverActive = false;
 }

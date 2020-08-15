@@ -59,7 +59,7 @@ NsSkelRpcRegistry::NsSkelRpcRegistry() {
 NsSkelRpcRegistry::~NsSkelRpcRegistry() {
 }
 
-void NsSkelRpcRegistry::registerReplier(shared_ptr<NsSkelRpcReplierInterface> replier) throw(NsException) {
+void NsSkelRpcRegistry::registerReplier(shared_ptr<NsSkelRpcReplierInterface> replier) {
 	if (!replier) {
 		throw NsException(NSE_POSITION, "Empty shared_ptr to the replier to register");
 	}
@@ -71,7 +71,7 @@ void NsSkelRpcRegistry::registerReplier(shared_ptr<NsSkelRpcReplierInterface> re
 	_repliersMapMutex.unlock();
 }
 
-void NsSkelRpcRegistry::unregisterReplier(shared_ptr<string> methodName) throw(NsException) {
+void NsSkelRpcRegistry::unregisterReplier(shared_ptr<string> methodName) {
 	if (!methodName) {
 		throw NsException(NSE_POSITION, "Empty shared_ptr to the replier method name to unregister");
 	}
@@ -97,8 +97,7 @@ void NsSkelRpcRegistry::unregisterReplier(shared_ptr<string> methodName) throw(N
 	_repliersMapMutex.unlock();
 }
 
-shared_ptr<NsSkelRpcReplierInterface>
-NsSkelRpcRegistry::getReplier(shared_ptr<string> methodName) throw(NsException) {
+shared_ptr<NsSkelRpcReplierInterface> NsSkelRpcRegistry::getReplier(shared_ptr<string> methodName) {
 	shared_ptr<NsSkelRpcReplierInterface> replier;
 
 	_repliersMapMutex.lock();
@@ -122,7 +121,7 @@ NsSkelRpcRegistry::getReplier(shared_ptr<string> methodName) throw(NsException) 
 	return replier;
 }
 
-shared_ptr<vector<string> > NsSkelRpcRegistry::methods() throw(NsException) {
+shared_ptr<vector<string> > NsSkelRpcRegistry::methods() {
 	shared_ptr<vector<string> > methods = make_shared<vector<string> >();
 
 	_repliersMapMutex.lock();
@@ -134,7 +133,7 @@ shared_ptr<vector<string> > NsSkelRpcRegistry::methods() throw(NsException) {
 	return methods;
 }
 
-void NsSkelRpcRegistry::prepareServicesMap() throw(NsException) {
+void NsSkelRpcRegistry::prepareServicesMap() {
 	NsSkelJsonPtr servicesJson;
 
 	_servicesMapMutex.lock();
@@ -145,7 +144,7 @@ void NsSkelRpcRegistry::prepareServicesMap() throw(NsException) {
 	}
 
 	try {
-		servicesJson = NsSkelConfiguration::instance()->getParameter<NsSkelJsonPtr>("known-services");
+		servicesJson = NsSkelConfiguration::instance()->getServices();
 	} catch (NsException &ex) {
 		stringstream ess;
 		ess << "getService(): NsException: " << ex.what();
@@ -154,16 +153,16 @@ void NsSkelRpcRegistry::prepareServicesMap() throw(NsException) {
 
 	if (!servicesJson) {
 		throw (NsException(NSE_POSITION, "getService(): known-services not found"));
-	} else if (servicesJson->type() != NsSkelJsonValueType::JSON_ARRAY) {
+	} else if (servicesJson->type() != NsSkelJsonValueType::JSON_OBJECT) {
 		stringstream ess;
-		ess << "getService(): known-services is not an array: " << verboseNsSkelJsonType(servicesJson->type());
+		ess << "getService(): known-services is not an object: " << verboseNsSkelJsonType(servicesJson->type());
 		throw (NsException(NSE_POSITION, ess));
 	}
 
-	NsSkelJsonArrayPtr serviceJsonArray = castNsSkelJsonPtr<NsSkelJsonArrayPtr>(servicesJson);
+	NsSkelJsonObjectPtr servicesJsonMap = castNsSkelJsonPtr<NsSkelJsonObjectPtr>(servicesJson);
 
-	for (auto it = serviceJsonArray->begin(); it != serviceJsonArray->end(); ++it) {
-		shared_ptr<NsSkelRpcService> service = make_shared<NsSkelRpcService>(*it);
+	for (auto it = servicesJsonMap->begin(); it != servicesJsonMap->end(); ++it) {
+		shared_ptr<NsSkelRpcService> service = make_shared<NsSkelRpcService>(make_shared<string>(it->first), it->second);
 		_services[*(service->serviceName())] = service;
 	}
 
@@ -173,7 +172,7 @@ void NsSkelRpcRegistry::prepareServicesMap() throw(NsException) {
 	_servicesMapMutex.unlock();
 }
 
-shared_ptr<NsSkelRpcService> NsSkelRpcRegistry::getService(shared_ptr<string> serviceName) throw(NsException) {
+shared_ptr<NsSkelRpcService> NsSkelRpcRegistry::getService(shared_ptr<string> serviceName) {
 	if (!serviceName) {
 		throw (NsException(NSE_POSITION, "Service name pointer is empty"));
 	}
@@ -239,16 +238,16 @@ shared_ptr<NsSkelRpcService> NsSkelRpcRegistry::getService(shared_ptr<string> se
 	return service;
 }
 
-void NsSkelRpcRegistry::initialize() throw(NsException) {
+void NsSkelRpcRegistry::initialize() {
 }
 
-shared_ptr<NsSkelRpcService> NsSkelRpcRegistry::getLocalService() throw(NsException) {
+shared_ptr<NsSkelRpcService> NsSkelRpcRegistry::getLocalService() {
 	shared_ptr<string> serviceName = NsSkelConfiguration::instance()->getServiceName();
 
 	return NsSkelRpcRegistry::instance()->getService(serviceName);
 }
 
-void NsSkelRpcRegistry::registerServer(std::shared_ptr<NsSkelRpcServer> server) throw(NsException) {
+void NsSkelRpcRegistry::registerServer(std::shared_ptr<NsSkelRpcServer> server) {
 	if (!server) {
 		return;
 	}
@@ -258,7 +257,7 @@ void NsSkelRpcRegistry::registerServer(std::shared_ptr<NsSkelRpcServer> server) 
 	_serversVectorMutex.unlock();
 }
 
-void NsSkelRpcRegistry::unregisterServer(shared_ptr<NsSkelRpcServer> server) throw(NsException) {
+void NsSkelRpcRegistry::unregisterServer(shared_ptr<NsSkelRpcServer> server) {
 	if (!server) {
 		return;
 	}
@@ -279,7 +278,7 @@ void NsSkelRpcRegistry::unregisterServer(shared_ptr<NsSkelRpcServer> server) thr
 	_serversVectorMutex.unlock();
 }
 
-void NsSkelRpcRegistry::startupServers() throw(NsException) {
+void NsSkelRpcRegistry::startupServers() {
 	_serversVectorMutex.lock();
 	vector<shared_ptr<NsSkelRpcServer> >::iterator it;
 	try {
@@ -311,11 +310,11 @@ void NsSkelRpcRegistry::startupServers() throw(NsException) {
 	_serversVectorMutex.unlock();
 }
 
-void NsSkelRpcRegistry::shutdownServers() throw(NsException) {
+void NsSkelRpcRegistry::shutdownServers() {
 	_serversVectorMutex.lock();
-	vector<shared_ptr<NsSkelRpcServer> >::iterator it;
+	vector<shared_ptr<NsSkelRpcServer> >::reverse_iterator it;
 	try {
-		for (it = _servers.begin(); it != _servers.end(); it++) {
+		for (it = _servers.rbegin(); it != _servers.rend(); it++) {
 			it->get()->shutdown();
 		}
 	} catch (NsException &e) {
@@ -343,7 +342,7 @@ void NsSkelRpcRegistry::shutdownServers() throw(NsException) {
 	_serversVectorMutex.unlock();
 }
 
-shared_ptr<vector<shared_ptr<NsSkelRpcServer> > > NsSkelRpcRegistry::servers() throw(NsException) {
+shared_ptr<vector<shared_ptr<NsSkelRpcServer> > > NsSkelRpcRegistry::servers() {
 	shared_ptr<vector<shared_ptr<NsSkelRpcServer> > > toRet = make_shared<std::vector<std::shared_ptr<NsSkelRpcServer> > >();
 	_serversVectorMutex.lock();
 	vector<shared_ptr<NsSkelRpcServer> >::iterator it;
@@ -354,26 +353,73 @@ shared_ptr<vector<shared_ptr<NsSkelRpcServer> > > NsSkelRpcRegistry::servers() t
 	} catch (NsException &e) {
 		_serversVectorMutex.unlock();
 		stringstream ess;
-		ess << "NsException in NsSkelRpcRegistry::shutdown()";
+		ess << "NsException in NsSkelRpcRegistry::servers()";
 		if ((*it) != nullptr) {
-			ess << " (when shutting down server on port " << it->get()->port() << ")";
+			ess << " (when get server on port " << it->get()->port() << ")";
 		}
 		ess << ": " << e.what();
 		throw (NsException(NSE_POSITION, ess));
 	} catch (std::exception &e) {
 		_serversVectorMutex.unlock();
 		stringstream ess;
-		ess << "std::exception in NsSkelRpcRegistry::shutdown()";
+		ess << "std::exception in NsSkelRpcRegistry::servers()";
 		if ((*it) != nullptr) {
-			ess << " (when shutting down server on port " << it->get()->port() << ")";
+			ess << " (when get server on port " << it->get()->port() << ")";
 		}
 		ess << ": " << e.what();
 		throw (NsException(NSE_POSITION, ess));
 	} catch (...) {
 		_serversVectorMutex.unlock();
-		throw (NsException(NSE_POSITION, "Unexpected in NsSkelRpcRegistry::shutdown()"));
+		throw (NsException(NSE_POSITION, "Unexpected in NsSkelRpcRegistry::servers()"));
 	}
 	_serversVectorMutex.unlock();
 
 	return toRet;
+}
+
+void NsSkelRpcRegistry::enableLoopWorker(std::shared_ptr<NsSkelLoopWorkerInterface> worker) {
+	bool active = false;
+	_serversVectorMutex.lock();
+	vector<shared_ptr<NsSkelRpcServer> >::iterator it;
+	try {
+		for (it = _servers.begin(); it != _servers.end() && !active; it++) {
+			active = it->get()->active();
+		}
+	} catch (NsException &e) {
+		_serversVectorMutex.unlock();
+		stringstream ess;
+		ess << "NsException in NsSkelRpcRegistry::enableLoopWorker()";
+		if ((*it) != nullptr) {
+			ess << " (when check activity of server on port " << it->get()->port() << ")";
+		}
+		ess << ": " << e.what();
+		throw (NsException(NSE_POSITION, ess));
+	} catch (std::exception &e) {
+		_serversVectorMutex.unlock();
+		stringstream ess;
+		ess << "std::exception in NsSkelRpcRegistry::enableLoopWorker()";
+		if ((*it) != nullptr) {
+			ess << " (when check activity of server on port " << it->get()->port() << ")";
+		}
+		ess << ": " << e.what();
+		throw (NsException(NSE_POSITION, ess));
+	} catch (...) {
+		_serversVectorMutex.unlock();
+		throw (NsException(NSE_POSITION, "Unexpected in NsSkelRpcRegistry::enableLoopWorker()"));
+	}
+	_serversVectorMutex.unlock();
+	if(active) {
+		stringstream ess;
+		ess << "Loop worker must be registered before startup!";
+		throw (NsException(NSE_POSITION, ess));
+	}
+	_loopWorker = worker;
+}
+
+std::shared_ptr<NsSkelLoopWorkerInterface> NsSkelRpcRegistry::getLoopWorker() {
+	return _loopWorker;
+}
+
+void NsSkelRpcRegistry::disableLoopWorker() {
+	if(_loopWorker) _loopWorker->disable();
 }

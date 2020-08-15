@@ -40,12 +40,9 @@ NsSkelRpcService::NsSkelRpcService(shared_ptr<string> serviceName, shared_ptr<st
 		_httpPort(httpPort) {
 }
 
-NsSkelRpcService::NsSkelRpcService(NsSkelJsonPtr serviceJson) throw(NsException) {
+NsSkelRpcService::NsSkelRpcService(shared_ptr<string> serviceName, NsSkelJsonPtr serviceJson) {
 	NsSkelJsonObject serviceJsonObj = fromNsSkelJsonPtr<NsSkelJsonObject>(serviceJson);
 
-	if (serviceJsonObj.find("service-name") == serviceJsonObj.end()) {
-		throw (NsException(NSE_POSITION, "No service-name in service description JSON"));
-	}
 	if (serviceJsonObj.find("host") == serviceJsonObj.end()) {
 		throw (NsException(NSE_POSITION, "No host in service description JSON"));
 	}
@@ -53,7 +50,7 @@ NsSkelRpcService::NsSkelRpcService(NsSkelJsonPtr serviceJson) throw(NsException)
 		throw (NsException(NSE_POSITION, "No port in service description JSON"));
 	}
 
-	_serviceName = make_shared<string>(fromNsSkelJsonPtr<std::string>(serviceJsonObj["service-name"]));
+	_serviceName = serviceName;
 	_host = make_shared<string>(fromNsSkelJsonPtr<std::string>(serviceJsonObj["host"]));
 	_port = fromNsSkelJsonPtr<uint16_t>(serviceJsonObj["port"]);
 

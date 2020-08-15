@@ -38,14 +38,18 @@ namespace nanoservices {
 
 		virtual ~NsSkelRpcReplierInterface();
 
-		virtual std::shared_ptr<std::string> methodName() throw(NsException) = 0;
+		virtual std::shared_ptr<std::string> methodName() noexcept(true) = 0;
 
-		virtual bool isThreadsafe() throw(NsException);
+		virtual bool isThreadsafe() noexcept(true);
 
 		virtual std::shared_ptr<NsSerialized>
-		processSerializedRequest(std::shared_ptr<NsSerialized> args) throw(NsException) = 0;
+		processSerializedRequest(std::shared_ptr<NsSerialized> args) = 0;
 
-		virtual std::shared_ptr<NsSerialized> processSerializedRequest(NsSerialized &args) throw(NsException) = 0;
+		virtual std::shared_ptr<NsSerialized> processSerializedRequest(NsSerialized &args) = 0;
+
+		virtual NsTypeInfoPtr getArgsType() = 0;
+
+		virtual NsTypeInfoPtr getReturnType() = 0;
 
 	private:
 		NsSkelRpcReplierInterface(const NsSkelRpcReplierInterface &orig) = delete;

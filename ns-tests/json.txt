@@ -1,0 +1,33 @@
+{
+	"host": {
+		"__data__":"0.0.0.0",
+		"__description__":"Service host"
+	},
+	"port": {
+		"__data__":12345,
+		"__description__":"Service port"
+	},
+	"http-enabled": {
+		"__data__":true
+	},
+	"http-port": {
+		"__data__":8082,
+		"__description__":"Service HTTP port"
+	},
+	"param-keys": {
+		"__description__":"Service command args",
+		"fuse": {
+			"key": {
+				"__data__": "f",
+				"__description__":"Short version"
+			},
+			"isRequired": {
+				"__data__": false
+			},
+			"desc": {
+				"__data__": "fuse service"
+			}
+		}
+	},
+	"__description__": "Test service"
+}

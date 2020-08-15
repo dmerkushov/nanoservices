@@ -24,6 +24,7 @@
 #include "NsSkeleton.h"
 
 #include <memory>
+#include <thread>
 #include <string>
 #include <sstream>
 
@@ -37,20 +38,25 @@
 #include "NsSkelRpcServer.h"
 #include "NsSkelRpcHttpServer.h"
 #include "NsMonitoring.h"
+#include "NsCmdLineParameters.h"
 
 using namespace std;
 using namespace nanoservices;
 
-void NsSkeleton::init(const std::string &serviceName, const std::string &configName) throw(NsException) try {
+void NsSkeleton::init(const std::string &serviceName, int argc, char **argv) try {
 
-	string configNameResult;
-	if (configName == "") {
-		configNameResult = serviceName;
-	} else {
-		configNameResult = configName;
-	}
+	string configNameResult = serviceName;
 
 	nsSkelConfig(serviceName, configNameResult);
+
+	NsSkelJsonPtr paramKeys = nullptr;
+	if (NsSkelConfiguration::instance()->hasParameter("param-keys")) {
+		paramKeys = NsSkelConfiguration::instance()->getParameter<NsSkelJsonPtr>("param-keys");
+	}
+	auto optionsDef = getOptionDefinitions(paramKeys);
+
+	NsCmdLineParameters::init(optionsDef, argc, argv);
+
 	shared_ptr<NsSkelRpcServer> server = make_shared<NsSkelRpcServer>();
 	NsSkelRpcRegistry::instance()->registerServer(server);
 
@@ -81,7 +87,7 @@ void NsSkeleton::init(const std::string &serviceName, const std::string &configN
 	throw NsException(NSE_POSITION, "NsSkeleton::init(): Unexpected failure");
 }
 
-void NsSkeleton::startup() throw(NsException) try {
+void NsSkeleton::startup() try {
 
 	NsSkelRpcRegistry::instance()->startupServers();
 
@@ -98,7 +104,7 @@ void NsSkeleton::startup() throw(NsException) try {
 	throw NsException(NSE_POSITION, "NsSkeleton::startup(): Unexpected failure");
 }
 
-void NsSkeleton::shutdown() throw(NsException) try {
+void NsSkeleton::shutdown() try {
 
 	NsSkelRpcRegistry::instance()->shutdownServers();
 
@@ -115,7 +121,7 @@ void NsSkeleton::shutdown() throw(NsException) try {
 	throw NsException(NSE_POSITION, "NsSkeleton::shutdown(): Unexpected failure");
 }
 
-void NsSkeleton::registerReplier(std::shared_ptr<NsSkelRpcReplierInterface> replier) throw(NsException) try {
+void NsSkeleton::registerReplier(std::shared_ptr<NsSkelRpcReplierInterface> replier) try {
 
 	NsSkelRpcRegistry::instance()->registerReplier(replier);
 } catch (NsException &ex) {
@@ -130,7 +136,7 @@ void NsSkeleton::registerReplier(std::shared_ptr<NsSkelRpcReplierInterface> repl
 	throw NsException(NSE_POSITION, "NsSkeleton::registerReplier(): Unexpected failure");
 }
 
-void NsSkeleton::unregisterReplier(std::shared_ptr<std::string> methodName) throw(NsException) try {
+void NsSkeleton::unregisterReplier(std::shared_ptr<std::string> methodName) try {
 
 	NsSkelRpcRegistry::instance()->unregisterReplier(methodName);
 } catch (NsException &ex) {
@@ -145,8 +151,12 @@ void NsSkeleton::unregisterReplier(std::shared_ptr<std::string> methodName) thro
 	throw NsException(NSE_POSITION, "NsSkeleton::unregisterReplier(): Unexpected failure");
 }
 
-std::shared_ptr<std::string> NsSkeleton::serviceName() throw(NsException) try {
-	return NsSkelConfiguration::instance()->getServiceName();
+std::shared_ptr<std::string> NsSkeleton::serviceName() try {
+	shared_ptr<string> returned = NsSkelConfiguration::instance()->getServiceName();
+	if (NsCmdLineParameters::instance()->isParam("name")) {
+		returned = make_shared<string>(NsCmdLineParameters::instance()->paramValue("name"));
+	}
+	return returned;
 } catch (NsException &ex) {
 	stringstream ess;
 	ess << "NsSkeleton::serviceName(): NsException: " << ex.what();
@@ -159,10 +169,28 @@ std::shared_ptr<std::string> NsSkeleton::serviceName() throw(NsException) try {
 	throw NsException(NSE_POSITION, "NsSkeleton::serviceName(): Unexpected failure");
 }
 
-void NsSkeleton::sleepWhileActive() throw(NsException) try {
+#include <chrono>
+
+#if __cplusplus < 201402L
+
+constexpr std::chrono::milliseconds operator ""ms(unsigned long long ms)
+{
+    return std::chrono::milliseconds(ms);
+}
+
+#endif
+
+void NsSkeleton::sleepWhileActive() try {
 	shared_ptr<vector<shared_ptr<NsSkelRpcServer> > > servers = NsSkelRpcRegistry::instance()->servers();
-	for (auto it = servers->begin(); it != servers->end(); it++) {
-		it->get()->sleepWhileActive();
+	auto loopWorker = NsSkelRpcRegistry::instance()->getLoopWorker();	
+	bool active = true;
+	while(active) {		
+		if(loopWorker) (*loopWorker)();
+		active = false;
+		for (auto it = servers->begin(); it != servers->end(); it++) {
+			active = active || it->get()->active();
+		}
+		this_thread::sleep_for(1ms);
 	}
 } catch (NsException &ex) {
 	stringstream ess;
@@ -174,4 +202,32 @@ void NsSkeleton::sleepWhileActive() throw(NsException) try {
 	throw NsException(NSE_POSITION, ess);
 } catch (...) {
 	throw NsException(NSE_POSITION, "NsSkeleton::sleepWhileActive(): Unexpected failure");
+}
+
+void NsSkeleton::registerLoopWorker(std::shared_ptr<NsSkelLoopWorkerInterface> worker) try {
+	NsSkelRpcRegistry::instance()->enableLoopWorker(worker);
+} catch (NsException &ex) {
+	stringstream ess;
+	ess << "NsSkeleton::registerLoopWorker(): NsException: " << ex.what();
+	throw NsException(NSE_POSITION, ess);
+} catch (std::exception &ex) {
+	stringstream ess;
+	ess << "NsSkeleton::registerLoopWorker(): std::exception: " << ex.what();
+	throw NsException(NSE_POSITION, ess);
+} catch (...) {
+	throw NsException(NSE_POSITION, "NsSkeleton::registerLoopWorker(): Unexpected failure");
+}
+
+void NsSkeleton::unregisterLoopWorker() try {
+	NsSkelRpcRegistry::instance()->disableLoopWorker();
+} catch (NsException &ex) {
+	stringstream ess;
+	ess << "NsSkeleton::unregisterLoopWorker(): NsException: " << ex.what();
+	throw NsException(NSE_POSITION, ess);
+} catch (std::exception &ex) {
+	stringstream ess;
+	ess << "NsSkeleton::unregisterLoopWorker(): std::exception: " << ex.what();
+	throw NsException(NSE_POSITION, ess);
+} catch (...) {
+	throw NsException(NSE_POSITION, "NsSkeleton::unregisterLoopWorker(): Unexpected failure");
 }

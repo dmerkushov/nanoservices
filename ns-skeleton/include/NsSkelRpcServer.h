@@ -68,6 +68,10 @@
 #include "NsRpcResponseError.h"
 #include "NsSerializer.h"
 
+#ifndef RELEASE
+#include "NsSkelUtils.h"
+#endif
+
 namespace nanoservices {
 
 	const int MAX_INTERRUPTED_TIMES = 3;
@@ -86,13 +90,15 @@ namespace nanoservices {
 
 		virtual ~NsSkelRpcServer();
 
-		void startup() throw(NsException);
+		virtual void startup();
 
-		void shutdown();
+		virtual void shutdown();
 
 		bool active();
 
 		void sleepWhileActive();
+
+		std::shared_ptr<std::string> host();
 
 		uint16_t port();
 
@@ -101,15 +107,17 @@ namespace nanoservices {
 
 		virtual void processIncomingConnection(int dataSocketFd);
 
+		std::thread _serverThread;
+		std::atomic<bool> _serverActive;
+
 	private:
 		NsSkelRpcServer(const NsSkelRpcServer &orig) = delete;
 
 		void operator=(NsSkelRpcServer &orig) = delete;
 
+		std::shared_ptr<std::string> _host;
 		uint16_t _port;
 		int _serverSocketFd;
-		std::thread _serverThread;
-		std::atomic<bool> _serverActive;
 		std::atomic<bool> _serverStarted;
 		std::atomic<bool> _shutdownReceived;
 		std::map<int, std::shared_ptr<std::thread> > _threads;
@@ -118,33 +126,46 @@ namespace nanoservices {
 	};
 
 	inline std::shared_ptr<NsBinBuffer> readBin(int dataSocketFd, uint32_t len) {
-		std::shared_ptr<NsBinBuffer> buf = std::make_shared<NsBinBuffer>(len);
 		std::shared_ptr<NsBinBuffer> empty;
 
+		char* buf = new char[len];
+#ifndef RELEASE
+		NsSkelUtils::log(LogLevel::Trace, std::stringstream() << "Start read " << len << " bytes.");
+#endif
 		char currByte;
 		ssize_t rcount = 0;
 		ssize_t totalcount = 0;
 		while (totalcount < len) {
-			rcount = read(dataSocketFd, &currByte, 1);
+			rcount = read(dataSocketFd, buf + totalcount , len - totalcount);
 			if (rcount == 0) {
+#ifndef RELEASE
 				cout_lock.lock();
 				std::cerr << "readBin: Socket closed prematurely: fd=" << dataSocketFd << std::endl;
 				cout_lock.unlock();
+#endif
 				return empty;
 			}
-			buf->write(&currByte, 1);
-			totalcount++;
+			totalcount += rcount;
 		}
 
+		std::shared_ptr<NsBinBuffer> res = std::make_shared<NsBinBuffer>(NsBinaryData(buf, len));
+		delete buf;
+
+#ifndef RELEASE
+		NsSkelUtils::log(LogLevel::Trace, std::stringstream() << "Stop read " << len << " bytes.");
 		//	cout_lock.lock ();
 		//	std::cout << "Read from socket " << dataSocketFd << ":" << std::endl;
 		//	std::cout << hexdump (buf->data (), len);
 		//	cout_lock.unlock ();
+#endif
 
-		return buf;
+		return res;
 	}
 
 	inline void writeBin(int dataSocketFd, const void *data, size_t len) {
+#ifndef RELEASE
+		NsSkelUtils::log(LogLevel::Trace, std::stringstream() << "Start write " << len << " bytes.");
+#endif
 		size_t index = 0;
 		const char *d = (char *) data;
 		int interruptedTimes = 0;
@@ -161,23 +182,28 @@ namespace nanoservices {
 					}
 					continue;
 				}
+#ifndef RELEASE
 				cout_lock.lock();
 				std::cerr << "writeBin: Socket closed prematurely: fd=" << dataSocketFd << std::endl;
 				cout_lock.unlock();
+#endif
 			} else {
 				index += count;
 			}
 		}
+#ifndef RELEASE
+		NsSkelUtils::log(LogLevel::Trace, std::stringstream() << "Stop write " << len << " bytes.");
 
 		//	cout_lock.lock ();
 		//	std::cout << "Wrote to socket " << dataSocketFd << ":" << std::endl;
 		//	std::cout << hexdump (d, len);
 		//	cout_lock.unlock ();
+#endif
 	}
 
 	static std::shared_ptr<NsRpcResponse>
 	sendPackRpcRequest(std::shared_ptr<std::string> serviceName, const char *host, uint16_t port,
-					   std::shared_ptr<NsRpcRequest> request) throw(NsException) {
+					   std::shared_ptr<NsRpcRequest> request) {
 
 		char portCharPtr[50];
 		sprintf(portCharPtr, "%d", port);
@@ -331,10 +357,20 @@ namespace nanoservices {
 	template<typename Args, typename Result>
 	static std::shared_ptr<Result>
 	sendRpcRequest(std::shared_ptr<std::string> serviceName, std::shared_ptr<std::string> methodName,
-				   std::shared_ptr<Args> args, bool waitForResponse) throw(NsException) {
+				   std::shared_ptr<Args> args, bool waitForResponse) {
+
 		std::shared_ptr<NsSkelRpcService> service;
+		std::shared_ptr<std::string> serviceNamePtr = serviceName;
+
+		// Check simplity of service name
+		std::string::size_type pos = serviceName->find(':');
+		if (pos != std::string::npos) {
+			// Define real service name
+			serviceNamePtr = std::make_shared<std::string>(serviceName->substr(0, pos));
+		}
+
 		try {
-			service = NsSkelRpcRegistry::instance()->getService(serviceName);
+			service = NsSkelRpcRegistry::instance()->getService(serviceNamePtr);
 		} catch (NsException &ex) {
 			std::stringstream ess;
 			ess << "NsException: " << ex.what();
@@ -344,6 +380,11 @@ namespace nanoservices {
 		const char *host = service->host()->c_str();
 		uint16_t port = service->port();
 
+		if (pos != std::string::npos) {
+			// Override port from service name
+			std::string port_s = serviceName->substr(pos + 1);
+			port = stoi(port_s);
+		}
 		//	cout_lock.lock ();
 		//	std::cout << "sendRpcRequest(): Trying to connect to host " << host << ":" << port << std::endl;
 		//	cout_lock.unlock ();

@@ -93,14 +93,32 @@ public:
 	virtual ~TestExceeptionThrowThrough_Replier() {
 	}
 
-	virtual std::shared_ptr<std::string> methodName() throw(nanoservices::NsException) {
+	virtual std::shared_ptr <std::string> methodName() noexcept(true) {
 		return _methodName;
 	}
 
-	virtual std::shared_ptr<TestExceptionThrowThrough_Result>
-	processRequest(std::shared_ptr<TestExceeptionThrowThrough_Args> args) throw(nanoservices::NsException) {
-		throw nanoservices::NsException(NSE_POSITION,
-										"Exception from TestBrokenWrite_B_Replier:processRequest");
+	virtual std::shared_ptr <MyResult> processRequest(std::shared_ptr <MyArgs> args) {
+		throw nanoservices::NsException(NSE_POSITION, "Exception from MyReplier:processRequest");
+
+		std::cout << "Replier: params: i=" << args->i << ", j=" << args->j << std::endl;
+
+		//		if (params->i >= 10000) {
+		//			throw (NsException (NSE_POSITION, "i is too big"));
+		//		}
+
+		std::shared_ptr <MyResult> result = std::make_shared<MyResult>();
+
+		//		try {
+		//			sendRpcRequest<MyParam, MyResult> (std::make_shared<std::string> ("sfgafs"), std::make_shared<std::string> ("skjghg"), params, true);
+		//		} catch (NsSkelRpcException ex) {
+		//			std::stringstream ess;
+		//			ess << "NsSkelRpcException: " << ex.what ();
+		//			throw NsSkelRpcException (NSE_POSITION, ess);
+		//		}
+
+		result->o = args->i + 1;
+
+		return result;
 	}
 
 private:

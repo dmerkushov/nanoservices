@@ -36,7 +36,7 @@ namespace nanoservices {
 
 	class NsRpcResponseError {
 	public:
-		NSSERIALIZER_PREPARE (_errorCode, _errorDescription, _optionalErrorParams);
+		NSSERIALIZER_PREPARE_SYS (_errorCode, _errorDescription, _optionalErrorParams);
 
 		NsRpcResponseError();
 

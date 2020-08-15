@@ -123,7 +123,7 @@ NsBinBuffer::NsBinBuffer() : msgpack2::sbuffer() {
 NsBinBuffer::NsBinBuffer(uint32_t size) : msgpack2::sbuffer(size) {
 }
 
-NsBinBuffer::NsBinBuffer(const msgpack2::type::raw_ref &bin) {
+NsBinBuffer::NsBinBuffer(const msgpack2::type::raw_ref &bin) : msgpack2::sbuffer(bin.size) {
 	this->write(bin.ptr, bin.size);
 }
 

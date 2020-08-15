@@ -1,0 +1,7 @@
+#!/bin/bash
+
+if ns-configurator -c -p "/ns-logger" -a "$(< /tmp/ns-logger/ns-logger.json)"; then
+	echo 'Configured!'
+else
+	ns-configurator -u -p "/ns-logger" -a "$(< /tmp/ns-logger/ns-logger.json)"; then
+fi

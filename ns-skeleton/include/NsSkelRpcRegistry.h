@@ -33,6 +33,7 @@
 #include "NsException.h"
 #include "NsSkelRpcService.h"
 #include "NsSkelRpcReplierInterface.h"
+#include "NsSkelLoopWorkerInterface.h"
 
 namespace nanoservices {
 
@@ -44,29 +45,35 @@ namespace nanoservices {
 
 		virtual ~NsSkelRpcRegistry();
 
-		std::shared_ptr<NsSkelRpcReplierInterface> getReplier(std::shared_ptr<std::string> method) throw(NsException);
+		std::shared_ptr<NsSkelRpcReplierInterface> getReplier(std::shared_ptr<std::string> method);
 
-		void registerReplier(std::shared_ptr<NsSkelRpcReplierInterface> replier) throw(NsException);
+		void registerReplier(std::shared_ptr<NsSkelRpcReplierInterface> replier);
 
-		void unregisterReplier(std::shared_ptr<std::string> methodName) throw(NsException);
+		void unregisterReplier(std::shared_ptr<std::string> methodName);
 
-		std::shared_ptr<std::vector<std::string> > methods() throw(NsException);
+		void enableLoopWorker(std::shared_ptr<NsSkelLoopWorkerInterface> worker);
 
-		std::shared_ptr<NsSkelRpcService> getService(std::shared_ptr<std::string> serviceName) throw(NsException);
+		std::shared_ptr<NsSkelLoopWorkerInterface> getLoopWorker();
 
-		std::shared_ptr<NsSkelRpcService> getLocalService() throw(NsException);
+		void disableLoopWorker();
 
-		void registerServer(std::shared_ptr<NsSkelRpcServer> server) throw(NsException);
+		std::shared_ptr<std::vector<std::string> > methods();
 
-		void unregisterServer(std::shared_ptr<NsSkelRpcServer> server) throw(NsException);
+		std::shared_ptr<NsSkelRpcService> getService(std::shared_ptr<std::string> serviceName);
 
-		void startupServers() throw(NsException);
+		std::shared_ptr<NsSkelRpcService> getLocalService();
 
-		void shutdownServers() throw(NsException);
+		void registerServer(std::shared_ptr<NsSkelRpcServer> server);
 
-		std::shared_ptr<std::vector<std::shared_ptr<NsSkelRpcServer> > > servers() throw(NsException);
+		void unregisterServer(std::shared_ptr<NsSkelRpcServer> server);
 
-		void initialize() throw(NsException);
+		void startupServers();
+
+		void shutdownServers();
+
+		std::shared_ptr<std::vector<std::shared_ptr<NsSkelRpcServer> > > servers();
+
+		void initialize();
 
 	private:
 		NsSkelRpcRegistry();
@@ -75,7 +82,7 @@ namespace nanoservices {
 
 		void operator=(const NsSkelRpcRegistry &orig) = delete;
 
-		void prepareServicesMap() throw(NsException);
+		void prepareServicesMap();
 
 		std::map<std::string, std::shared_ptr<NsSkelRpcReplierInterface> > _repliers;
 
@@ -83,6 +90,8 @@ namespace nanoservices {
 		bool _servicesMapReady = false;
 
 		std::vector<std::shared_ptr<NsSkelRpcServer> > _servers;
+
+		std::shared_ptr<NsSkelLoopWorkerInterface> _loopWorker = nullptr;
 	};
 }
 
