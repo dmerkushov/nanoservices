@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.0)
 project(nanoservices)
 
+set(CMAKE_CXX_FLAGS_RELEASE -DRELEASE)
+
 option(ZOO "make with zoo config" ON)
 include(CMakeDependentOption)
 cmake_dependent_option(FILE "make with file config" OFF "ZOO" ON)

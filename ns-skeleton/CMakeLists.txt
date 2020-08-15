@@ -33,7 +33,8 @@ set(Sources
 		src/CVNoNodeData.cpp
 		src/CVTooManyChildren.cpp
 		src/CVTooLongData.cpp
-		src/NsCmdLineParameters.cpp)
+		src/NsCmdLineParameters.cpp
+		src/NsSkelLoopWorkerInterface.cpp)
 
 if(FILE)
 	set(Sources ${Sources}
@@ -85,7 +86,8 @@ set(Headers
 		include/CVNoNodeData.h
 		include/CVTooManyChildren.h
 		include/CVTooLongData.h
-		include/NsCmdLineParameters.h)
+		include/NsCmdLineParameters.h
+		include/NsSkelLoopWorkerInterface.h)
 
 if(FILE)
 	set(Headers ${Headers}

@@ -2,6 +2,14 @@
 
 ## Build docker image
 
+It's better to remove unused docke cache first
+
+```bash
+docker image prune
+```
+
+Now build image
+
 ```bash
 cd nanoservices
 

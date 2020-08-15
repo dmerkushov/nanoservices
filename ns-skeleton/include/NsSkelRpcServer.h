@@ -68,6 +68,10 @@
 #include "NsRpcResponseError.h"
 #include "NsSerializer.h"
 
+#ifndef RELEASE
+#include "NsSkelUtils.h"
+#endif
+
 namespace nanoservices {
 
 // These serializers are defined in NsRpcExecutor.cpp
@@ -123,15 +127,20 @@ namespace nanoservices {
 		std::shared_ptr<NsBinBuffer> empty;
 
 		char* buf = new char[len];
+#ifndef RELEASE
+		NsSkelUtils::log(LogLevel::Trace, std::stringstream() << "Start read " << len << " bytes.");
+#endif
 		char currByte;
 		ssize_t rcount = 0;
 		ssize_t totalcount = 0;
 		while (totalcount < len) {
 			rcount = read(dataSocketFd, buf + totalcount , len - totalcount);
 			if (rcount == 0) {
+#ifndef RELEASE
 				cout_lock.lock();
 				std::cerr << "readBin: Socket closed prematurely: fd=" << dataSocketFd << std::endl;
 				cout_lock.unlock();
+#endif
 				return empty;
 			}
 			totalcount += rcount;
@@ -140,15 +149,21 @@ namespace nanoservices {
 		std::shared_ptr<NsBinBuffer> res = std::make_shared<NsBinBuffer>(NsBinaryData(buf, len));
 		delete buf;
 
+#ifndef RELEASE
+		NsSkelUtils::log(LogLevel::Trace, std::stringstream() << "Stop read " << len << " bytes.");
 		//	cout_lock.lock ();
 		//	std::cout << "Read from socket " << dataSocketFd << ":" << std::endl;
 		//	std::cout << hexdump (buf->data (), len);
 		//	cout_lock.unlock ();
+#endif
 
 		return res;
 	}
 
 	inline void writeBin(int dataSocketFd, const void *data, size_t len) {
+#ifndef RELEASE
+		NsSkelUtils::log(LogLevel::Trace, std::stringstream() << "Start write " << len << " bytes.");
+#endif
 		size_t index = 0;
 		const char *d = (char *) data;
 		while (index < len) {
@@ -157,18 +172,23 @@ namespace nanoservices {
 				if (errno == EINTR) {
 					continue;
 				}
+#ifndef RELEASE
 				cout_lock.lock();
 				std::cerr << "writeBin: Socket closed prematurely: fd=" << dataSocketFd << std::endl;
 				cout_lock.unlock();
+#endif
 			} else {
 				index += count;
 			}
 		}
+#ifndef RELEASE
+		NsSkelUtils::log(LogLevel::Trace, std::stringstream() << "Stop write " << len << " bytes.");
 
 		//	cout_lock.lock ();
 		//	std::cout << "Wrote to socket " << dataSocketFd << ":" << std::endl;
 		//	std::cout << hexdump (d, len);
 		//	cout_lock.unlock ();
+#endif
 	}
 
 	static std::shared_ptr<NsRpcResponse>

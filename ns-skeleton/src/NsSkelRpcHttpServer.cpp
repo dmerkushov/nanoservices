@@ -53,25 +53,38 @@ NsSkelRpcHttpServer::NsSkelRpcHttpServer() : NsSkelRpcServer() {
 		shared_ptr<NsSerialized> rpcResultSerialized;
 
 		rpcResultSerialized = processRpcRequest(rpcRequestSerialized, waitForResponse);
-
+#ifndef RELEASE
 		// DEBUG
 		cout_lock.lock();
 		cout << "processIncomingConnection(): serialized result: " << endl
 			 << hexdump(rpcResultSerialized->ptr, rpcResultSerialized->size) << endl;
 		cout << "processIncomingConnection(): Wait for response: " << waitForResponse << endl;
 		cout_lock.unlock();
-
+#endif
 		if (waitForResponse) {
 			shared_ptr<string> resultBase64 = NsSkelUtils::toBase64(rpcResultSerialized);
 
+#ifndef RELEASE
 			// DEBUG
 			cout_lock.lock();
 			cout << "processIncomingConnection(): base64 result: " << *resultBase64 << endl;
 			cout_lock.unlock();
-
+#endif
 			res.set_content(*resultBase64, "application/base64");
 			res.set_header("Access-Control-Allow-Origin", "*");
 		}
+	});
+	_serverptr->Get("/methods", [&](const Request& req, Response& res) {
+		auto methods_list = NsSkelRpcRegistry::instance()->methods();
+		string content;
+		for(auto method : *methods_list) {
+			auto replier = NsSkelRpcRegistry::instance()->getReplier(make_shared<string>(method));
+			content += replier->getReturnType()->getName() + " " + method + "(" + replier->getArgsType()->getName() +")\n";
+			content += "// Received from " + *(NsSkelRpcRegistry::instance()->getLocalService()->serviceName()) + "\n";
+			content += replier->getArgsType()->getDefinition() + "\n";
+			content += replier->getReturnType()->getDefinition() + "\n";
+		}
+		res.set_content(content, "text/plain");
 	});
 }
 

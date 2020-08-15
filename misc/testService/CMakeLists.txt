@@ -3,9 +3,11 @@ project(test_service)
 
 set(Sources 
 	testMethod.cpp
+	testWorker.cpp
 	main.cpp)
 
 set(Headers
+	testWorker.h
 	testMethod.h)
 
 add_executable(testService ${Headers} ${Sources})

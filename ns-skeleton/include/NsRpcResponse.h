@@ -32,7 +32,7 @@ namespace nanoservices {
 
 	class NsRpcResponse {
 	public:
-		NSSERIALIZER_PREPARE (_success, _result);
+		NSSERIALIZER_PREPARE_SYS (_success, _result);
 
 		NsRpcResponse();
 
