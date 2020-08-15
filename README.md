@@ -7,13 +7,47 @@ Nanoservices framework
 
 It is in development by now, a more meaningful readme will be added later
 
-How to build
-------------
+## Requirements
 
 You'll need: `cmake` (minimum version is 3.0), `make`, `libzookeeper-mt-dev`, running local instance of `zookeeper` and a C++11 compiler (the framework is tested with gcc 6+)
 
+### Ubuntu 18.04
+
+`build-essential`
+
+`software-properties-common`
+
+`gcc-6 g++-6`
+
+`cmake`
+
+`make`
+
+`libzookeeper-mt-dev`
+
+`zookeeper`
+
+
+If you want to build with gcc 6+ do the following
+
 ```bash
-git clone git@github.com:dmerkushov/nanoservices.git`
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 60 --slave /usr/bin/g++ g++ /usr/bin/g++-6
+```
+
+To pass test with zookeeper run
+
+```bash
+ sudo /usr/share/zookeeper/bin/zkServer.sh start
+```
+
+How to build
+------------
+
+
+
+```bash
+git clone https://github.com/dmerkushov/nanoservices.git
+git checkout ag-develop
 cd nanoservices/
 mkdir build
 cd build/
