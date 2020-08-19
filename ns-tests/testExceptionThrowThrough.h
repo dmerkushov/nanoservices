@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* 
+/*
  * File:   testExceptionThrowThrough.h
  * Author: dmerkushov
  *
@@ -36,20 +36,24 @@
 #include "NsSkelRpcRegistry.h"
 #include "NsSkelUtils.h"
 
-class MyArgs {
+namespace nanoservices {
+namespace tests {
+namespace testExceptionThrowThrough {
+
+class TestExceeptionThrowThrough_Args {
 public:
 
-	MyArgs() {
+	TestExceeptionThrowThrough_Args() {
 		::memset(k, 0, sizeof(k));
 	}
 
-	MyArgs(MyArgs &orig) {
+	TestExceeptionThrowThrough_Args(TestExceeptionThrowThrough_Args &orig) {
 		this->i = orig.i;
 		this->j = orig.j;
 		::memset(k, 0, sizeof(k));
 	}
 
-	virtual ~MyArgs() {
+	virtual ~TestExceeptionThrowThrough_Args() {
 	}
 
 	uint32_t i;
@@ -57,37 +61,36 @@ public:
 
 	uint32_t k[102400];
 
-	NSSERIALIZER_PREPARE (i, j, k
-	);
+	NSSERIALIZER_PREPARE (i, j, k);
 };
 
-class MyResult {
+class TestExceptionThrowThrough_Result {
 public:
 
-	MyResult() {
+	TestExceptionThrowThrough_Result() {
 	}
 
-	MyResult(MyResult &orig) {
+	TestExceptionThrowThrough_Result(TestExceptionThrowThrough_Result &orig) {
 		this->o = orig.o;
 	}
 
-	virtual ~MyResult() {
+	virtual ~TestExceptionThrowThrough_Result() {
 	}
 
 	uint32_t o;
 	uint32_t a = 0;
 
-	NSSERIALIZER_PREPARE (o, a
-	);
+	NSSERIALIZER_PREPARE (o, a);
 };
 
-class MyReplier : public nanoservices::NsSkelRpcReplier<MyArgs, MyResult> {
+class TestExceeptionThrowThrough_Replier
+		: public nanoservices::NsSkelRpcReplier<TestExceeptionThrowThrough_Args, TestExceptionThrowThrough_Result> {
 public:
 
-	MyReplier() {
+	TestExceeptionThrowThrough_Replier() {
 	}
 
-	virtual ~MyReplier() {
+	virtual ~TestExceeptionThrowThrough_Replier() {
 	}
 
 	virtual std::shared_ptr <std::string> methodName() noexcept(true) {
@@ -119,10 +122,13 @@ public:
 	}
 
 private:
-	std::shared_ptr <std::string> _methodName = std::make_shared<std::string>("doSmth");
+	std::shared_ptr<std::string> _methodName = std::make_shared<std::string>("doSmth");
 };
 
 void testExceptionThrowThrough();
+}
+}
+}
 
 #endif /* TESTEXCEPTIONTHROWTHROUGH_H */
 

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#include "testBase64.h"
+
 #include <string>
 
 #include "testing.h"
@@ -24,13 +26,15 @@
 using namespace std;
 using namespace nanoservices;
 
-void testBase64() {
+void nanoservices::tests::testBase64::testBase64() {
 	TEST_START_DESCRIBE("Test Base64 encoding/decoding routines\n"
 						"by encoding/decoding sample lines\n"
 						"that had used to cause problems");
 
 	string ololo = "/home/databin/Maps/Podolsk/Podolsk.map";
-	for (int i = 0; i < 4; i++) {
+	for (
+			int i = 0; i < 4; i++
+			) {
 		string ololi = ololo.substr(0, ololo.size() - i);
 		shared_ptr<NsSerialized> ololiSer = make_shared<NsSerialized>(ololi.c_str(), ololi.size());
 		shared_ptr<string> base64s = NsSkelUtils::toBase64(ololiSer);
@@ -45,7 +49,9 @@ void testBase64() {
 	}
 
 	ololo = "/home/databin/Maps/N-37-017/N-37-017.MAP";
-	for (int i = 0; i < 4; i++) {
+	for (
+			int i = 0; i < 4; i++
+			) {
 		string ololi = ololo.substr(0, ololo.size() - i);
 		shared_ptr<NsSerialized> ololiSer = make_shared<NsSerialized>(ololi.c_str(), ololi.size());
 		shared_ptr<string> base64s = NsSkelUtils::toBase64(ololiSer);

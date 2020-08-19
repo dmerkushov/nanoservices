@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* 
+/*
  * File:   testBase64.h
  * Author: dmerkushov
  *
@@ -24,7 +24,14 @@
 #ifndef TESTBASE64_H
 #define TESTBASE64_H
 
+namespace nanoservices {
+namespace tests {
+namespace testBase64 {
+
 void testBase64();
+}
+}
+}
 
 #endif /* TESTBASE64_H */
 

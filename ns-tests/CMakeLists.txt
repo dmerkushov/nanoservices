@@ -11,9 +11,10 @@ endif ()
 
 set(Sources
 		main.cpp
-		testing.cpp
-		testBase64.cpp
-		testExceptionThrowThrough.cpp)
+		testing.cpp testing.h
+		testBase64.cpp testBase64.h
+		testExceptionThrowThrough.cpp testExceptionThrowThrough.h
+		testBrokenWrite.cpp testBrokenWrite.h)
 
 message("Sources: ${Sources}")
 
@@ -26,7 +27,7 @@ include_directories(${ns_skeleton_SOURCE_DIR}/include)
 # Header-only MSGPACK realisation
 include_directories(${nanoservices_SOURCE_DIR}/third-party/msgpack-c/include)
 
-add_executable(ns-tests ${Sources} ${Headers})
+add_executable(ns-tests ${Sources})
 
 if (${GLOBAL_BUILD})
 	message("ns-tests: Will link ns-tests with ${ns_skeleton_BINARY_DIR}/libns-skeleton.so")
@@ -46,5 +47,5 @@ if (${GLOBAL_BUILD})
 	add_custom_command(TARGET ns-tests POST_BUILD COMMAND ${CMAKE_CURRENT_BINARY_DIR}/ns-tests)
 	add_custom_command(TARGET ns-tests POST_BUILD COMMAND bash -c "${TEAR_DOWN_CMD}" VERBATIM)
 else ()
-	message(WARNING "ns-tests: Not a global build, so no libns-skeleton.so to link with")
+	message(WARNING "ns-tests: Not a global build, so no libns-skeleton.so to link with and run tests against")
 endif ()

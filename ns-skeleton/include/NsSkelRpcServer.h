@@ -74,6 +74,8 @@
 
 namespace nanoservices {
 
+	const int MAX_INTERRUPTED_TIMES = 3;
+
 // These serializers are defined in NsRpcExecutor.cpp
 	extern NsSerializer<NsRpcRequest> _requestSerializer;
 	extern NsSerializer<NsRpcResponseError> _errorSerializer;
@@ -166,10 +168,18 @@ namespace nanoservices {
 #endif
 		size_t index = 0;
 		const char *d = (char *) data;
+		int interruptedTimes = 0;
 		while (index < len) {
 			ssize_t count = write(dataSocketFd, d + index, len - index);
 			if (count < 0) {
 				if (errno == EINTR) {
+					interruptedTimes++;
+					if (interruptedTimes > MAX_INTERRUPTED_TIMES) {
+						cout_lock.lock();
+						std::cerr << "writeBin: Too many EINTR signals received: fd=" << dataSocketFd << std::endl;
+						cout_lock.unlock();
+						break;
+					}
 					continue;
 				}
 #ifndef RELEASE
