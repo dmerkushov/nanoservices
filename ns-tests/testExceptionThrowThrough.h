@@ -106,7 +106,7 @@ public:
 		//			throw (NsException (NSE_POSITION, "i is too big"));
 		//		}
 
-		std::shared_ptr <TestExceptionThrowThrough_Result> result = std::make_shared<MyResult>();
+		std::shared_ptr <TestExceptionThrowThrough_Result> result = std::make_shared<TestExceptionThrowThrough_Result>();
 
 		//		try {
 		//			sendRpcRequest<TestExceeptionThrowThrough_Args, TestExceptionThrowThrough_Result> (std::make_shared<std::string> ("sfgafs"), std::make_shared<std::string> ("skjghg"), params, true);
