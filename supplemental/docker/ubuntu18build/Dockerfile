@@ -19,8 +19,8 @@ USER deploy
 RUN \
     cd ~; \
     git clone https://github.com/dmerkushov/nanoservices.git; \
-    git checkout v-bus-patch-2; \ 
     cd nanoservices; \
+    git checkout v-bus-patch-2; \ 
     mkdir build; \
     cd build; \
     cmake .. ;\
