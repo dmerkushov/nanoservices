@@ -75,12 +75,12 @@ public:
 	virtual ~TestBrokenWrite_A_Replier() {
 	}
 
-	virtual std::shared_ptr<std::string> methodName() throw(nanoservices::NsException) {
+	virtual std::shared_ptr<std::string> methodName() noexcept(true) {
 		return _methodName;
 	}
 
 	virtual std::shared_ptr<TestBrokenWrite_A_Result>
-	processRequest(std::shared_ptr<TestBrokenWrite_A_Args> args) throw(nanoservices::NsException) {
+	processRequest(std::shared_ptr<TestBrokenWrite_A_Args> args) {
 
 		std::cout << "Replier A: preparing a call to B" << std::endl;
 
@@ -116,12 +116,12 @@ public:
 	virtual ~TestBrokenWrite_B_Replier() {
 	}
 
-	virtual std::shared_ptr<std::string> methodName() throw(nanoservices::NsException) {
+	virtual std::shared_ptr<std::string> methodName() noexcept(true) {
 		return _methodName;
 	}
 
 	virtual std::shared_ptr<TestBrokenWrite_B_Result>
-	processRequest(std::shared_ptr<TestBrokenWrite_B_Args> args) throw(nanoservices::NsException) {
+	processRequest(std::shared_ptr<TestBrokenWrite_B_Args> args) {
 
 		std::cout << "Replier B: args: i=" << args->i << std::endl;
 

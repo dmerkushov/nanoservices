@@ -97,7 +97,7 @@ public:
 		return _methodName;
 	}
 
-	virtual std::shared_ptr <MyResult> processRequest(std::shared_ptr <MyArgs> args) {
+	virtual std::shared_ptr <TestExceptionThrowThrough_Result> processRequest(std::shared_ptr <TestExceeptionThrowThrough_Args> args) {
 		throw nanoservices::NsException(NSE_POSITION, "Exception from MyReplier:processRequest");
 
 		std::cout << "Replier: params: i=" << args->i << ", j=" << args->j << std::endl;
@@ -106,10 +106,10 @@ public:
 		//			throw (NsException (NSE_POSITION, "i is too big"));
 		//		}
 
-		std::shared_ptr <MyResult> result = std::make_shared<MyResult>();
+		std::shared_ptr <TestExceptionThrowThrough_Result> result = std::make_shared<TestExceptionThrowThrough_Result>();
 
 		//		try {
-		//			sendRpcRequest<MyParam, MyResult> (std::make_shared<std::string> ("sfgafs"), std::make_shared<std::string> ("skjghg"), params, true);
+		//			sendRpcRequest<TestExceeptionThrowThrough_Args, TestExceptionThrowThrough_Result> (std::make_shared<std::string> ("sfgafs"), std::make_shared<std::string> ("skjghg"), params, true);
 		//		} catch (NsSkelRpcException ex) {
 		//			std::stringstream ess;
 		//			ess << "NsSkelRpcException: " << ex.what ();
