@@ -98,23 +98,27 @@ NsException::NsException(const string &position, const stringstream &shortDescri
 	init(rootStacktrace, rootShortDescription, rootFullDescription);
 }
 
-NsException::~NsException() _GLIBCXX_USE_NOEXCEPT {
+NsException::~NsException() noexcept {
 }
 
-const char *NsException::what() const _GLIBCXX_USE_NOEXCEPT {
+const char *NsException::what() const noexcept {
 	return _fullDescription.c_str();
 }
 
-const string &NsException::stacktrace() const {
+const string &NsException::stacktrace() const noexcept {
 	return _stacktrace;
 }
 
-const string &NsException::shortDescription() const {
+const string &NsException::shortDescription() const noexcept {
 	return _shortDescription;
 }
 
-const string &NsException::fullDescription() const {
+const string &NsException::fullDescription() const noexcept {
 	return _fullDescription;
+}
+
+const string &NsException::rootExceptionFullDescription() const noexcept {
+	return _rootExceptionFullDescription;
 }
 
 void NsException::init(const string &rootExStack, const string &rootExShort, const string &rootExFull) {

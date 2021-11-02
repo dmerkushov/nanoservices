@@ -66,37 +66,37 @@ namespace nanoservices {
 
 		NsException(std::stringstream &shortDescription);
 
-		virtual ~NsException() _GLIBCXX_USE_NOEXCEPT;
+		virtual ~NsException() noexcept;
 
 		/**
 		 * Inherited from std::exception
 		 * @return The full description of the exception
 		 */
-		const char *what() const _GLIBCXX_USE_NOEXCEPT override;
+		const char *what() const noexcept override;
 
 		/**
 		 *
 		 * @return Stacktrace of the exception
 		 */
-		const std::string &stacktrace() const;
+		const std::string &stacktrace() const noexcept;
 
 		/**
 		 *
 		 * @return Short description of the exception
 		 */
-		const std::string &shortDescription() const;
+		const std::string &shortDescription() const noexcept;
 
 		/**
 		 *
 		 * @return Full description of the exception; the same string as would be constructed if calling what()
 		 */
-		const std::string &fullDescription() const;
+		const std::string &fullDescription() const noexcept;
 
 		/**
 		 *
 		 * @return Full description of the root exception; empty string if no root exception provided
 		 */
-		const std::string &rootExceptionFullDescription() const;
+		const std::string &rootExceptionFullDescription() const noexcept;
 
 	private:
 		std::string _shortDescription;
