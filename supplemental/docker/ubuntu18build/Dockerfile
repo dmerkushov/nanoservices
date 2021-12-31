@@ -1,6 +1,6 @@
 FROM ubuntu:18.04
 LABEL name="ubuntu18_ns_devel"
-LABEL version="v0.1.0"
+LABEL version="v0.1.1"
 
 ENV PACKAGES="sudo apt-utils curl git software-properties-common build-essential software-properties-common gcc-6 g++-6 cmake make libzookeeper-mt-dev zookeeper vim nano"
 SHELL ["/bin/bash", "-c"]
@@ -20,7 +20,7 @@ RUN \
     cd ~; \
     git clone https://github.com/dmerkushov/nanoservices.git; \
     cd nanoservices; \
-    git checkout ag-develop; \ 
+    git checkout v-bus-patch-2; \ 
     mkdir build; \
     cd build; \
     cmake .. ;\
